@@ -25,7 +25,7 @@ def errorHandler(e: Exception, arg=None):
 def readScoreFromExcel(date):
     excelDict = {}
     try:
-        data = xlrd.open_workbook(f'/Users/destiny/code/dev/python/stockAnalyse/dragon_s1/result/{date}.xls')
+        data = xlrd.open_workbook(f'/Users/destiny/code/dev/python/stock/stockAnalyse/dragon_s1/result/{date}.xls')
         sheet = data.sheet_by_index(0)
         for i in range(1, sheet.nrows):
             detail = sheet.row_values(i)
@@ -38,7 +38,7 @@ def readScoreFromExcel(date):
 def readExcelDetail(date):  # TODO:TEST METHOD
     pointDict = {}
     try:
-        data = xlrd.open_workbook(f'/Users/destiny/code/dev/python/stockAnalyse/dragon_s1/result/{date}.xls')
+        data = xlrd.open_workbook(f'/Users/destiny/code/dev/python/stock/stockAnalyse/dragon_s1/result/{date}.xls')
         sheet = data.sheet_by_index(0)
         for i in range(1, sheet.nrows):
             detail = sheet.row_values(i)
