@@ -249,23 +249,6 @@ def rule20(stock, data: List[dataModel]):
         return False
 
 
-def rule21(stock, data: List[dataModel]):
-    err = None
-    try:
-        range10 = data[-10:]
-        range60 = data[-60:]
-        range220 = data[-220:]
-        if sum([_.close() for _ in range10]) / 10 > sum([_.close() for _ in range220]) / 220:
-            if sum([_.close() for _ in range60]) / 60 > sum([_.close() for _ in range220]) / 220:
-                if max([_.volume() for _ in range60]) > 5 * sum([_.volume() for _ in range220]) / 220:
-                    for i in range(1, 61):
-                        if data[-i].pctChange() > limit(stock):
-                            return True
-    except Exception as e:
-        err = e
-        return False
-
-
 def rule22(stock, data: List[dataModel]):
     if not t_limit(stock, data):
         return False
@@ -327,7 +310,6 @@ class level4:
         self.shot_rule.append(18) if rule18(self.stock, self.data) else self.fail_rule.append(18)
         self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
         self.shot_rule.append(20) if rule20(self.stock, self.data) else self.fail_rule.append(20)
-        self.shot_rule.append(21) if rule21(self.stock, self.data) else self.fail_rule.append(21)
         self.shot_rule.append(22) if rule22(self.stock, self.data) else self.fail_rule.append(22)
         self.shot_rule.append(24) if rule24(self.stock, self.data) else self.fail_rule.append(24)
         self.shot_rule.append(26) if rule26(self.stock, self.data) else self.fail_rule.append(26)

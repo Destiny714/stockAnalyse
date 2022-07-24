@@ -7,7 +7,8 @@
 from typing import List
 
 from common import dateHandler
-from common.collect_data import t_low_pct, t_close_pct, t_open_pct, limit, dataModel, model_1, model_t, t_limit
+from common.collect_data import t_low_pct, t_close_pct, t_open_pct, limit, dataModel, model_1, model_t, t_limit, \
+    collectData
 
 
 def rule1(stock, data: List[dataModel]):
@@ -69,6 +70,8 @@ def rule5(stock, data: List[dataModel]):
         else:
             return False
     if data[-1].firstLimitTime() <= data[-2].firstLimitTime() + dateHandler.timeDelta(data[-2].date(), data[-1].date()):
+        return False
+    if data[-2].firstLimitTime() <= data[-3].firstLimitTime() + dateHandler.timeDelta(data[-3].date(), data[-2].date()):
         return False
     return True
 
@@ -215,15 +218,46 @@ def rule19(stock, data: List[dataModel]):
             return False
         if t_open_pct(data, i - 1) >= 0.045:
             continue
-        if t_low_pct(data, i - 1) < -0.015:
+        if t_low_pct(data, i - 1) < -0.025:
             count += 1
     if count >= 2:
         return True
 
 
 def rule20(data: List[dataModel]):
-    if data[-1].limitOpenTime() > 2 or data[-2].limitOpenTime() > 2:
+    for i in range(2):
+        if data[-i - 1].limitOpenTime() <= 2:
+            continue
+        gemData = collectData('399006', dateRange=5, aimDate=data[-1].date())
+        if t_low_pct(gemData, i) > -0.005:
+            return True
+
+
+def rule21(data: List[dataModel]):
+    range0_9 = data[-10:]
+    range10_19 = data[-20:-10]
+    if sum([_.turnover() for _ in range0_9]) < sum([_.turnover() for _ in range10_19]):
         return True
+
+
+def rule22(data: List[dataModel]):
+    range0_19 = data[-20:]
+    range20_39 = data[-40:-20]
+    if sum([_.turnover() for _ in range0_19]) < sum([_.turnover() for _ in range20_39]):
+        return True
+
+
+def rule23(data: List[dataModel]):
+    for i in range(5):
+        if t_open_pct(data, i) - t_low_pct(data, i) > 0.04:
+            return True
+
+
+def rule24(stock, data: List[dataModel]):
+    for i in range(2):
+        if not (data[-i - 1].limitOpenTime() > 1 and t_open_pct(data, i) > limit(stock) / 100):
+            return False
+    return True
 
 
 class level8:
@@ -257,4 +291,8 @@ class level8:
         self.shot_rule.append(18) if rule18(self.stock, self.data) else self.fail_rule.append(18)
         self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
         self.shot_rule.append(20) if rule20(self.data) else self.fail_rule.append(20)
+        self.shot_rule.append(21) if rule21(self.data) else self.fail_rule.append(21)
+        self.shot_rule.append(22) if rule22(self.data) else self.fail_rule.append(22)
+        self.shot_rule.append(23) if rule23(self.data) else self.fail_rule.append(23)
+        self.shot_rule.append(24) if rule24(self.stock, self.data) else self.fail_rule.append(24)
         return self.result()

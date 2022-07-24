@@ -5,17 +5,17 @@
 # @Software: PyCharm
 
 import write_excel
-from api import databaseApi, tushareApi
-from common import toolBox, concurrentActions, dateHandler
 from rule_level import A, S, F
+from api import databaseApi, tushareApi
 from rule_black import level6, level7, level8, level9
+from common import toolBox, concurrentActions, dateHandler
 from rule_white import level1, level2, level3, level4, level5
 from common.collect_data import collectData, t_open_pct, limit_height
 
 if __name__ == '__main__':
     stocks = concurrentActions.initStock(needReload=False, extra=True)
     tradeDays = databaseApi.Mysql().selectTradeDate()
-    aimDates = [dateHandler.lastTradeDay()]
+    aimDates = ['20220719', '20220720', '20220721', '20220722']
 
 
     def process(aimDate):

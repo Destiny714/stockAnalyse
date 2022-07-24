@@ -24,7 +24,7 @@ def rule1(stock, data: List[dataModel]):
 
 
 def rule2(stock, data: List[dataModel]):
-    if data[-1].turnover() <= 1:
+    if data[-1].limitOpenTime() <= 1:
         return False
     for i in range(1, 6):
         if t_low_pct(data, i - 1) >= -0.06:
@@ -72,31 +72,6 @@ def rule6(stock, data: List[dataModel]):
     if not model_t(stock, data):
         return False
     if data[-1].volume() > 1.8 * max([_.volume() for _ in data[-6:-1]]):
-        return True
-
-
-def rule7(stock, data: List[dataModel]):
-    for i in range(1, 4):
-        if data[-i].pctChange() <= limit(stock):
-            return False
-        if i in range(1, 3):
-            if t_close_pct(data, i - 1) <= limit(stock) / 100:
-                continue
-            if t_open_pct(data, i - 1) < -0.025 or t_low_pct(data, i - 1) < -0.045:
-                return True
-
-
-def rule9(stock, data: List[dataModel]):
-    if t_limit(stock, data, 2):
-        return False
-    if not t_limit(stock, data, 1):
-        return False
-    if not t_limit(stock, data):
-        return False
-    if t_open_pct(data) >= 0.04:
-        return False
-    matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '10:30:00')
-    if data[-1].firstLimitTime() > matchTime:
         return True
 
 
@@ -259,8 +234,6 @@ class level9:
         self.shot_rule.append(3) if rule3(self.data) else self.fail_rule.append(3)
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
-        self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)
-        self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.data) else self.fail_rule.append(10)
         self.shot_rule.append(11) if rule11(self.stock, self.data) else self.fail_rule.append(11)
         self.shot_rule.append(14) if rule14(self.stock, self.data) else self.fail_rule.append(14)

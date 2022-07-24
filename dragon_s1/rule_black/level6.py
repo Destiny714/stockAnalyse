@@ -106,10 +106,10 @@ def rule9(stock, data: List[dataModel]):
             return True
 
 
-def rule10(data: List[dataModel]):
+def rule10(stock, data: List[dataModel]):
     count = 0
     for i in range(1, 6):
-        if t_low_pct(data, i - 1) < -0.055:
+        if t_low_pct(data, i - 1) < -0.055 and t_high_pct(data, i - 1) > limit(stock) / 100:
             count += 1
             if count >= 2:
                 return True
@@ -120,7 +120,7 @@ def rule11(stock, data: List[dataModel]):
     for i in range(1, 4):
         if not t_limit(stock, data, i - 1):
             return False
-        if t_open_pct(data, i - 1) >= 0.045:
+        if t_open_pct(data, i - 1) >= 0.035:
             return False
     return True
 
@@ -252,7 +252,10 @@ def rule22(stock, data: List[dataModel]):
             continue
         if t_low_pct(data, i) >= 0.05:
             continue
-        if t_close_pct(data, i) > limit(stock) / 100:
+        if t_close_pct(data, i) <= limit(stock) / 100:
+            continue
+        matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '10:30:00')
+        if data[-i - 1].lastLimitTime() > matchTime:
             return True
 
 
@@ -277,7 +280,7 @@ class level6:
         self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)
         self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
         self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
-        self.shot_rule.append(10) if rule10(self.data) else self.fail_rule.append(10)
+        self.shot_rule.append(10) if rule10(self.stock, self.data) else self.fail_rule.append(10)
         self.shot_rule.append(11) if rule11(self.stock, self.data) else self.fail_rule.append(11)
         self.shot_rule.append(12) if rule12(self.stock, self.data) else self.fail_rule.append(12)
         self.shot_rule.append(13) if rule13(self.data) else self.fail_rule.append(13)

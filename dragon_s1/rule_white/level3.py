@@ -127,6 +127,23 @@ def rule10(stock, data: List[dataModel]):
             return True
 
 
+def rule11(stock, data: List[dataModel]):
+    err = None
+    try:
+        range10 = data[-10:]
+        range60 = data[-60:]
+        range220 = data[-220:]
+        if sum([_.close() for _ in range10]) / 10 > sum([_.close() for _ in range220]) / 220:
+            if sum([_.close() for _ in range60]) / 60 > sum([_.close() for _ in range220]) / 220:
+                if max([_.volume() for _ in range60]) > 5 * sum([_.volume() for _ in range220]) / 220:
+                    for i in range(1, 61):
+                        if data[-i].pctChange() > limit(stock):
+                            return True
+    except Exception as e:
+        err = e
+        return False
+
+
 def rule13(data: List[dataModel]):
     for i in range(1, 3):
         if data[-i].close() > max([_.close() for _ in data[-i - 440:-i]]):
@@ -233,6 +250,7 @@ class level3:
         self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
         self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.stock, self.data) else self.fail_rule.append(10)
+        self.shot_rule.append(11) if rule11(self.stock, self.data) else self.fail_rule.append(11)
         self.shot_rule.append(13) if rule13(self.data) else self.fail_rule.append(13)
         self.shot_rule.append(14) if rule14(self.data) else self.fail_rule.append(14)
         self.shot_rule.append(15) if rule15(self.data) else self.fail_rule.append(15)

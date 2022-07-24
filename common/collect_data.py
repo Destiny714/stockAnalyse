@@ -4,9 +4,8 @@
 # @File    : collect_data.py
 # @Software: PyCharm
 from typing import List
-
-from common import dateHandler
 from api import databaseApi
+from common import dateHandler
 
 
 class dataModel:
@@ -73,9 +72,9 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
                        modifyData.volume() * 0.6,
                        modifyData.amount() * 0.6,
                        modifyData.turnover() * 0.6,
-                       modifyData.firstLimitTime() - 300 + dateHandler.timeDelta(modifyData.date(), nextDate),
-                       modifyData.lastLimitTime() - 300 + dateHandler.timeDelta(modifyData.date(), nextDate),
-                       0, ]
+                       dateHandler.joinTimeToStamp(nextDate, '09:45:00'),
+                       dateHandler.joinTimeToStamp(nextDate, '09:45:00'),
+                       0]
         res.append(dataModel(virtualData))
     elif virtual == 'f':
         modifyData = res[-1]
@@ -92,8 +91,8 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
                        modifyData.volume() * 1.4,
                        modifyData.amount() * 1.4,
                        modifyData.turnover() * 1.4,
-                       (modifyData.firstLimitTime() + 300 + dateHandler.timeDelta(modifyData.date(), nextDate)) * plus,
-                       (modifyData.lastLimitTime() + 300 + dateHandler.timeDelta(modifyData.date(), nextDate)) * plus,
+                       dateHandler.joinTimeToStamp(nextDate, '10:45:00'),
+                       dateHandler.joinTimeToStamp(nextDate, '14:30:00'),
                        1]
         res.append(dataModel(virtualData))
     return res
