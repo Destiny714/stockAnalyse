@@ -5,7 +5,7 @@
 # @Software: PyCharm
 from typing import List
 from common import dateHandler
-from common.collect_data import t_low_pct, t_open_pct, t_close_pct, limit, dataModel, model_1, t_limit
+from common.collect_data import t_low_pct, t_open_pct, t_close_pct, t_high_pct, limit, dataModel, model_1, t_limit
 
 
 def rule1(stock, data: List[dataModel]):
@@ -214,6 +214,16 @@ def rule18(data: List[dataModel]):
             return True
 
 
+def rule19(stock, data: List[dataModel]):
+    for i in range(3):
+        if not t_limit(stock, data, i):
+            return False
+        matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '09:47:00')
+        if data[-i - 1].firstLimitTime() >= matchTime:
+            return False
+    return True
+
+
 def rule20(stock, data: List[dataModel]):
     if t_limit(stock, data, 2):
         return False
@@ -226,6 +236,15 @@ def rule20(stock, data: List[dataModel]):
     matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '10:30:00')
     if data[-1].firstLimitTime() > matchTime:
         return True
+
+
+def rule21(data: List[dataModel]):
+    count = 0
+    for i in range(4):
+        if t_high_pct(data, i) - t_low_pct(data, i) > 0.08:
+            count += 1
+        if count >= 3:
+            return True
 
 
 class level7:
@@ -258,5 +277,7 @@ class level7:
         self.shot_rule.append(16) if rule16(self.data) else self.fail_rule.append(16)
         self.shot_rule.append(17) if rule17(self.stock, self.data) else self.fail_rule.append(17)
         self.shot_rule.append(18) if rule18(self.data) else self.fail_rule.append(18)
+        self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
         self.shot_rule.append(20) if rule20(self.stock, self.data) else self.fail_rule.append(20)
+        self.shot_rule.append(21) if rule21(self.data) else self.fail_rule.append(21)
         return self.result()

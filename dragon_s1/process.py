@@ -15,7 +15,7 @@ from common.collect_data import collectData, t_open_pct, limit_height
 if __name__ == '__main__':
     stocks = concurrentActions.initStock(needReload=False, extra=True)
     tradeDays = databaseApi.Mysql().selectTradeDate()
-    aimDates = [dateHandler.lastTradeDay()]
+    aimDates = ['20220722','20220725']
 
 
     def process(aimDate):
