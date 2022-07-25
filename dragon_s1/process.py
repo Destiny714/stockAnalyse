@@ -15,7 +15,7 @@ from common.collect_data import collectData, t_open_pct, limit_height
 if __name__ == '__main__':
     stocks = concurrentActions.initStock(needReload=False, extra=True)
     tradeDays = databaseApi.Mysql().selectTradeDate()
-    aimDates = ['20220719', '20220720', '20220721', '20220722']
+    aimDates = [dateHandler.lastTradeDay()]
 
 
     def process(aimDate):
@@ -38,7 +38,7 @@ if __name__ == '__main__':
                 l5 = level5.level5(stock, data, virtual='s').filter()
                 l6 = level6.level6(stock, data).filter()
                 l7 = level7.level7(stock, data).filter()
-                l8 = level8.level8(stock, data).filter()
+                l8 = level8.level8(stock, data, virtual='s').filter()
                 l9 = level9.level9(stock, data).filter()
                 for white in [l1, l2, l3, l4, l5]:
                     if white['result']:
@@ -73,7 +73,7 @@ if __name__ == '__main__':
                 l5 = level5.level5(stock, data, virtual='f').filter()
                 l6 = level6.level6(stock, data).filter()
                 l7 = level7.level7(stock, data).filter()
-                l8 = level8.level8(stock, data).filter()
+                l8 = level8.level8(stock, data, virtual='f').filter()
                 l9 = level9.level9(stock, data).filter()
                 for white in [l1, l2, l3, l4, l5]:
                     if white['result']:

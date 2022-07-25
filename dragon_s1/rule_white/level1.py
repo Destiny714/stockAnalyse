@@ -42,8 +42,8 @@ def rule5(data: List[dataModel]):
 
 def rule6(data: List[dataModel]):
     for i in range(1, 4):
-        high20 = max([_.volume() for _ in data[-20 - i:-i]])
-        if data[-i].volume() > high20:
+        high20 = max([_.turnover() for _ in data[-20 - i:-i]])
+        if data[-i].turnover() > high20:
             return True
 
 
@@ -74,7 +74,7 @@ def rule10(data: List[dataModel]):
     try:
         range3month = data[-90:]
         range3year = data[-660:]
-        if max([_.volume() for _ in range3month]) > sum([_.volume() for _ in range3year]) / 660:
+        if max([_.turnover() for _ in range3month]) > sum([_.turnover() for _ in range3year]) / 660:
             return True
     except Exception as e:
         err = e

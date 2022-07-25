@@ -31,8 +31,8 @@ def rule2(stock, data: List[dataModel]):
         return False
     if not t_limit(stock, data, 2):
         return False
-    if data[-1].volume() > 1.5 * data[-2].volume():
-        if data[-2].volume() > 1.5 * data[-3].volume():
+    if data[-1].turnover() > 1.5 * data[-2].turnover():
+        if data[-2].turnover() > 1.5 * data[-3].turnover():
             return True
 
 
@@ -45,7 +45,9 @@ def rule3(stock, data: List[dataModel]):
         return False
     if model_1(stock, data, 1):
         return False
-    if data[-1].volume() > 3 * data[-2].volume():
+    if data[-1].turnover() <= 3 * data[-2].turnover():
+        return False
+    if data[-1].firstLimitTime() > data[-2].firstLimitTime() + dateHandler.timeDelta(data[-2].date(), data[-1].date()):
         return True
 
 
@@ -60,7 +62,7 @@ def rule4(stock, data: List[dataModel]):
         return False
     if model_1(stock, data, 1):
         return False
-    if data[-1].volume() < data[-2].volume() < data[-3].volume():
+    if data[-1].turnover() < data[-2].turnover() < data[-3].turnover():
         return True
 
 
@@ -76,7 +78,7 @@ def rule5(stock, data: List[dataModel]):
         return False
     if count1 < 3:
         return False
-    if data[-4].volume() < data[-3].volume() < data[-2].volume() < data[-1].volume():
+    if data[-4].turnover() < data[-3].turnover() < data[-2].turnover() < data[-1].turnover():
         return True
 
 
@@ -84,12 +86,12 @@ def rule6(stock, data: List[dataModel]):
     if not model_1(stock, data, 0):
         return False
     range10 = data[-11:-1]
-    if data[-1].volume() > 1.8 * max([_.volume() for _ in range10]):
+    if data[-1].turnover() > 1.8 * max([_.turnover() for _ in range10]):
         return True
 
 
 def rule7(stock, data: List[dataModel]):
-    if not (data[-4].volume() > data[-3].volume() > data[-2].volume()):
+    if not (data[-4].turnover() > data[-3].turnover() > data[-2].turnover()):
         return False
     flag = False
     for i in range(2, 5):
@@ -164,7 +166,7 @@ def rule13(stock, data: List[dataModel]):
             flag = True
             break
     if flag:
-        allVol = [_.volume() for _ in data[-5:]]
+        allVol = [_.turnover() for _ in data[-5:]]
         if min(allVol) > (1 / 3) * max(allVol):
             return True
 
@@ -203,6 +205,12 @@ def rule17(stock, data: List[dataModel]):
         if data[-i - 1].turnover() <= 4:
             continue
         if model_1(stock, data, i):
+            return True
+
+
+def rule18(data: List[dataModel]):
+    for i in range(5):
+        if t_open_pct(data, i) - t_low_pct(data, i) > 0.05:
             return True
 
 
@@ -249,5 +257,6 @@ class level7:
         self.shot_rule.append(15) if rule15(self.data) else self.fail_rule.append(15)
         self.shot_rule.append(16) if rule16(self.data) else self.fail_rule.append(16)
         self.shot_rule.append(17) if rule17(self.stock, self.data) else self.fail_rule.append(17)
+        self.shot_rule.append(18) if rule18(self.data) else self.fail_rule.append(18)
         self.shot_rule.append(20) if rule20(self.stock, self.data) else self.fail_rule.append(20)
         return self.result()

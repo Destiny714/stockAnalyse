@@ -13,10 +13,10 @@ def rule1(stock, data: List[dataModel]):
         return False
     if data[-2].pctChange() <= limit(stock):
         return False
-    if data[-1].volume() <= data[-2].volume():
+    if data[-1].turnover() <= data[-2].turnover():
         return False
     range10 = data[-11:-1]
-    if data[-1].volume() < 1.8 * max([_.volume() for _ in range10]):
+    if data[-1].turnover() < 1.8 * max([_.turnover() for _ in range10]):
         return True
 
 
@@ -25,11 +25,11 @@ def rule2(stock, data: List[dataModel]):
         return False
     if data[-2].pctChange() <= limit(stock):
         return False
-    if data[-1].volume() >= data[-2].volume():
+    if data[-1].turnover() >= data[-2].turnover():
         return False
     if t_open_pct(data, 0) <= t_open_pct(data, 1):
         return False
-    if data[-2].volume() > data[-3].volume():
+    if data[-2].turnover() > data[-3].turnover():
         return True
 
 
@@ -38,7 +38,7 @@ def rule3(stock, data: List[dataModel]):
         return False
     if data[-2].pctChange() <= limit(stock):
         return False
-    if data[-1].volume() >= data[-2].volume():
+    if data[-1].turnover() >= data[-2].turnover():
         return False
     if t_open_pct(data) > 0.035:
         return True
@@ -62,7 +62,7 @@ def rule5(stock, data: List[dataModel]):
         return False
     if data[-2].pctChange() <= limit(stock):
         return False
-    if data[-1].volume() >= data[-2].volume():
+    if data[-1].turnover() >= data[-2].turnover():
         return False
     matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
     if data[-1].firstLimitTime() < matchTime:
@@ -98,7 +98,7 @@ def rule8(stock, data: List[dataModel]):
         range5to25 = data[-26:-5]
         if data[-1].close() <= 1.2 * max(_.close() for _ in range5to25):
             range10 = data[-11:-1]
-            if data[-1].volume() < 1.5 * max([_.volume() for _ in range10]):
+            if data[-1].turnover() < 1.5 * max([_.turnover() for _ in range10]):
                 range440 = data[-441:-1]
                 if data[-1].close() > max([_.high() for _ in range440]):
                     return True
@@ -108,12 +108,12 @@ def rule8(stock, data: List[dataModel]):
 
 
 def rule9(stock, data: List[dataModel]):
-    if data[-2].volume() <= data[-1].volume():
+    if data[-2].turnover() <= data[-1].turnover():
         return False
     if not (t_open_pct(data) > -0.01 and t_close_pct(data) > limit(stock) / 100):
         return False
     range10 = data[-12:-2]
-    if data[-2].volume() > max([_.volume() for _ in range10]):
+    if data[-2].turnover() > max([_.turnover() for _ in range10]):
         return True
 
 
@@ -135,7 +135,7 @@ def rule11(stock, data: List[dataModel]):
         range220 = data[-220:]
         if sum([_.close() for _ in range10]) / 10 > sum([_.close() for _ in range220]) / 220:
             if sum([_.close() for _ in range60]) / 60 > sum([_.close() for _ in range220]) / 220:
-                if max([_.volume() for _ in range60]) > 5 * sum([_.volume() for _ in range220]) / 220:
+                if max([_.turnover() for _ in range60]) > 5 * sum([_.turnover() for _ in range220]) / 220:
                     for i in range(1, 61):
                         if data[-i].pctChange() > limit(stock):
                             return True
@@ -209,7 +209,7 @@ def rule23(stock, data: List[dataModel]):
                 continue
             if t_low_pct(data, i - 1) <= -0.01:
                 continue
-            if d.volume() > 1.8 * max([_.volume() for _ in data[-10 - i:-i]]):
+            if d.turnover() > 1.8 * max([_.turnover() for _ in data[-10 - i:-i]]):
                 continue
             if d.close() > max([_.close() for _ in data[-440 - i:-i]]):
                 return True

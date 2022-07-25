@@ -50,7 +50,7 @@ def rule4(stock, data: List[dataModel]):
         return False
     if not model_1(stock, data):
         return False
-    if data[-1].volume() > data[-2].volume() / 3:
+    if data[-1].turnover() > data[-2].turnover() / 3:
         return True
 
 
@@ -71,7 +71,7 @@ def rule6(stock, data: List[dataModel]):
         return False
     if not model_t(stock, data):
         return False
-    if data[-1].volume() > 1.8 * max([_.volume() for _ in data[-6:-1]]):
+    if data[-1].turnover() > 1.8 * max([_.turnover() for _ in data[-6:-1]]):
         return True
 
 

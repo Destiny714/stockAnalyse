@@ -80,10 +80,10 @@ def rule6(stock, data: List[dataModel]):
         return False
     if not t_limit(stock, data, 1):
         return False
-    if data[-1].volume() > data[-2].volume():
+    if data[-1].turnover() > data[-2].turnover():
         if t_open_pct(data) > 0.07:
             if t_low_pct(data) > 0.05:
-                if data[-2].volume() < 0.7 * data[-3].volume():
+                if data[-2].turnover() < 0.7 * data[-3].turnover():
                     return True
 
 
@@ -92,7 +92,7 @@ def rule7(stock, data: List[dataModel]):
         return False
     if not model_1(stock, data, 2):
         return False
-    if data[-2].volume() < 1.5 * data[-3].volume():
+    if data[-2].turnover() < 1.5 * data[-3].turnover():
         if model_t(stock, data) and t_low_pct(data) > 0.07:
             return True
 
@@ -107,7 +107,7 @@ def rule10(stock, data: List[dataModel]):
     if data[-1].turnover() >= data[-2].turnover():
         return False
     range7 = data[-9:-2]
-    if data[-2].volume() > max([_.volume() for _ in range7]):
+    if data[-2].turnover() > max([_.turnover() for _ in range7]):
         return True
 
 

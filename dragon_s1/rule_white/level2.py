@@ -12,7 +12,7 @@ from common.collect_data import dataModel, t_limit
 def rule1(data: List[dataModel]):
     range5 = data[-5:]
     range6to10 = data[-10:-5]
-    if sum([_.volume() for _ in range5]) > 2 * sum([_.volume() for _ in range6to10]):
+    if sum([_.turnover() for _ in range5]) > 2 * sum([_.turnover() for _ in range6to10]):
         return True
 
 
@@ -21,7 +21,7 @@ def rule2(data: List[dataModel]):
     try:
         range60 = data[-60:]
         range220 = data[-220:]
-        if max([_.volume() for _ in range60]) > 5 * sum([_.volume() for _ in range220]) / 220:
+        if max([_.turnover() for _ in range60]) > 5 * sum([_.turnover() for _ in range220]) / 220:
             return True
     except Exception as e:
         err = e
@@ -43,31 +43,31 @@ def rule9(data: List[dataModel]):
 
 
 def rule10(data: List[dataModel]):
-    if data[-3].volume() < data[-2].volume() < data[-1].volume():
+    if data[-3].turnover() < data[-2].turnover() < data[-1].turnover():
         if data[-3].close() < data[-2].close() < data[-1].close():
             return True
 
 
 def rule11(data: List[dataModel]):
-    if data[-4].volume() < data[-3].volume() < data[-2].volume():
+    if data[-4].turnover() < data[-3].turnover() < data[-2].turnover():
         if data[-4].close() < data[-3].close() < data[-2].close():
             return True
 
 
 def rule12(data: List[dataModel]):
-    if data[-5].volume() < data[-4].volume() < data[-3].volume():
+    if data[-5].turnover() < data[-4].turnover() < data[-3].turnover():
         if data[-5].close() < data[-4].close() < data[-3].close():
             return True
 
 
 def rule13(data: List[dataModel]):
-    if data[-5].volume() < data[-3].volume() < data[-2].volume():
+    if data[-5].turnover() < data[-3].turnover() < data[-2].turnover():
         if data[-5].close() < data[-3].close() < data[-2].close():
             return True
 
 
 def rule14(data: List[dataModel]):
-    if data[-5].volume() < data[-4].volume() < data[-2].volume():
+    if data[-5].turnover() < data[-4].turnover() < data[-2].turnover():
         if data[-5].close() < data[-4].close() < data[-2].close():
             return True
 
