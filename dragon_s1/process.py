@@ -13,9 +13,9 @@ from rule_white import level1, level2, level3, level4, level5
 from common.collect_data import collectData, t_open_pct, limit_height
 
 if __name__ == '__main__':
-    stocks = concurrentActions.initStock(needReload=False, extra=True)
+    stocks = concurrentActions.initStock(needReload=False, extra=False)
     tradeDays = databaseApi.Mysql().selectTradeDate()
-    aimDates = ['20220722','20220725']
+    aimDates = ['20220721','20220722','20220725']
 
 
     def process(aimDate):
@@ -137,7 +137,7 @@ if __name__ == '__main__':
                 level = 'B'
                 if A.ruleA(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum).filter():
                     level = 'A'
-                if F.ruleF(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum).filter():
+                if F.ruleF(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum).filter():
                     level = 'F'
                 if S.ruleS(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum).filter():
                     level = 'S'

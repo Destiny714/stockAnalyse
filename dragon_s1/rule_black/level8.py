@@ -160,9 +160,9 @@ def rule13(stock, data: List[dataModel]):
         return False
     if data[-2].turnover() <= 0.8 * data[-3].turnover():
         return False
-    t1_limit_time = data[-2].lastLimitTime()
-    t2_limit_time = data[-3].lastLimitTime()
-    if t1_limit_time > t2_limit_time + dateHandler.timeDelta(data[-3].date(), data[-2].date()):
+    if data[-2].lastLimitTime() <= data[-3].lastLimitTime() + dateHandler.timeDelta(data[-3].date(), data[-2].date()):
+        return False
+    if data[-2].firstLimitTime() > data[-3].firstLimitTime() + dateHandler.timeDelta(data[-3].date(), data[-2].date()):
         return True
 
 
@@ -240,14 +240,14 @@ def rule20(data: List[dataModel], virtual):
 def rule21(data: List[dataModel]):
     range0_9 = data[-10:]
     range10_19 = data[-20:-10]
-    if sum([_.turnover() for _ in range0_9]) < sum([_.turnover() for _ in range10_19]):
+    if sum([_.turnover() for _ in range0_9]) < sum([_.turnover() for _ in range10_19]) * 0.8:
         return True
 
 
 def rule22(data: List[dataModel]):
     range0_19 = data[-20:]
     range20_39 = data[-40:-20]
-    if sum([_.turnover() for _ in range0_19]) < sum([_.turnover() for _ in range20_39]):
+    if sum([_.turnover() for _ in range0_19]) < sum([_.turnover() for _ in range20_39]) * 0.7:
         return True
 
 

@@ -118,14 +118,16 @@ def rule8(stock, data: List[dataModel]):
 
 
 def rule9(stock, data: List[dataModel]):
+    flag = False
     for i in range(1, 4):
-        if data[-i].pctChange() <= limit(stock):
+        if not t_limit(stock, data, i - 1):
             return False
-        if i in range(1, 3):
+        if i in range(1, 3) and flag is False:
             if t_close_pct(data, i - 1) <= limit(stock) / 100:
                 continue
             if t_open_pct(data, i - 1) < -0.025 or t_low_pct(data, i - 1) < -0.045:
-                return True
+                flag = True
+    return flag
 
 
 def rule10(stock, data: List[dataModel]):
@@ -238,11 +240,12 @@ def rule20(stock, data: List[dataModel]):
         return True
 
 
-def rule21(data: List[dataModel]):
+def rule21(stock, data: List[dataModel]):
     count = 0
     for i in range(4):
         if t_high_pct(data, i) - t_low_pct(data, i) > 0.08:
-            count += 1
+            if t_high_pct(data, i) > limit(stock) / 100:
+                count += 1
         if count >= 3:
             return True
 
@@ -279,5 +282,5 @@ class level7:
         self.shot_rule.append(18) if rule18(self.data) else self.fail_rule.append(18)
         self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
         self.shot_rule.append(20) if rule20(self.stock, self.data) else self.fail_rule.append(20)
-        self.shot_rule.append(21) if rule21(self.data) else self.fail_rule.append(21)
+        self.shot_rule.append(21) if rule21(self.stock, self.data) else self.fail_rule.append(21)
         return self.result()

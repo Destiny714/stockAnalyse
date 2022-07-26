@@ -102,7 +102,7 @@ def rule10(stock, data: List[dataModel]):
         return False
     if not t_limit(stock, data, 1):
         return False
-    if not (t_open_pct(data, 1) > 0.05 and t_low_pct(data, 1) > 0.03):
+    if not (t_open_pct(data) > 0.05 and t_low_pct(data) > 0.03):
         return False
     if data[-1].turnover() >= data[-2].turnover():
         return False
