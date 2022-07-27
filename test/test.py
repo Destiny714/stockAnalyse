@@ -3,14 +3,9 @@
 # @Author  : Destiny_
 # @File    : test.py
 # @Software: PyCharm
-from common.concurrentActions import updateLimitDetailData, updateStockListDailyIndex
 
-for i in [20220711,
-          20220712,
-          20220713,
-          20220714,
-          20220715,
-          20220718,
-          20220719]:
-    updateLimitDetailData(i)
-    updateStockListDailyIndex(i)
+from common.collect_data import collectData
+from dragon_s1.rule_black.level8 import rule21
+d = collectData(stock='002395',aimDate='20220727')
+res = rule21('002395',d)
+print(res)

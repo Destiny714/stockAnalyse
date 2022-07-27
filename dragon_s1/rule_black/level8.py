@@ -250,7 +250,7 @@ def rule20(data: List[dataModel], virtual):
 def rule21(stock, data: List[dataModel]):
     if t_limit(stock, data, 2):
         return False
-    range1 = data[-3:0]
+    range1 = data[-3:]
     range2 = data[-6:-3]
     if sum([_.turnover() for _ in range1]) < sum([_.turnover() for _ in range2]):
         return True

@@ -16,7 +16,7 @@ class Mysql:
         self.host = 'localhost'
         self.word = ''
         self.db = pymysql.connect(host=self.host, port=3306, user=self.__account, password=self.__pswd,
-                                  database=self.__DB,connect_timeout=60)
+                                  database=self.__DB,connect_timeout=5)
         self.cursor = self.db.cursor()
 
     def action(self, output: bool):
