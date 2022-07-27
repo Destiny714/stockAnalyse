@@ -13,9 +13,9 @@ from rule_white import level1, level2, level3, level4, level5
 from common.collect_data import collectData, t_open_pct, limit_height
 
 if __name__ == '__main__':
-    stocks = concurrentActions.initStock(needReload=False, extra=False)
+    stocks = concurrentActions.initStock(needReload=False, extra=True)
     tradeDays = databaseApi.Mysql().selectTradeDate()
-    aimDates = ['20220721','20220722','20220725']
+    aimDates = [dateHandler.lastTradeDay()]
 
 
     def process(aimDate):

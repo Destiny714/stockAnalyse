@@ -7,7 +7,8 @@
 from typing import List
 
 from common import dateHandler
-from common.collect_data import t_low_pct, t_close_pct, t_open_pct, limit, dataModel, model_1, model_t, t_limit, \
+from common.collect_data import t_low_pct, t_close_pct, t_open_pct, t_high_pct, limit, dataModel, model_1, model_t, \
+    t_limit, \
     collectData
 
 
@@ -102,6 +103,15 @@ def rule7(stock, data: List[dataModel]):
         return True
 
 
+def rule8(stock, data: List[dataModel]):
+    if t_limit(stock, data, 1):
+        return False
+    if not t_limit(stock, data):
+        return False
+    if data[-2].close() > data[-3].close() > data[-4].close():
+        return True
+
+
 def rule9(stock, data: List[dataModel]):
     if not model_1(stock, data, 1):
         return False
@@ -179,7 +189,7 @@ def rule15(stock, data: List[dataModel]):
     if not t_limit(stock, data):
         return False
     range20 = data[-21:-1]
-    if data[-1].turnover() > (sum([_.turnover() for _ in range20]) / 20) * 5:
+    if data[-1].turnover() > max([_.turnover() for _ in range20]) * 4:
         return True
 
 
@@ -218,9 +228,9 @@ def rule19(stock, data: List[dataModel]):
     for i in range(1, 4):
         if data[-i].pctChange() < limit(stock):
             return False
-        if t_open_pct(data, i - 1) >= 0.045:
+        if t_open_pct(data, i - 1) >= 0.035:
             continue
-        if t_low_pct(data, i - 1) < -0.025:
+        if t_low_pct(data, i - 1) < -0.045:
             count += 1
     if count >= 2:
         return True
@@ -237,27 +247,24 @@ def rule20(data: List[dataModel], virtual):
             return True
 
 
-def rule21(data: List[dataModel]):
-    range0_9 = data[-10:]
-    range10_19 = data[-20:-10]
-    if sum([_.turnover() for _ in range0_9]) < sum([_.turnover() for _ in range10_19]) * 0.8:
+def rule21(stock, data: List[dataModel]):
+    if t_limit(stock, data, 2):
+        return False
+    range1 = data[-3:0]
+    range2 = data[-6:-3]
+    if sum([_.turnover() for _ in range1]) < sum([_.turnover() for _ in range2]):
         return True
 
 
-def rule22(data: List[dataModel]):
-    range0_19 = data[-20:]
-    range20_39 = data[-40:-20]
-    if sum([_.turnover() for _ in range0_19]) < sum([_.turnover() for _ in range20_39]) * 0.7:
-        return True
-
-
-def rule23(data: List[dataModel]):
+def rule23(stock, data: List[dataModel]):
     count = 0
     for i in range(5):
+        if t_high_pct(data, i) <= limit(stock) / 100:
+            continue
         if t_open_pct(data, i) - t_low_pct(data, i) > 0.04:
             count += 1
-        if count >= 2:
-            return True
+    if count >= 3:
+        return True
 
 
 def rule24(stock, data: List[dataModel]):
@@ -265,6 +272,20 @@ def rule24(stock, data: List[dataModel]):
         if not (data[-i - 1].limitOpenTime() > 1 and t_open_pct(data, i) > limit(stock) / 100):
             return False
     return True
+
+
+def rule25(stock, data: List[dataModel]):
+    flag: bool = False
+    for i in range(5):
+        if t_open_pct(data, i) - t_low_pct(data, i) > 0.05:
+            if t_high_pct(data, i) > limit(stock) / 100:
+                matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '10:30:00')
+                if data[-i - 1].lastLimitTime() > matchTime:
+                    if flag:
+                        return True
+                    else:
+                        flag = True
+                        continue
 
 
 class level8:
@@ -287,6 +308,7 @@ class level8:
         self.shot_rule.append(5) if rule5(self.stock, self.data) else self.fail_rule.append(5)
         self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
         self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)
+        self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
         self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.stock, self.data) else self.fail_rule.append(10)
         self.shot_rule.append(11) if rule11(self.stock, self.data) else self.fail_rule.append(11)
@@ -299,8 +321,8 @@ class level8:
         self.shot_rule.append(18) if rule18(self.stock, self.data) else self.fail_rule.append(18)
         self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
         self.shot_rule.append(20) if rule20(self.data, self.virtual) else self.fail_rule.append(20)
-        self.shot_rule.append(21) if rule21(self.data) else self.fail_rule.append(21)
-        self.shot_rule.append(22) if rule22(self.data) else self.fail_rule.append(22)
-        self.shot_rule.append(23) if rule23(self.data) else self.fail_rule.append(23)
+        self.shot_rule.append(21) if rule21(self.stock, self.data) else self.fail_rule.append(21)
+        self.shot_rule.append(23) if rule23(self.stock, self.data) else self.fail_rule.append(23)
         self.shot_rule.append(24) if rule24(self.stock, self.data) else self.fail_rule.append(24)
+        self.shot_rule.append(25) if rule25(self.stock, self.data) else self.fail_rule.append(25)
         return self.result()

@@ -54,6 +54,14 @@ def rule4(stock, data: List[dataModel]):
         return True
 
 
+def rule5(data: List[dataModel]):
+    if sum([data[-1].turnover(), data[-2].turnover(), data[-3].turnover()]) <= 40:
+        return False
+    matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '10:00:00')
+    if data[-1].firstLimitTime() > matchTime and data[-1].lastLimitTime() > matchTime:
+        return True
+
+
 def rule6(stock, data: List[dataModel]):
     if data[-5].pctChange() > limit(stock):
         return False
@@ -98,7 +106,7 @@ def rule14(stock, data: List[dataModel]):
         if not t_limit(stock, data, i - 1):
             return False
         matchTime = dateHandler.joinTimeToStamp(data[-i].date(), '10:15:00')
-        if data[-i].lastLimitTime() > matchTime:
+        if data[-i].lastLimitTime() > matchTime and data[-i].firstLimitTime() > matchTime:
             count += 1
     return count >= 3
 
@@ -233,6 +241,7 @@ class level9:
         self.shot_rule.append(2) if rule2(self.stock, self.data) else self.fail_rule.append(2)
         self.shot_rule.append(3) if rule3(self.data) else self.fail_rule.append(3)
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
+        self.shot_rule.append(5) if rule5(self.data) else self.fail_rule.append(5)
         self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
         self.shot_rule.append(10) if rule10(self.data) else self.fail_rule.append(10)
         self.shot_rule.append(11) if rule11(self.stock, self.data) else self.fail_rule.append(11)

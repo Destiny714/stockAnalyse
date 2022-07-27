@@ -52,12 +52,9 @@ def rule3(stock, data: List[dataModel]):
 
 
 def rule4(stock, data: List[dataModel]):
-    if not t_limit(stock, data):
-        return False
-    if not t_limit(stock, data, 1):
-        return False
-    if not t_limit(stock, data, 2):
-        return False
+    for i in range(4):
+        if not t_limit(stock, data, i):
+            return False
     if model_1(stock, data):
         return False
     if model_1(stock, data, 1):
@@ -194,11 +191,11 @@ def rule15(data: List[dataModel]):
 
 
 def rule16(data: List[dataModel]):
-    range20 = data[-20:]
+    range15 = data[-15:]
     range60 = data[-60:]
-    avg20 = sum([_.close() for _ in range20]) / 20
+    avg15 = sum([_.close() for _ in range15]) / 15
     avg60 = sum([_.close() for _ in range60]) / 60
-    if avg20 < avg60:
+    if avg15 < avg60:
         return True
 
 
@@ -210,9 +207,17 @@ def rule17(stock, data: List[dataModel]):
             return True
 
 
-def rule18(data: List[dataModel]):
+def rule18(stock, data: List[dataModel]):
+    if not t_limit(stock, data):
+        return False
+    matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '10:00:00')
+    if data[-1].lastLimitTime() <= matchTime:
+        return False
+    count = 0
     for i in range(5):
-        if t_open_pct(data, i) - t_low_pct(data, i) > 0.05:
+        if t_open_pct(data, i) - t_low_pct(data, i) > 0.07:
+            count += 1
+        if count >= 2:
             return True
 
 
@@ -243,7 +248,7 @@ def rule20(stock, data: List[dataModel]):
 def rule21(stock, data: List[dataModel]):
     count = 0
     for i in range(4):
-        if t_high_pct(data, i) - t_low_pct(data, i) > 0.08:
+        if t_open_pct(data, i) - t_low_pct(data, i) > 0.07:
             if t_high_pct(data, i) > limit(stock) / 100:
                 count += 1
         if count >= 3:
@@ -279,7 +284,7 @@ class level7:
         self.shot_rule.append(15) if rule15(self.data) else self.fail_rule.append(15)
         self.shot_rule.append(16) if rule16(self.data) else self.fail_rule.append(16)
         self.shot_rule.append(17) if rule17(self.stock, self.data) else self.fail_rule.append(17)
-        self.shot_rule.append(18) if rule18(self.data) else self.fail_rule.append(18)
+        self.shot_rule.append(18) if rule18(self.stock, self.data) else self.fail_rule.append(18)
         self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
         self.shot_rule.append(20) if rule20(self.stock, self.data) else self.fail_rule.append(20)
         self.shot_rule.append(21) if rule21(self.stock, self.data) else self.fail_rule.append(21)

@@ -6,16 +6,8 @@
 
 from typing import List
 from common.dateHandler import timeDelta
-from common.collect_data import t_low_pct, t_close_pct, t_open_pct, limit, dataModel, model_t, t_limit, model_1
-
-
-def rule1(stock, data: List[dataModel]):
-    if not (0.065 < t_open_pct(data) < limit(stock) / 100):
-        return False
-    if not (0.065 < t_low_pct(data) < limit(stock) / 100):
-        return False
-    if t_close_pct(data) > limit(stock) / 100:
-        return True
+from common.collect_data import t_low_pct, t_close_pct, t_open_pct, t_high_pct, limit, dataModel, model_t, t_limit, \
+    model_1
 
 
 def rule2(stock, data: List[dataModel]):
@@ -104,6 +96,43 @@ def rule6(stock, data: List[dataModel]):
     range120 = data[-121:-1]
     if data[-1].close() > max([_.high() for _ in range120]):
         return True
+
+
+def rule7(stock, data: List[dataModel]):
+    if not t_limit(stock, data, 1):
+        return False
+    if not t_limit(stock, data):
+        return False
+    if model_1(stock, data):
+        return False
+    if 4 < data[-1].close() < 12:
+        if 3 < data[-1].turnover() < 9:
+            return True
+
+
+def rule8(stock, data: List[dataModel]):
+    for i in range(3, 33):
+        if not 0.05 < t_high_pct(data, i - 1) < limit(stock) / 100:
+            continue
+        if t_close_pct(data, i - 1) <= 0.04:
+            continue
+        last5 = data[-i - 5:-i]
+        flag = True
+        count1 = 0
+        count2 = 0
+        for _ in last5:
+            if data[-i].high() <= _.high():
+                count1 += 1
+            if count1 > 1:
+                flag = False
+                break
+            if data[-i].low() >= _.low():
+                count2 += 1
+            if count2 > 1:
+                flag = False
+                break
+        if flag:
+            return True
 
 
 def rule9(stock, data: List[dataModel]):
@@ -294,12 +323,13 @@ class level4:
         return {'level': self.level, 'stock': self.stock, 'detail': self.shot_rule, 'result': self.shot_rule != []}
 
     def filter(self):
-        self.shot_rule.append(1) if rule1(self.stock, self.data) else self.fail_rule.append(1)
         self.shot_rule.append(2) if rule2(self.stock, self.data) else self.fail_rule.append(2)
         self.shot_rule.append(3) if rule3(self.stock, self.data) else self.fail_rule.append(3)
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         self.shot_rule.append(5) if rule5(self.stock, self.data) else self.fail_rule.append(5)
         self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
+        self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)
+        self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
         self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.stock, self.data) else self.fail_rule.append(10)
         self.shot_rule.append(11) if rule11(self.stock, self.data) else self.fail_rule.append(11)

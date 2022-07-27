@@ -142,7 +142,7 @@ def rule12(stock, data: List[dataModel]):
 
 def rule13(data: List[dataModel]):
     flag = True
-    for i in range(1, 19):
+    for i in range(1, 61):
         t1 = data[-i]
         t2 = data[-i - 1]
         t3 = data[-i - 2]

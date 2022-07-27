@@ -5,7 +5,7 @@
 # @Software: PyCharm
 from common import dateHandler
 from typing import List
-from common.collect_data import limit, dataModel, t_open_pct, t_close_pct, t_low_pct, t_limit, collectData
+from common.collect_data import limit, dataModel, t_open_pct, t_close_pct, t_low_pct, t_limit, model_1, collectData
 
 
 def rule1(stock, data: List[dataModel]):
@@ -144,6 +144,17 @@ def rule11(stock, data: List[dataModel]):
         return False
 
 
+def rule12(data: List[dataModel]):
+    err = None
+    try:
+        range220 = data[-221:-1]
+        if data[-1].close() * 1.1 > max([_.close() for _ in range220]):
+            return True
+    except Exception as e:
+        err = e
+        return False
+
+
 def rule13(data: List[dataModel]):
     for i in range(1, 3):
         if data[-i].close() > max([_.close() for _ in data[-i - 440:-i]]):
@@ -175,6 +186,47 @@ def rule15(data: List[dataModel]):
         range220 = data[-i - 220:-i]
         if data[-i].close() > max([_.high() for _ in range220]):
             return True
+
+
+def rule17(stock, data: List[dataModel]):
+    for i in range(2):
+        if not t_limit(stock, data, i):
+            continue
+        if t_open_pct(data, i) > 0.07 and t_low_pct(data, i) > 0.05:
+            return True
+
+
+def rule18(stock, data: List[dataModel]):
+    if t_limit(stock, data, 1):
+        return False
+    if not t_limit(stock, data):
+        return False
+    if model_1(stock, data):
+        return False
+    if 4 < data[-1].close() < 12:
+        if 1.5 < data[-1].turnover() < 6:
+            return True
+
+
+def rule19(stock, data: List[dataModel]):
+    if t_limit(stock, data, 2):
+        return False
+    if not t_limit(stock, data, 1):
+        return False
+    if not t_limit(stock, data):
+        return False
+    if 4 < data[-1].close() < 12:
+        if 3 < data[-1].turnover() < 9:
+            return True
+
+
+def rule20(stock, data: List[dataModel]):
+    if not (0.065 < t_open_pct(data) < limit(stock) / 100):
+        return False
+    if not (0.065 < t_low_pct(data) < limit(stock) / 100):
+        return False
+    if t_close_pct(data) > limit(stock) / 100:
+        return True
 
 
 def rule21(data: List[dataModel]):
@@ -251,9 +303,14 @@ class level3:
         self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.stock, self.data) else self.fail_rule.append(10)
         self.shot_rule.append(11) if rule11(self.stock, self.data) else self.fail_rule.append(11)
+        self.shot_rule.append(12) if rule12(self.data) else self.fail_rule.append(12)
         self.shot_rule.append(13) if rule13(self.data) else self.fail_rule.append(13)
         self.shot_rule.append(14) if rule14(self.data) else self.fail_rule.append(14)
         self.shot_rule.append(15) if rule15(self.data) else self.fail_rule.append(15)
+        self.shot_rule.append(17) if rule17(self.stock, self.data) else self.fail_rule.append(17)
+        self.shot_rule.append(18) if rule18(self.stock, self.data) else self.fail_rule.append(18)
+        self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
+        self.shot_rule.append(20) if rule20(self.stock, self.data) else self.fail_rule.append(20)
         self.shot_rule.append(21) if rule21(self.data) else self.fail_rule.append(21)
         self.shot_rule.append(22) if rule22(self.stock, self.data) else self.fail_rule.append(22)
         self.shot_rule.append(23) if rule23(self.stock, self.data) else self.fail_rule.append(23)
