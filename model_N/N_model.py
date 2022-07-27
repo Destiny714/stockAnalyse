@@ -5,11 +5,14 @@
 # @Software: PyCharm
 import os
 import sys
+import warnings
 
-sys.path.append(os.getcwd().replace('/model_N',''))
+warnings.filterwarnings('ignore')
+
+sys.path.append(os.getcwd().replace('/model_N', ''))
 
 import rules
-from common import toolBox, dateHandler, concurrentActions
+from common import toolBox, dateHandler, concurrentActions, push
 
 if __name__ == '__main__':
     stocks = concurrentActions.initStock(needReload=True, extra=False)
@@ -22,9 +25,11 @@ if __name__ == '__main__':
             day2 = rules.twoDaySlideWindow(stock, aimDate=dateHandler.lastTradeDay())
             if day2:
                 print(f'{stock}-{day2}-二日')
+                push.bark_pusher('二日', f'{stock}-{day2}')
             day3 = rules.threeDaySlideWindow(stock, aimDate=dateHandler.lastTradeDay())
             if day3:
                 print(f'{stock}-{day3}-三日')
+                push.bark_pusher('三日', f'{stock}-{day3}')
         except Exception as e:
             errors.append(f'{stock} : logic error : {e}')
             pass

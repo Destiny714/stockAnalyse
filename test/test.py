@@ -3,6 +3,6 @@
 # @Author  : Destiny_
 # @File    : test.py
 # @Software: PyCharm
+from common import push
 
-import os
-print(os.getcwd())
+push.bark_pusher('Excel生成完毕','请查看',_url='https://file.geekshop.space')

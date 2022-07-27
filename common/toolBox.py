@@ -26,7 +26,7 @@ def errorHandler(e: Exception, arg=None):
 def readScoreFromExcel(date):
     excelDict = {}
     try:
-        absPath = os.getcwd().replace('/common','')
+        absPath = os.getcwd().replace('/dragon_s1','')
         filePath = f'{absPath}/dragon_s1/result/{date}.xls'
         data = xlrd.open_workbook(filePath)
         sheet = data.sheet_by_index(0)

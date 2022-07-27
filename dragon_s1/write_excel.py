@@ -22,6 +22,6 @@ def write(date: str, datas: list):
     for index, data in enumerate(datas):
         for j in range(0, len(col)):
             sheet.write(index + 1, j, data[j])
-    absPath = os.getcwd().replace('/dragon_s1','')
+    absPath = os.getcwd().replace('/dragon_s1','').replace('/common','')
     savePath = f'{absPath}/dragon_s1/result/{date}.xls'
     book.save(savePath)

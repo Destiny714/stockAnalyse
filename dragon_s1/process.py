@@ -12,7 +12,7 @@ import write_excel
 from rule_level import A, S, F
 from api import databaseApi, tushareApi
 from rule_black import level6, level7, level8, level9
-from common import toolBox, concurrentActions, dateHandler
+from common import toolBox, concurrentActions, dateHandler,push
 from rule_white import level1, level2, level3, level4, level5
 from common.collect_data import collectData, t_open_pct, limit_height
 
@@ -200,3 +200,4 @@ if __name__ == '__main__':
 
     for date in aimDates:
         process(date)
+    push.bark_pusher('Excel生成完毕','请查看',_url='https://file.geekshop.space')
