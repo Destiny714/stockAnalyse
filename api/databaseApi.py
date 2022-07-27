@@ -81,6 +81,11 @@ class Mysql:
         data = self.action(output=True)
         return [_[0] for _ in data]
 
+    def selectLastTradeDate(self,date):
+        self.word = f"SELECT lastDate FROM tradeCalender where date='{date}'"
+        data = self.action(output=True)
+        return data[0][0]
+
     def selectNextTradeDay(self, date):
         self.word = f"SELECT date FROM tradeCalender WHERE id > (SELECT id FROM tradeCalender WHERE date='{date}') LIMIT 1"
         data = self.action(output=True)

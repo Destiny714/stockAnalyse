@@ -35,6 +35,12 @@ def today2str():
 def lastTradeDay(date=None):
     today = today2str() if date is None else date
     tradeDays = databaseApi.Mysql().selectTradeDate()
+    if today in tradeDays:
+        matchTime = joinTimeToStamp(today,'16:00:00')
+        if time.time() < matchTime:
+            return databaseApi.Mysql().selectLastTradeDate(today)
+        else:
+            return today
     count = 0
     while (today not in tradeDays) and count < 10000:
         count += 1
