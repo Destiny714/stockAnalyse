@@ -4,8 +4,5 @@
 # @File    : test.py
 # @Software: PyCharm
 
-from common.collect_data import collectData
-from dragon_s1.rule_black.level8 import rule21
-d = collectData(stock='002395',aimDate='20220727')
-res = rule21('002395',d)
-print(res)
+import os
+print(os.getcwd())
