@@ -3,7 +3,7 @@
 # @Author  : Destiny_
 # @File    : write_excel.py
 # @Software: PyCharm
-
+import os
 import xlwt
 
 
@@ -22,5 +22,6 @@ def write(date: str, datas: list):
     for index, data in enumerate(datas):
         for j in range(0, len(col)):
             sheet.write(index + 1, j, data[j])
-    savePath = f'/Users/destiny/code/dev/python/stock/stockAnalyse/dragon_s1/result/{date}.xls'
+    absPath = os.path.dirname(os.path.abspath(__file__))
+    savePath = f'{absPath}/dragon_s1/result/{date}.xls'
     book.save(savePath)
