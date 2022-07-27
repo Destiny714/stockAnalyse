@@ -7,7 +7,6 @@ import os
 import sys
 
 sys.path.append(os.getcwd().replace('/model_N',''))
-print(sys.path)
 
 import rules
 from common import toolBox, dateHandler, concurrentActions

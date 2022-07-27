@@ -7,7 +7,6 @@ import os
 import sys
 
 sys.path.append(os.getcwd().replace('/dragon_s1',''))
-print(sys.path)
 
 import write_excel
 from rule_level import A, S, F
