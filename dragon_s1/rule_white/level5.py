@@ -7,7 +7,8 @@
 from typing import List
 
 from common import dateHandler
-from common.collect_data import t_low_pct, t_close_pct, t_open_pct, limit, dataModel, model_1, model_t, t_limit, \
+from common.collect_data import t_low_pct, t_close_pct, t_open_pct, t_high_pct, limit, dataModel, model_1, model_t, \
+    t_limit, \
     collectData
 
 
@@ -94,6 +95,31 @@ def rule7(stock, data: List[dataModel]):
         return False
     if data[-2].turnover() < 1.5 * data[-3].turnover():
         if model_t(stock, data) and t_low_pct(data) > 0.07:
+            return True
+
+
+def rule8(stock, data: List[dataModel]):
+    for i in range(3, 33):
+        if not 0.05 < t_high_pct(data, i - 1) < limit(stock) / 100:
+            continue
+        if t_close_pct(data, i - 1) <= 0.04:
+            continue
+        last5 = data[-i - 5:-i]
+        flag = True
+        count1 = 0
+        count2 = 0
+        for _ in last5:
+            if data[-i].high() <= _.high():
+                count1 += 1
+            if count1 > 1:
+                flag = False
+                break
+            if data[-i].low() >= _.low():
+                count2 += 1
+            if count2 > 1:
+                flag = False
+                break
+        if flag:
             return True
 
 
@@ -206,6 +232,7 @@ class level5:
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
         self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)
+        self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
         self.shot_rule.append(10) if rule10(self.stock, self.data) else self.fail_rule.append(10)
         self.shot_rule.append(11) if rule11(self.stock, self.data) else self.fail_rule.append(11)
         self.shot_rule.append(12) if rule12(self.stock, self.data) else self.fail_rule.append(12)

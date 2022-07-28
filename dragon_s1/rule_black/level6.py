@@ -63,23 +63,7 @@ def rule5(stock, data: List[dataModel]):
         return False
     if not model_1(stock, data):
         return False
-    if data[-1].turnover() > data[-2].turnover():
-        return True
-
-
-def rule6(stock, data: List[dataModel]):
-    if not model_1(stock, data):
-        return False
-    range10 = data[-11:-1]
-    if data[-1].turnover() > 0.25 * max([_.turnover() for _ in range10]):
-        return True
-
-
-def rule7(stock, data: List[dataModel]):
-    if not model_1(stock, data, 1):
-        return False
-    range10 = data[-12:-2]
-    if data[-2].turnover() > 0.25 * max([_.turnover() for _ in range10]):
+    if data[-1].turnover() > data[-2].turnover() * 2:
         return True
 
 
@@ -213,6 +197,10 @@ def rule18(stock, data: List[dataModel]):
 
 
 def rule19(stock, data: List[dataModel]):
+    if not t_limit(stock, data, 3):
+        return False
+    if not t_limit(stock, data, 2):
+        return False
     if model_1(stock, data, 1):
         return False
     if not model_1(stock, data):
@@ -276,8 +264,6 @@ class level6:
         self.shot_rule.append(3) if rule3(self.stock, self.data) else self.fail_rule.append(3)
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         self.shot_rule.append(5) if rule5(self.stock, self.data) else self.fail_rule.append(5)
-        self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
-        self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)
         self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
         self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.stock, self.data) else self.fail_rule.append(10)

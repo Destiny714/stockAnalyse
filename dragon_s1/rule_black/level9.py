@@ -83,6 +83,25 @@ def rule6(stock, data: List[dataModel]):
         return True
 
 
+def rule7(data: List[dataModel]):
+    if data[-1].turnover() <= 1.5 * data[-2].turnover():
+        return False
+    standard = (sum([data[-_].turnover() for _ in range(3, 8)]) / 5) * 3
+    if data[-1].turnover() > standard and data[-2].turnover() > standard:
+        return True
+
+
+def rule8(stock, data: List[dataModel]):
+    if not t_limit(stock, data):
+        return False
+    if not t_limit(stock, data, 1):
+        return False
+    if data[-1].turnover() > 3 * data[-2].turnover():
+        matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '11:00:00')
+        if data[-1].firstLimitTime() > matchTime and data[-1].lastLimitTime() > matchTime:
+            return True
+
+
 def rule10(data: List[dataModel]):
     if data[-1].turnover() <= 10:
         return False
@@ -243,6 +262,8 @@ class level9:
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         self.shot_rule.append(5) if rule5(self.data) else self.fail_rule.append(5)
         self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
+        self.shot_rule.append(7) if rule7(self.data) else self.fail_rule.append(7)
+        self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
         self.shot_rule.append(10) if rule10(self.data) else self.fail_rule.append(10)
         self.shot_rule.append(11) if rule11(self.stock, self.data) else self.fail_rule.append(11)
         self.shot_rule.append(14) if rule14(self.stock, self.data) else self.fail_rule.append(14)

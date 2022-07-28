@@ -17,7 +17,7 @@ def rule1(stock, data: List[dataModel]):
         return False
     if not model_1(stock, data, 1):
         return False
-    if data[-1].turnover() > 5 * data[-2].turnover():
+    if data[-1].turnover() > 1.5 * data[-2].turnover():
         return True
 
 
@@ -129,7 +129,8 @@ def rule10(stock, data: List[dataModel]):
         if t_open_pct(data, i - 1) < 0.025:
             count += 1
     if count >= 2 and data[-1].turnover() > data[-2].turnover():
-        return True
+        if data[-1].limitOpenTime() > 0:
+            return True
 
 
 def rule11(stock, data: List[dataModel]):
@@ -203,7 +204,8 @@ def rule16(stock, data: List[dataModel]):
     range20 = data[-22:-2]
     avgRate = (sum([_.turnover() for _ in range20]) / 20) * 5
     if data[-1].turnover() > avgRate and data[-2].turnover() > avgRate:
-        return True
+        if data[-1].turnover() > 1.8 * data[-2].turnover():
+            return True
 
 
 def rule17(data: List[dataModel]):
@@ -253,10 +255,29 @@ def rule21(stock, data: List[dataModel]):
     range1 = data[-3:]
     range2 = data[-6:-3]
     if sum([_.turnover() for _ in range1]) < sum([_.turnover() for _ in range2]):
-        return True
+        matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:40:00')
+        if data[-1].firstLimitTime() < matchTime:
+            return True
+
+
+def rule22(data: List[dataModel]):
+    err = None
+    try:
+        for i in range(-660, -6):
+            range7 = data[i:None if i + 7 == 0 else i + 7]
+            if range7[-1].close() / range7[0].preClose() > 1.6:
+                return True
+    except Exception as e:
+        err = e
+        return False
 
 
 def rule23(stock, data: List[dataModel]):
+    if data[-1].turnover() <= 0.5 * data[-2].turnover():
+        return False
+    matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
+    if data[-1].lastLimitTime() <= matchTime:
+        return False
     count = 0
     for i in range(5):
         if t_high_pct(data, i) <= limit(stock) / 100:
@@ -275,6 +296,11 @@ def rule24(stock, data: List[dataModel]):
 
 
 def rule25(stock, data: List[dataModel]):
+    if data[-1].turnover() <= 0.5 * data[-2].turnover():
+        return False
+    matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
+    if data[-1].lastLimitTime() <= matchTime:
+        return False
     flag: bool = False
     for i in range(5):
         if t_open_pct(data, i) - t_low_pct(data, i) > 0.05:
@@ -322,6 +348,7 @@ class level8:
         self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
         self.shot_rule.append(20) if rule20(self.data, self.virtual) else self.fail_rule.append(20)
         self.shot_rule.append(21) if rule21(self.stock, self.data) else self.fail_rule.append(21)
+        self.shot_rule.append(22) if rule22(self.data) else self.fail_rule.append(22)
         self.shot_rule.append(23) if rule23(self.stock, self.data) else self.fail_rule.append(23)
         self.shot_rule.append(24) if rule24(self.stock, self.data) else self.fail_rule.append(24)
         self.shot_rule.append(25) if rule25(self.stock, self.data) else self.fail_rule.append(25)

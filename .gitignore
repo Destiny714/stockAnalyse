@@ -6,9 +6,11 @@ __pycache__/
 # C extensions
 *.so
 # ext
+test.py
 *.xls
 .idea/
 .DS_Store
+test/
 # Distribution / packaging
 .Python
 build/

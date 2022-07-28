@@ -6,7 +6,7 @@
 
 from typing import List
 from common.dateHandler import timeDelta
-from common.collect_data import t_low_pct, t_close_pct, t_open_pct, t_high_pct, limit, dataModel, model_t, t_limit, \
+from common.collect_data import t_low_pct, t_close_pct, t_open_pct, limit, dataModel, model_t, t_limit, \
     model_1
 
 
@@ -110,31 +110,6 @@ def rule7(stock, data: List[dataModel]):
             return True
 
 
-def rule8(stock, data: List[dataModel]):
-    for i in range(3, 33):
-        if not 0.05 < t_high_pct(data, i - 1) < limit(stock) / 100:
-            continue
-        if t_close_pct(data, i - 1) <= 0.04:
-            continue
-        last5 = data[-i - 5:-i]
-        flag = True
-        count1 = 0
-        count2 = 0
-        for _ in last5:
-            if data[-i].high() <= _.high():
-                count1 += 1
-            if count1 > 1:
-                flag = False
-                break
-            if data[-i].low() >= _.low():
-                count2 += 1
-            if count2 > 1:
-                flag = False
-                break
-        if flag:
-            return True
-
-
 def rule9(stock, data: List[dataModel]):
     if model_1(stock, data):
         return False
@@ -199,6 +174,24 @@ def rule13(stock, data: List[dataModel]):
         if t_open_pct(data) > 0.01:
             if data[-3].turnover() < data[-4].turnover() < data[-2].turnover():
                 return True
+
+
+def rule14(stock, data: List[dataModel]):
+    if not model_1(stock, data):
+        return False
+    if model_1(stock, data, 1):
+        return False
+    if data[-1].turnover() < 0.25 * data[-2].turnover():
+        return True
+
+
+def rule15(stock, data: List[dataModel]):
+    if not model_1(stock, data, 1):
+        return False
+    if model_1(stock, data, 2):
+        return False
+    if data[-2].turnover() < 0.25 * data[-3].turnover():
+        return True
 
 
 def rule16(stock, data: List[dataModel]):
@@ -329,12 +322,13 @@ class level4:
         self.shot_rule.append(5) if rule5(self.stock, self.data) else self.fail_rule.append(5)
         self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
         self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)
-        self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
         self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.stock, self.data) else self.fail_rule.append(10)
         self.shot_rule.append(11) if rule11(self.stock, self.data) else self.fail_rule.append(11)
         self.shot_rule.append(12) if rule12(self.stock, self.data) else self.fail_rule.append(12)
         self.shot_rule.append(13) if rule13(self.stock, self.data) else self.fail_rule.append(13)
+        self.shot_rule.append(14) if rule14(self.stock, self.data) else self.fail_rule.append(14)
+        self.shot_rule.append(15) if rule15(self.stock, self.data) else self.fail_rule.append(15)
         self.shot_rule.append(16) if rule16(self.stock, self.data) else self.fail_rule.append(16)
         self.shot_rule.append(17) if rule17(self.stock, self.data) else self.fail_rule.append(17)
         self.shot_rule.append(18) if rule18(self.stock, self.data) else self.fail_rule.append(18)

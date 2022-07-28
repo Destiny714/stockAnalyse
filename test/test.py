@@ -3,6 +3,9 @@
 # @Author  : Destiny_
 # @File    : test.py
 # @Software: PyCharm
-from common import push
+from common.collect_data import collectData
+from dragon_s1.rule_black.level8 import rule22
 
-push.bark_pusher('Excel生成完毕','请查看',_url='https://file.geekshop.space')
+data = collectData('000629')
+res = rule22(data)
+print(res)

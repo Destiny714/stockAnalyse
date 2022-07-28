@@ -60,7 +60,8 @@ def rule4(stock, data: List[dataModel]):
     if model_1(stock, data, 1):
         return False
     if data[-1].turnover() < data[-2].turnover() < data[-3].turnover():
-        return True
+        if data[-2].turnover() < data[-4].turnover():
+            return True
 
 
 def rule5(stock, data: List[dataModel]):
@@ -76,7 +77,8 @@ def rule5(stock, data: List[dataModel]):
     if count1 < 3:
         return False
     if data[-4].turnover() < data[-3].turnover() < data[-2].turnover() < data[-1].turnover():
-        return True
+        if t_open_pct(data, 1) < 0.06 and t_open_pct(data) < 0.06:
+            return True
 
 
 def rule6(stock, data: List[dataModel]):
@@ -115,16 +117,16 @@ def rule8(stock, data: List[dataModel]):
 
 
 def rule9(stock, data: List[dataModel]):
-    flag = False
     for i in range(1, 4):
         if not t_limit(stock, data, i - 1):
             return False
-        if i in range(1, 3) and flag is False:
-            if t_close_pct(data, i - 1) <= limit(stock) / 100:
-                continue
-            if t_open_pct(data, i - 1) < -0.025 or t_low_pct(data, i - 1) < -0.045:
-                flag = True
-    return flag
+    for i in range(2):
+        if data[-i - 1].limitOpenTime() <= 1:
+            continue
+        if t_close_pct(data, i) <= limit(stock) / 100:
+            continue
+        if t_open_pct(data, i) < -0.025 or t_low_pct(data, i) < -0.045:
+            return True
 
 
 def rule10(stock, data: List[dataModel]):
@@ -135,7 +137,8 @@ def rule10(stock, data: List[dataModel]):
         if t_low_pct(data, i - 1) < -0.06:
             matchTime = dateHandler.joinTimeToStamp(data[-i].date(), '10:30:00')
             if data[-i].firstLimitTime() != 0 and data[-i].firstLimitTime() > matchTime:
-                count += 1
+                if data[-i].limitOpenTime() > 0:
+                    count += 1
     return count >= 1
 
 
@@ -224,6 +227,8 @@ def rule18(stock, data: List[dataModel]):
 def rule19(stock, data: List[dataModel]):
     for i in range(3):
         if not t_limit(stock, data, i):
+            return False
+        if model_1(stock, data, i):
             return False
         matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '09:47:00')
         if data[-i - 1].firstLimitTime() >= matchTime:
