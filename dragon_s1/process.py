@@ -200,4 +200,4 @@ if __name__ == '__main__':
 
     for date in aimDates:
         process(date)
-    push.bark_pusher('Excel生成完毕','请查看',_url='https://file.geekshop.space')
+        push.bark_pusher(f'{date}的Excel生成完毕','请查看',_url='https://file.geekshop.space')
