@@ -16,7 +16,7 @@ class Mysql:
         self.host = 'localhost'
         self.word = ''
         self.db = pymysql.connect(host=self.host, port=3306, user=self.__account, password=self.__pswd,
-                                  database=self.__DB,connect_timeout=5)
+                                  database=self.__DB, connect_timeout=5)
         self.cursor = self.db.cursor()
 
     def action(self, output: bool):
@@ -57,7 +57,26 @@ class Mysql:
                     f"turnover double default 0," \
                     f"firstLimitTime BIGINT default 0," \
                     f"lastLimitTime BIGINT default 0," \
-                    f"openTime int default 0)"
+                    f"openTime int default 0," \
+                    f"buy_sm_vol int default 0," \
+                    f"buy_sm_amount double default 0," \
+                    f"sell_sm_vol int default 0," \
+                    f"sell_sm_amount double default 0," \
+                    f"buy_md_vol int default 0," \
+                    f"buy_md_amount double default 0," \
+                    f"sell_md_vol int default 0," \
+                    f"sell_md_amount double default 0," \
+                    f"buy_lg_vol int default 0," \
+                    f"buy_lg_amount double default 0," \
+                    f"sell_lg_vol int default 0," \
+                    f"sell_lg_amount double default 0," \
+                    f"buy_elg_vol int default 0," \
+                    f"buy_elg_amount double default 0," \
+                    f"sell_elg_vol int default 0," \
+                    f"sell_elg_amount double default 0," \
+                    f"net_mf_vol int default 0," \
+                    f"net_mf_amount double default 0," \
+                    f"trade_count int default 0)"
         self.action(output=False)
 
     def selectExistTable(self):
@@ -81,7 +100,7 @@ class Mysql:
         data = self.action(output=True)
         return [_[0] for _ in data]
 
-    def selectLastTradeDate(self,date):
+    def selectLastTradeDate(self, date):
         self.word = f"SELECT lastDate FROM tradeCalender where date='{date}'"
         data = self.action(output=True)
         return data[0][0]
@@ -203,7 +222,8 @@ class Mysql:
         self.word = f"UPDATE No{str(data['ts_code']).split('.')[0]} SET " \
                     f"firstLimitTime={dateHandler.joinTimeToStamp(data['trade_date'], data['first_time'] if data['first_time'] != '' else '09:30:00')}," \
                     f"lastLimitTime={dateHandler.joinTimeToStamp(data['trade_date'], data['last_time'] if data['last_time'] != '' else '09:30:00')}," \
-                    f"openTime={data['open_times']} WHERE date = '{data['trade_date']}'"
+                    f"openTime={data['open_times']} " \
+                    f"WHERE date = '{data['trade_date']}'"
         self.action(output=False)
 
     def updateStockListDailyIndex(self, data):
@@ -214,4 +234,28 @@ class Mysql:
         self.word = f"UPDATE stockList SET amount={data['circ_mv']} WHERE symbol={str(data['ts_code']).split('.')[0]}"
         self.action(output=False)
         self.word = f'UPDATE No{str(data["ts_code"]).split(".")[0]} SET turnover={data["turnover_rate"]} WHERE date={data["trade_date"]}'
+        self.action(output=False)
+
+    def updateMoneyFlow(self, data):
+        self.word = f"UPDATE No{str(data['ts_code']).split('.')[0]} SET " \
+                    f"buy_sm_vol={data['buy_sm_vol']}," \
+                    f"buy_sm_amount={data['buy_sm_amount']}," \
+                    f"sell_sm_vol={data['sell_sm_vol']}," \
+                    f"sell_sm_amount={data['sell_sm_amount']}," \
+                    f"buy_md_vol={data['buy_md_vol']}," \
+                    f"buy_md_amount={data['buy_md_amount']}," \
+                    f"sell_md_vol={data['sell_md_vol']}," \
+                    f"sell_md_amount={data['sell_md_amount']}," \
+                    f"buy_lg_vol={data['buy_lg_vol']}," \
+                    f"buy_lg_amount={data['buy_lg_amount']}," \
+                    f"sell_lg_vol={data['sell_lg_vol']}," \
+                    f"sell_lg_amount={data['sell_lg_amount']}," \
+                    f"buy_elg_vol={data['buy_elg_vol']}," \
+                    f"buy_elg_amount={data['buy_elg_amount']}," \
+                    f"sell_elg_vol={data['sell_elg_vol']}," \
+                    f"sell_elg_amount={data['sell_elg_amount']}," \
+                    f"net_mf_vol={data['net_mf_vol']}," \
+                    f"net_mf_amount={data['net_mf_amount']}," \
+                    f"trade_count={data['trade_count']} " \
+                    f"WHERE date = {data['trade_date']}"
         self.action(output=False)

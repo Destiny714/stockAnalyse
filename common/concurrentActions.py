@@ -103,6 +103,21 @@ def updateGem():
             databaseApi.Mysql().insertOneRecord(d)
 
 
+def updateMoneyFlow(aimDate=dateHandler.lastTradeDay()):
+    print(f'updating {aimDate} money flow')
+    data = Tushare().moneyFlow(aimDate)
+
+    def updateOne(d):
+        try:
+            client = Mysql()
+            client.updateMoneyFlow(d)
+        except Exception as e:
+            print(e)
+
+    toolBox.thread_pool_executor(updateOne, data)
+    print(f'{aimDate} money flow update done')
+
+
 def industryLimit(aimDate=dateHandler.lastTradeDay()):
     industries = databaseApi.Mysql().selectAllIndustry()
     errors = []
@@ -146,4 +161,5 @@ def initStock(needReload: bool = True, extra: bool = False):
     if extra:
         updateLimitDetailData()
         updateStockListDailyIndex()
+        updateMoneyFlow()
     return stocks

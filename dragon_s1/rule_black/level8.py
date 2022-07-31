@@ -257,15 +257,17 @@ def rule21(stock, data: List[dataModel]):
     if sum([_.turnover() for _ in range1]) < sum([_.turnover() for _ in range2]):
         matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:40:00')
         if data[-1].firstLimitTime() < matchTime:
-            return True
+            range2_20 = data[-21:-2]
+            if data[-2].close() < max([_.close() for _ in range2_20]):
+                return True
 
 
 def rule22(data: List[dataModel]):
     err = None
     try:
-        for i in range(-660, -6):
-            range7 = data[i:None if i + 7 == 0 else i + 7]
-            if range7[-1].close() / range7[0].preClose() > 1.6:
+        for i in range(-661, -10):
+            range10 = data[i:i + 10]
+            if range10[-1].close() / range10[0].close() > 1.8:
                 return True
     except Exception as e:
         err = e

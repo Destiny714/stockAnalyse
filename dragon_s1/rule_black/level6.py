@@ -67,6 +67,12 @@ def rule5(stock, data: List[dataModel]):
         return True
 
 
+def rule6(data: List[dataModel]):
+    range91 = data[-121:-30]
+    if range91[-1].close() / range91[0].close() > 2.2:
+        return True
+
+
 def rule8(stock, data: List[dataModel]):
     if not t_limit(stock, data):
         return False
@@ -231,7 +237,9 @@ def rule21(stock, data: List[dataModel]):
         return False
     matchTime = dateHandler.joinTimeToStamp(data[-2].date(), '09:45:00')
     if data[-2].lastLimitTime() < matchTime:
-        return True
+        range2_20 = data[-21:-2]
+        if data[-2].close() < max([_.close() for _ in range2_20]):
+            return True
 
 
 def rule22(stock, data: List[dataModel]):
@@ -264,6 +272,7 @@ class level6:
         self.shot_rule.append(3) if rule3(self.stock, self.data) else self.fail_rule.append(3)
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         self.shot_rule.append(5) if rule5(self.stock, self.data) else self.fail_rule.append(5)
+        self.shot_rule.append(6) if rule6(self.data) else self.fail_rule.append(6)
         self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
         self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.stock, self.data) else self.fail_rule.append(10)
