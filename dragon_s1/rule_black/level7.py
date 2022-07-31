@@ -207,7 +207,8 @@ def rule17(stock, data: List[dataModel]):
         if data[-i - 1].turnover() <= 4:
             continue
         if model_1(stock, data, i):
-            return True
+            if data[-i - 1].buy_elg_vol() < data[-i - 1].sell_elg_vol():
+                return True
 
 
 def rule18(stock, data: List[dataModel]):

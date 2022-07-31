@@ -13,7 +13,7 @@ from rule_level import A, S, F
 from api import databaseApi, tushareApi
 from rule_black import level6, level7, level8, level9
 from common import toolBox, concurrentActions, dateHandler, push
-from rule_white import level1, level2, level3, level4, level5
+from rule_white import level1, level2, level3, level4, level5, level10, level11
 from common.collect_data import collectData, t_open_pct, limit_height
 
 if __name__ == '__main__':
@@ -44,7 +44,9 @@ if __name__ == '__main__':
                 l7 = level7.level7(stock, data).filter()
                 l8 = level8.level8(stock, data, virtual='s').filter()
                 l9 = level9.level9(stock, data).filter()
-                for white in [l1, l2, l3, l4, l5]:
+                l10 = level10.level10(stock, data).filter()
+                l11 = level11.level11(stock, data).filter()
+                for white in [l1, l2, l3, l4, l5, l10, l11]:
                     if white['result']:
                         details[white['level']] = white['detail']
                 for black in [l6, l7, l8, l9]:
@@ -54,6 +56,8 @@ if __name__ == '__main__':
                     score += len(white['detail'])
                 score += len(l3['detail']) * 2
                 score += len(l4['detail']) * 4
+                score += len(l10['detail']) * 5
+                score += len(l11['detail']) * 7
                 score += len(l5['detail']) * 8
                 for black in [l6, l7]:
                     score -= len(black['detail']) * 2
@@ -79,7 +83,9 @@ if __name__ == '__main__':
                 l7 = level7.level7(stock, data).filter()
                 l8 = level8.level8(stock, data, virtual='f').filter()
                 l9 = level9.level9(stock, data).filter()
-                for white in [l1, l2, l3, l4, l5]:
+                l10 = level10.level10(stock, data).filter()
+                l11 = level11.level11(stock, data).filter()
+                for white in [l1, l2, l3, l4, l5, l10, l11]:
                     if white['result']:
                         details[white['level']] = white['detail']
                 for black in [l6, l7, l8, l9]:
@@ -89,6 +95,8 @@ if __name__ == '__main__':
                     score += len(white['detail'])
                 score += len(l3['detail']) * 2
                 score += len(l4['detail']) * 4
+                score += len(l10['detail']) * 5
+                score += len(l11['detail']) * 7
                 score += len(l5['detail']) * 8
                 for black in [l6, l7]:
                     score -= len(black['detail']) * 2
@@ -116,7 +124,9 @@ if __name__ == '__main__':
                 l7 = level7.level7(stock, data).filter()
                 l8 = level8.level8(stock, data).filter()
                 l9 = level9.level9(stock, data).filter()
-                for white in [l1, l2, l3, l4, l5]:
+                l10 = level10.level10(stock, data).filter()
+                l11 = level11.level11(stock, data).filter()
+                for white in [l1, l2, l3, l4, l5, l10, l11]:
                     white_sum += len(white['detail'])
                     if white['result']:
                         details[white['level']] = white['detail']
@@ -128,6 +138,8 @@ if __name__ == '__main__':
                     score += len(white['detail'])
                 score += len(l3['detail']) * 2
                 score += len(l4['detail']) * 4
+                score += len(l10['detail']) * 5
+                score += len(l11['detail']) * 7
                 score += len(l5['detail']) * 8
                 for black in [l6, l7]:
                     score -= len(black['detail']) * 2

@@ -51,7 +51,8 @@ def rule4(stock, data: List[dataModel]):
     if not model_1(stock, data):
         return False
     if data[-1].turnover() > data[-2].turnover() / 3:
-        return True
+        if data[-1].buy_elg_vol() < data[-1].sell_elg_vol():
+            return True
 
 
 def rule5(data: List[dataModel]):

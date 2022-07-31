@@ -51,6 +51,63 @@ class dataModel:
     def limitOpenTime(self):
         return self.data[13]
 
+    def buy_sm_vol(self):
+        return self.data[14]
+
+    def buy_sm_amount(self):
+        return self.data[15]
+
+    def sell_sm_vol(self):
+        return self.data[16]
+
+    def sell_sm_amount(self):
+        return self.data[17]
+
+    def buy_md_vol(self):
+        return self.data[18]
+
+    def buy_md_amount(self):
+        return self.data[19]
+
+    def sell_md_vol(self):
+        return self.data[20]
+
+    def sell_md_amount(self):
+        return self.data[21]
+
+    def buy_lg_vol(self):
+        return self.data[22]
+
+    def buy_lg_amount(self):
+        return self.data[23]
+
+    def sell_lg_vol(self):
+        return self.data[24]
+
+    def sell_lg_amount(self):
+        return self.data[25]
+
+    def buy_elg_vol(self):
+        return self.data[26]
+
+    def buy_elg_amount(self):
+        return self.data[27]
+
+    def sell_elg_vol(self):
+        return self.data[28]
+
+    def sell_elg_amount(self):
+        return self.data[29]
+
+    def net_mf_vol(self):
+        return self.data[30]
+
+    def net_mf_amount(self):
+        return self.data[31]
+
+    def trade_count(self):
+        return self.data[32]
+
 
 def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(), virtual=None) -> List[dataModel]:
     mysql = databaseApi.Mysql()
@@ -74,7 +131,13 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
                        modifyData.turnover() * 0.6,
                        dateHandler.joinTimeToStamp(nextDate, '09:45:00'),
                        dateHandler.joinTimeToStamp(nextDate, '09:45:00'),
-                       0]
+                       0, modifyData.buy_sm_vol(), modifyData.buy_sm_amount(), modifyData.sell_sm_vol(),
+                       modifyData.sell_sm_amount(), modifyData.buy_md_vol(), modifyData.buy_md_amount(),
+                       modifyData.sell_md_vol(), modifyData.sell_md_amount(), modifyData.buy_lg_vol(),
+                       modifyData.buy_lg_amount(), modifyData.sell_lg_vol(), modifyData.sell_lg_amount(),
+                       modifyData.buy_elg_vol(), modifyData.buy_elg_amount(), modifyData.sell_elg_vol(),
+                       modifyData.sell_elg_amount(), modifyData.net_mf_vol(), modifyData.net_mf_amount(),
+                       modifyData.trade_count()]
         res.append(dataModel(virtualData))
     elif virtual == 'f':
         modifyData = res[-1]
@@ -93,7 +156,13 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
                        modifyData.turnover() * 1.4,
                        dateHandler.joinTimeToStamp(nextDate, '10:45:00'),
                        dateHandler.joinTimeToStamp(nextDate, '14:30:00'),
-                       1]
+                       1, modifyData.buy_sm_vol(), modifyData.buy_sm_amount(), modifyData.sell_sm_vol(),
+                       modifyData.sell_sm_amount(), modifyData.buy_md_vol(), modifyData.buy_md_amount(),
+                       modifyData.sell_md_vol(), modifyData.sell_md_amount(), modifyData.buy_lg_vol(),
+                       modifyData.buy_lg_amount(), modifyData.sell_lg_vol(), modifyData.sell_lg_amount(),
+                       modifyData.buy_elg_vol(), modifyData.buy_elg_amount(), modifyData.sell_elg_vol(),
+                       modifyData.sell_elg_amount(), modifyData.net_mf_vol(), modifyData.net_mf_amount(),
+                       modifyData.trade_count()]
         res.append(dataModel(virtualData))
     return res
 

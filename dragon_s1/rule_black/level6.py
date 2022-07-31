@@ -127,7 +127,8 @@ def rule12(stock, data: List[dataModel]):
     if not model_1(stock, data):
         return False
     if data[-1].turnover() > 0.5 * data[-2].turnover():
-        return True
+        if data[-1].buy_elg_vol() < data[-1].sell_elg_vol():
+            return True
 
 
 def rule13(data: List[dataModel]):
