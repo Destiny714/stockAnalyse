@@ -7,10 +7,11 @@ __pycache__/
 *.so
 # ext
 test.py
-.xls
+*.xls
 .idea/
 .DS_Store
 test/
+dragon_s1/result/
 # Distribution / packaging
 .Python
 build/
