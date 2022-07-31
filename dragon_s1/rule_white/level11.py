@@ -68,7 +68,7 @@ def rule4(stock, data: List[dataModel]):
 
 class level11:
     def __init__(self, stock: str, data: List[dataModel]):
-        self.level = 1
+        self.level = 11
         self.data = data
         self.stock = stock
         self.shot_rule: list = []
