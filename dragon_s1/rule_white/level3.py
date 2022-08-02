@@ -245,13 +245,13 @@ def rule21(data: List[dataModel]):
                 return True
 
 
-def rule22(stock, data: List[dataModel]):
+def rule22(stock, data: List[dataModel], virtual=None):
     if not t_limit(stock, data):
         return False
     if t_low_pct(data) <= -0.05:
         return False
     if t_open_pct(data) > 0.01:
-        gemData = collectData('399006', dateRange=5, aimDate=data[-1].date())
+        gemData = collectData('399006', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
         if t_close_pct(gemData) < -0.02:
             return True
 
@@ -275,10 +275,11 @@ def rule23(stock, data: List[dataModel]):
 
 
 class level3:
-    def __init__(self, stock: str, data: List[dataModel]):
+    def __init__(self, stock: str, data: List[dataModel], virtual=None):
         self.level = 3
         self.data = data
         self.stock = stock
+        self.virtual = virtual
         self.shot_rule: list = []
         self.fail_rule: list = []
 
@@ -306,6 +307,6 @@ class level3:
         self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
         self.shot_rule.append(20) if rule20(self.stock, self.data) else self.fail_rule.append(20)
         self.shot_rule.append(21) if rule21(self.data) else self.fail_rule.append(21)
-        self.shot_rule.append(22) if rule22(self.stock, self.data) else self.fail_rule.append(22)
+        self.shot_rule.append(22) if rule22(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(22)
         self.shot_rule.append(23) if rule23(self.stock, self.data) else self.fail_rule.append(23)
         return self.result()

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/7/31 22:40
 # @Author  : Destiny_
-# @File    : level11.py
+# @File    : levelS2.py
 # @Software: PyCharm
 from typing import List
 
@@ -38,37 +38,9 @@ def rule2(stock, data: List[dataModel]):
         return True
 
 
-def rule3(stock, data: List[dataModel]):
-    if t_limit(stock, data, 1):
-        return False
-    if not t_limit(stock, data):
-        return False
-    if data[-1].buy_elg_vol() / data[-1].volume() <= 0.4:
-        return False
-    if data[-1].buy_lg_vol() / data[-1].volume() <= 0.18:
-        return False
-    if data[-1].buy_elg_vol() <= data[-1].sell_elg_vol():
-        return False
-    if (data[-1].buy_elg_vol() + data[-1].buy_lg_vol()) > (data[-1].sell_elg_vol() + data[-1].sell_lg_vol()):
-        return True
-
-
-def rule4(stock, data: List[dataModel]):
-    if t_limit(stock, data, 1):
-        return False
-    if not t_limit(stock, data):
-        return False
-    if (data[-1].buy_elg_vol() + data[-1].buy_lg_vol()) / data[-1].volume() <= 0.55:
-        return False
-    if data[-1].buy_elg_vol() <= data[-1].sell_elg_vol():
-        return False
-    if (data[-1].buy_elg_vol() + data[-1].buy_lg_vol()) > (data[-1].sell_elg_vol() + data[-1].sell_lg_vol()):
-        return True
-
-
-class level11:
+class levelS2:
     def __init__(self, stock: str, data: List[dataModel]):
-        self.level = 11
+        self.level = 'S2'
         self.data = data
         self.stock = stock
         self.shot_rule: list = []
@@ -80,6 +52,4 @@ class level11:
     def filter(self):
         self.shot_rule.append(1) if rule1(self.stock, self.data) else self.fail_rule.append(1)
         self.shot_rule.append(2) if rule2(self.stock, self.data) else self.fail_rule.append(2)
-        self.shot_rule.append(3) if rule3(self.stock, self.data) else self.fail_rule.append(3)
-        self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         return self.result()

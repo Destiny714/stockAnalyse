@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/6/22 11:25
 # @Author  : Destiny_
-# @File    : level9.py
+# @File    : levelF4.py
 # @Software: PyCharm
 
 from typing import List
 
 from common import dateHandler
-from common.collect_data import t_low_pct, t_close_pct, t_open_pct, limit, dataModel, model_1, model_t, t_limit
+from common.collect_data import t_low_pct, t_close_pct, t_open_pct, limit, dataModel, model_1, model_t, t_limit, \
+    collectData
 
 
 def rule1(stock, data: List[dataModel]):
@@ -103,6 +104,20 @@ def rule8(stock, data: List[dataModel]):
             return True
 
 
+def rule9(stock, data: List[dataModel]):
+    err = None
+    if t_limit(stock, data, 1):
+        return False
+    if not t_limit(stock, data):
+        return False
+    try:
+        if data[-1].close() / data[-221].close() > 2:
+            return True
+    except Exception as e:
+        err = e
+        return False
+
+
 def rule10(data: List[dataModel]):
     if data[-1].turnover() <= 10:
         return False
@@ -120,6 +135,15 @@ def rule11(stock, data: List[dataModel]):
         return True
 
 
+def rule12(stock, data: List[dataModel]):
+    if t_limit(stock, data, 1):
+        return False
+    if not t_limit(stock, data):
+        return False
+    if data[-1].limitOpenTime() > 3:
+        return True
+
+
 def rule14(stock, data: List[dataModel]):
     count = 0
     for i in range(1, 5):
@@ -129,6 +153,16 @@ def rule14(stock, data: List[dataModel]):
         if data[-i].lastLimitTime() > matchTime and data[-i].firstLimitTime() > matchTime:
             count += 1
     return count >= 3
+
+
+def rule15(data: List[dataModel]):
+    for i in range(2):
+        d = data[-i - 1]
+        if d.buy_elg_vol() + d.buy_lg_vol() >= d.sell_elg_vol() + d.sell_lg_vol():
+            return False
+        if d.buy_elg_vol() >= d.sell_elg_vol():
+            return False
+    return True
 
 
 def rule16(stock, data: List[dataModel]):
@@ -158,18 +192,6 @@ def rule18(data: List[dataModel]):
     matchTime0 = dateHandler.joinTimeToStamp(data[-1].date(), '10:15:00')
     matchTime1 = dateHandler.joinTimeToStamp(data[-2].date(), '10:15:00')
     if data[-1].firstLimitTime() > matchTime0 and data[-2].firstLimitTime() > matchTime1:
-        return True
-
-
-def rule19(stock, data: List[dataModel]):
-    if t_limit(stock, data, 1):
-        return False
-    if not t_limit(stock, data):
-        return False
-    if model_1(stock, data):
-        return False
-    matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
-    if data[-1].lastLimitTime() < matchTime:
         return True
 
 
@@ -223,7 +245,7 @@ def rule23(stock, data: List[dataModel]):
         return True
 
 
-def rule24(stock, data: List[dataModel]):
+def rule24(stock, data: List[dataModel], virtual=None):
     if not t_limit(stock, data):
         return False
     if not t_limit(stock, data, 1):
@@ -231,7 +253,9 @@ def rule24(stock, data: List[dataModel]):
     if data[-2].limitOpenTime() <= 1:
         return False
     if data[-1].lastLimitTime() > data[-2].lastLimitTime() + dateHandler.timeDelta(data[-2].date(), data[-1].date()):
-        return True
+        gemData = collectData('399006', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
+        if t_low_pct(gemData) > -0.005:
+            return True
 
 
 def rule25(stock, data: List[dataModel]):
@@ -245,11 +269,59 @@ def rule25(stock, data: List[dataModel]):
             return True
 
 
-class level9:
-    def __init__(self, stock: str, data: List[dataModel]):
-        self.level = 9
+def rule26(stock, data: List[dataModel]):
+    if data[-1].buy_elg_vol() >= data[-1].sell_elg_vol():
+        return False
+    for i in range(5):
+        if data[-i - 1].turnover() <= 4:
+            continue
+        if model_1(stock, data, i):
+            if data[-i - 1].buy_elg_vol() < data[-i - 1].sell_elg_vol():
+                return True
+
+
+def rule27(stock, data: List[dataModel]):
+    for i in range(2):
+        if not t_limit(stock, data, i):
+            return False
+        matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '10:30:00')
+        if data[-i - 1].firstLimitTime() <= matchTime:
+            return False
+        if data[-i - 1].lastLimitTime() <= matchTime:
+            return False
+    if data[-1].turnover() > data[-2].turnover() > data[-3].turnover():
+        return True
+
+
+def rule28(stock, data: List[dataModel]):
+    for i in range(3):
+        if not t_limit(stock, data, i):
+            return False
+    if data[-1].turnover() > data[-2].turnover() > data[-3].turnover() > 15:
+        return True
+
+
+def rule29(stock, data: List[dataModel]):
+    err = None
+    if not t_limit(stock, data, 1):
+        return False
+    if not t_limit(stock, data):
+        return False
+    try:
+        range220to660 = data[-661:-220]
+        if data[-1].close() < max([_.close() for _ in range220to660]):
+            return True
+    except Exception as e:
+        err = e
+        return False
+
+
+class levelF4:
+    def __init__(self, stock: str, data: List[dataModel], virtual=None):
+        self.level = 'F4'
         self.data = data
         self.stock = stock
+        self.virtual = virtual
         self.shot_rule: list = []
         self.fail_rule: list = []
 
@@ -265,17 +337,23 @@ class level9:
         self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
         self.shot_rule.append(7) if rule7(self.data) else self.fail_rule.append(7)
         self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
+        self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.data) else self.fail_rule.append(10)
         self.shot_rule.append(11) if rule11(self.stock, self.data) else self.fail_rule.append(11)
+        self.shot_rule.append(12) if rule12(self.stock, self.data) else self.fail_rule.append(12)
         self.shot_rule.append(14) if rule14(self.stock, self.data) else self.fail_rule.append(14)
+        self.shot_rule.append(15) if rule15(self.data) else self.fail_rule.append(15)
         self.shot_rule.append(16) if rule16(self.stock, self.data) else self.fail_rule.append(16)
         self.shot_rule.append(17) if rule17(self.stock, self.data) else self.fail_rule.append(17)
         self.shot_rule.append(18) if rule18(self.data) else self.fail_rule.append(18)
-        self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
         self.shot_rule.append(20) if rule20(self.stock, self.data) else self.fail_rule.append(20)
         self.shot_rule.append(21) if rule21(self.stock, self.data) else self.fail_rule.append(21)
         self.shot_rule.append(22) if rule22(self.stock, self.data) else self.fail_rule.append(22)
         self.shot_rule.append(23) if rule23(self.stock, self.data) else self.fail_rule.append(23)
-        self.shot_rule.append(24) if rule24(self.stock, self.data) else self.fail_rule.append(24)
+        self.shot_rule.append(24) if rule24(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(24)
         self.shot_rule.append(25) if rule25(self.stock, self.data) else self.fail_rule.append(25)
+        self.shot_rule.append(26) if rule26(self.stock, self.data) else self.fail_rule.append(26)
+        self.shot_rule.append(27) if rule27(self.stock, self.data) else self.fail_rule.append(27)
+        self.shot_rule.append(28) if rule28(self.stock, self.data) else self.fail_rule.append(28)
+        self.shot_rule.append(29) if rule29(self.stock, self.data) else self.fail_rule.append(29)
         return self.result()

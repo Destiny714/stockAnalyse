@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/6/22 11:25
 # @Author  : Destiny_
-# @File    : level7.py
+# @File    : levelF2.py
 # @Software: PyCharm
 from typing import List
 from common import dateHandler
-from common.collect_data import t_low_pct, t_open_pct, t_close_pct, t_high_pct, limit, dataModel, model_1, t_limit
+from common.collect_data import t_low_pct, t_open_pct, t_close_pct, t_high_pct, limit, dataModel, model_1, t_limit, \
+    collectData
 
 
 def rule1(stock, data: List[dataModel]):
@@ -36,7 +37,7 @@ def rule2(stock, data: List[dataModel]):
             return True
 
 
-def rule3(stock, data: List[dataModel]):
+def rule3(stock, data: List[dataModel], virtual=None):
     if not t_limit(stock, data):
         return False
     if not t_limit(stock, data, 1):
@@ -48,7 +49,9 @@ def rule3(stock, data: List[dataModel]):
     if data[-1].turnover() <= 3 * data[-2].turnover():
         return False
     if data[-1].firstLimitTime() > data[-2].firstLimitTime() + dateHandler.timeDelta(data[-2].date(), data[-1].date()):
-        return True
+        gemData = collectData('399006', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
+        if t_low_pct(gemData) > -0.005:
+            return True
 
 
 def rule4(stock, data: List[dataModel]):
@@ -184,13 +187,22 @@ def rule14(stock, data: List[dataModel]):
         return True
 
 
-def rule15(data: List[dataModel]):
-    range10 = data[-10:]
-    range30 = data[-30:]
-    avg10 = sum([_.close() for _ in range10]) / 10
-    avg30 = sum([_.close() for _ in range30]) / 30
-    if avg10 < avg30:
-        return True
+def rule15(stock, data: List[dataModel]):
+    if t_limit(stock, data, 1):
+        return False
+    if not t_limit(stock, data):
+        return False
+    err = None
+    try:
+        range30 = data[-30:]
+        range120 = data[-120:]
+        avg30 = sum([_.close() for _ in range30]) / 30
+        avg120 = sum([_.close() for _ in range120]) / 120
+        if avg30 < avg120:
+            return True
+    except Exception as e:
+        err = e
+        return False
 
 
 def rule16(data: List[dataModel]):
@@ -200,15 +212,6 @@ def rule16(data: List[dataModel]):
     avg60 = sum([_.close() for _ in range60]) / 60
     if avg15 < avg60:
         return True
-
-
-def rule17(stock, data: List[dataModel]):
-    for i in range(5):
-        if data[-i - 1].turnover() <= 4:
-            continue
-        if model_1(stock, data, i):
-            if data[-i - 1].buy_elg_vol() < data[-i - 1].sell_elg_vol():
-                return True
 
 
 def rule18(stock, data: List[dataModel]):
@@ -261,11 +264,12 @@ def rule21(stock, data: List[dataModel]):
             return True
 
 
-class level7:
-    def __init__(self, stock: str, data: List[dataModel]):
-        self.level = 7
+class levelF2:
+    def __init__(self, stock: str, data: List[dataModel], virtual=None):
+        self.level = 'F2'
         self.data = data
         self.stock = stock
+        self.virtual = virtual
         self.shot_rule: list = []
         self.fail_rule: list = []
 
@@ -275,7 +279,7 @@ class level7:
     def filter(self):
         self.shot_rule.append(1) if rule1(self.stock, self.data) else self.fail_rule.append(1)
         self.shot_rule.append(2) if rule2(self.stock, self.data) else self.fail_rule.append(2)
-        self.shot_rule.append(3) if rule3(self.stock, self.data) else self.fail_rule.append(3)
+        self.shot_rule.append(3) if rule3(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(3)
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         self.shot_rule.append(5) if rule5(self.stock, self.data) else self.fail_rule.append(5)
         self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
@@ -287,9 +291,8 @@ class level7:
         self.shot_rule.append(12) if rule12(self.data) else self.fail_rule.append(12)
         self.shot_rule.append(13) if rule13(self.stock, self.data) else self.fail_rule.append(13)
         self.shot_rule.append(14) if rule14(self.stock, self.data) else self.fail_rule.append(14)
-        self.shot_rule.append(15) if rule15(self.data) else self.fail_rule.append(15)
+        self.shot_rule.append(15) if rule15(self.stock, self.data) else self.fail_rule.append(15)
         self.shot_rule.append(16) if rule16(self.data) else self.fail_rule.append(16)
-        self.shot_rule.append(17) if rule17(self.stock, self.data) else self.fail_rule.append(17)
         self.shot_rule.append(18) if rule18(self.stock, self.data) else self.fail_rule.append(18)
         self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
         self.shot_rule.append(20) if rule20(self.stock, self.data) else self.fail_rule.append(20)

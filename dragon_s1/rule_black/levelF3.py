@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/6/22 11:25
 # @Author  : Destiny_
-# @File    : level8.py
+# @File    : levelF3.py
 # @Software: PyCharm
 
 from typing import List
@@ -118,7 +118,10 @@ def rule9(stock, data: List[dataModel]):
     if model_1(stock, data, 2):
         return False
     if data[-2].turnover() > (1 / 3) * data[-3].turnover():
-        return True
+        t2Time = data[-3].lastLimitTime()
+        t3Time = data[-4].lastLimitTime()
+        if t2Time > t3Time + dateHandler.timeDelta(data[-4].date(), data[-3].date()):
+            return True
 
 
 def rule10(stock, data: List[dataModel]):
@@ -133,7 +136,7 @@ def rule10(stock, data: List[dataModel]):
             return True
 
 
-def rule11(stock, data: List[dataModel]):
+def rule11(stock, data: List[dataModel], virtual=None):
     if model_1(stock, data, 1):
         return False
     if not t_limit(stock, data, 1):
@@ -141,8 +144,10 @@ def rule11(stock, data: List[dataModel]):
     if data[-1].turnover() <= 1.8 * data[-2].turnover():
         return False
     matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
-    if data[-1].firstLimitTime() > matchTime:
-        return True
+    if data[-1].firstLimitTime() > matchTime and data[-1].lastLimitTime() > matchTime:
+        gemData = collectData('399006', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
+        if t_low_pct(gemData) > -0.005:
+            return True
 
 
 def rule12(stock, data: List[dataModel]):
@@ -214,7 +219,7 @@ def rule17(data: List[dataModel]):
             return True
 
 
-def rule18(stock, data: List[dataModel]):
+def rule18(stock, data: List[dataModel], virtual=None):
     if not t_limit(stock, data, 1):
         return False
     if model_1(stock, data, 1):
@@ -222,7 +227,9 @@ def rule18(stock, data: List[dataModel]):
     if data[-1].limitOpenTime() <= 3:
         return False
     if data[-1].turnover() > 3 * data[-2].turnover():
-        return True
+        gemData = collectData('399006', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
+        if t_low_pct(gemData) > -0.005:
+            return True
 
 
 def rule19(stock, data: List[dataModel]):
@@ -238,15 +245,15 @@ def rule19(stock, data: List[dataModel]):
         return True
 
 
-def rule20(data: List[dataModel], virtual):
-    gemData = None
+def rule20(stock, data: List[dataModel], virtual):
     for i in range(2):
-        if data[-i - 1].limitOpenTime() <= 2:
-            continue
-        gemData = collectData('399006', dateRange=5,
-                              aimDate=data[-1 if virtual is None else -2].date()) if gemData is None else gemData
-        if t_low_pct(gemData, i) > -0.005:
-            return True
+        if not t_limit(stock, data, i):
+            return False
+    if data[-1].limitOpenTime() <= 2:
+        return False
+    gemData = collectData('399006', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
+    if t_low_pct(gemData) > -0.005:
+        return True
 
 
 def rule21(stock, data: List[dataModel]):
@@ -265,7 +272,7 @@ def rule21(stock, data: List[dataModel]):
 def rule22(data: List[dataModel]):
     err = None
     try:
-        for i in range(-661, -10):
+        for i in range(-661, -120):
             range10 = data[i:i + 10]
             if range10[-1].close() / range10[0].close() > 1.8:
                 return True
@@ -316,9 +323,20 @@ def rule25(stock, data: List[dataModel]):
                         continue
 
 
-class level8:
+def rule26(stock, data: List[dataModel], virtual=None):
+    for i in range(2):
+        if not t_limit(stock, data, i + 1):
+            return False
+    if data[-2].limitOpenTime() <= 2:
+        return False
+    gemData = collectData('399006', dateRange=5, aimDate=data[-2 if virtual is None else -3].date())
+    if t_low_pct(gemData) > -0.005:
+        return True
+
+
+class levelF3:
     def __init__(self, stock: str, data: List[dataModel], virtual=None):
-        self.level = 8
+        self.level = 'F3'
         self.data = data
         self.stock = stock
         self.virtual = virtual
@@ -339,19 +357,20 @@ class level8:
         self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
         self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.stock, self.data) else self.fail_rule.append(10)
-        self.shot_rule.append(11) if rule11(self.stock, self.data) else self.fail_rule.append(11)
+        self.shot_rule.append(11) if rule11(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(11)
         self.shot_rule.append(12) if rule12(self.stock, self.data) else self.fail_rule.append(12)
         self.shot_rule.append(13) if rule13(self.stock, self.data) else self.fail_rule.append(13)
         self.shot_rule.append(14) if rule14(self.data) else self.fail_rule.append(14)
         self.shot_rule.append(15) if rule15(self.stock, self.data) else self.fail_rule.append(15)
         self.shot_rule.append(16) if rule16(self.stock, self.data) else self.fail_rule.append(16)
         self.shot_rule.append(17) if rule17(self.data) else self.fail_rule.append(17)
-        self.shot_rule.append(18) if rule18(self.stock, self.data) else self.fail_rule.append(18)
+        self.shot_rule.append(18) if rule18(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(18)
         self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
-        self.shot_rule.append(20) if rule20(self.data, self.virtual) else self.fail_rule.append(20)
+        self.shot_rule.append(20) if rule20(self.stock, self.data, self.virtual) else self.fail_rule.append(20)
         self.shot_rule.append(21) if rule21(self.stock, self.data) else self.fail_rule.append(21)
         self.shot_rule.append(22) if rule22(self.data) else self.fail_rule.append(22)
         self.shot_rule.append(23) if rule23(self.stock, self.data) else self.fail_rule.append(23)
         self.shot_rule.append(24) if rule24(self.stock, self.data) else self.fail_rule.append(24)
         self.shot_rule.append(25) if rule25(self.stock, self.data) else self.fail_rule.append(25)
+        self.shot_rule.append(26) if rule26(self.stock, self.data, self.virtual) else self.fail_rule.append(26)
         return self.result()

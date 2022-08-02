@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/6/22 11:25
 # @Author  : Destiny_
-# @File    : level6.py
+# @File    : levelF1.py
 # @Software: PyCharm
 from common import dateHandler
 from typing import List
@@ -70,6 +70,18 @@ def rule5(stock, data: List[dataModel]):
 def rule6(data: List[dataModel]):
     range91 = data[-121:-30]
     if range91[-1].close() / range91[0].close() > 2.2:
+        return True
+
+
+def rule7(stock, data: List[dataModel]):
+    if t_limit(stock, data, 1):
+        return False
+    if not t_limit(stock, data):
+        return False
+    if model_1(stock, data):
+        return False
+    matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
+    if data[-1].lastLimitTime() < matchTime:
         return True
 
 
@@ -256,9 +268,15 @@ def rule22(stock, data: List[dataModel]):
             return True
 
 
-class level6:
+def rule23(data: List[dataModel]):
+    if data[-1].buy_elg_vol() + data[-1].buy_lg_vol() < data[-1].sell_elg_vol() + data[-1].sell_lg_vol():
+        if data[-1].buy_elg_vol() < data[-1].sell_elg_vol():
+            return True
+
+
+class levelF1:
     def __init__(self, stock: str, data: List[dataModel]):
-        self.level = 6
+        self.level = 'F1'
         self.data = data
         self.stock = stock
         self.shot_rule: list = []
@@ -274,6 +292,7 @@ class level6:
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         self.shot_rule.append(5) if rule5(self.stock, self.data) else self.fail_rule.append(5)
         self.shot_rule.append(6) if rule6(self.data) else self.fail_rule.append(6)
+        self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)
         self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
         self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.stock, self.data) else self.fail_rule.append(10)
@@ -289,4 +308,5 @@ class level6:
         self.shot_rule.append(20) if rule20(self.stock, self.data) else self.fail_rule.append(20)
         self.shot_rule.append(21) if rule21(self.stock, self.data) else self.fail_rule.append(21)
         self.shot_rule.append(22) if rule22(self.stock, self.data) else self.fail_rule.append(22)
+        self.shot_rule.append(23) if rule23(self.data) else self.fail_rule.append(23)
         return self.result()
