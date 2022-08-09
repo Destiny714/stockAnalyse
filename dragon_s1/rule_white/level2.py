@@ -6,7 +6,7 @@
 from typing import List
 
 from common import dateHandler
-from common.collect_data import dataModel, t_limit
+from common.collect_data import dataModel, t_limit, t_open_pct, t_low_pct
 
 
 def rule1(data: List[dataModel]):
@@ -28,11 +28,59 @@ def rule2(data: List[dataModel]):
         return False
 
 
+def rule3(stock, data: List[dataModel]):
+    for i in range(1, 4):
+        if not t_limit(stock, data, i - 1):
+            return False
+        if t_open_pct(data, i - 1) <= 0:
+            return False
+        if t_low_pct(data, i - 1) <= -0.01:
+            return False
+    return True
+
+
 def rule4(data: List[dataModel]):
-    range10 = data[-10:]
-    range30 = data[-30:]
-    if max(_.close() for _ in range10) > sum(_.close() for _ in range30) / 30:
+    range10 = data[-11:-1]
+    range30 = data[-31:-1]
+    if sum(_.close() for _ in range10) / 10 > sum(_.close() for _ in range30) / 30:
         return True
+
+
+def rule5(data: List[dataModel]):
+    range10 = data[-11:-1]
+    range20 = data[-21:-1]
+    if sum(_.close() for _ in range10) / 10 > sum(_.close() for _ in range20) / 20:
+        return True
+
+
+def rule6(data: List[dataModel]):
+    try:
+        range20 = data[-21:-1]
+        range30 = data[-31:-1]
+        if sum(_.close() for _ in range20) / 20 > sum(_.close() for _ in range30) / 30:
+            return True
+    except Exception:
+        return False
+
+
+def rule7(data: List[dataModel]):
+    try:
+        range30 = data[-31:-1]
+        range60 = data[-61:-1]
+        if sum(_.close() for _ in range30) / 30 > sum(_.close() for _ in range60) / 60:
+            return True
+    except Exception:
+        return False
+
+
+def rule8(data: List[dataModel]):
+    try:
+        range60 = data[-61:-1]
+        range120 = data[-121:-1]
+        if sum(_.close() for _ in range60) / 60 > sum(_.close() for _ in range120) / 120:
+            return True
+    except:
+        return False
 
 
 def rule9(data: List[dataModel]):
@@ -97,6 +145,20 @@ def rule17(stock, data: List[dataModel]):
         return True
 
 
+def rule18(stock, data: List[dataModel]):
+    if t_limit(stock, data, 1):
+        return False
+    try:
+        range1to5 = data[-6:-1]
+        range1to10 = data[-11:-1]
+        range1to20 = data[-21:-1]
+        if sum([_.close() for _ in range1to5]) / 5 > sum([_.close() for _ in range1to20]) / 20:
+            if data[-2].close() > sum([_.close() for _ in range1to10]) / 10:
+                return True
+    except:
+        return False
+
+
 class level2:
     def __init__(self, stock: str, data: List[dataModel]):
         self.level = 2
@@ -111,7 +173,12 @@ class level2:
     def filter(self):
         self.shot_rule.append(1) if rule1(self.data) else self.fail_rule.append(1)
         self.shot_rule.append(2) if rule2(self.data) else self.fail_rule.append(2)
+        self.shot_rule.append(3) if rule3(self.stock, self.data) else self.fail_rule.append(3)
         self.shot_rule.append(4) if rule4(self.data) else self.fail_rule.append(4)
+        self.shot_rule.append(5) if rule5(self.data) else self.fail_rule.append(5)
+        self.shot_rule.append(6) if rule6(self.data) else self.fail_rule.append(6)
+        self.shot_rule.append(7) if rule7(self.data) else self.fail_rule.append(7)
+        self.shot_rule.append(8) if rule8(self.data) else self.fail_rule.append(8)
         self.shot_rule.append(9) if rule9(self.data) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.data) else self.fail_rule.append(10)
         self.shot_rule.append(11) if rule11(self.data) else self.fail_rule.append(11)
@@ -121,4 +188,5 @@ class level2:
         self.shot_rule.append(15) if rule15(self.data) else self.fail_rule.append(15)
         self.shot_rule.append(16) if rule16(self.data) else self.fail_rule.append(16)
         self.shot_rule.append(17) if rule17(self.stock, self.data) else self.fail_rule.append(17)
+        self.shot_rule.append(18) if rule18(self.stock, self.data) else self.fail_rule.append(18)
         return self.result()

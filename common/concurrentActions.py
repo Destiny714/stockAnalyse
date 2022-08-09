@@ -118,27 +118,48 @@ def updateMoneyFlow(aimDate=dateHandler.lastTradeDay()):
     print(f'{aimDate} money flow update done')
 
 
-def industryLimit(aimDate=dateHandler.lastTradeDay()):
+def updateChipDetail(aimDate=dateHandler.lastTradeDay()):
+    print(f'updating {aimDate} chip detail')
+    data = Tushare().chipDetail(aimDate)
+
+    def updateOne(d):
+        if str(d['ts_code'])[0] != '8':
+            try:
+                client = Mysql()
+                client.updateChipDetail(d)
+            except Exception as e:
+                print(e)
+
+    toolBox.thread_pool_executor(updateOne, data)
+    print(f'{aimDate} chip detail update done')
+
+
+def industryIndex(aimDate=dateHandler.lastTradeDay()):
     industries = databaseApi.Mysql().selectAllIndustry()
     errors = []
     industryLimitDict = {}
 
     def processOne(industry):
         limit = 0
+        concentrationSum = 0
+        concentrationCalcuSum = 0
         mysql = databaseApi.Mysql()
         industryStocks = mysql.selectStockByIndustry(industry)
         for industryStock in industryStocks:
             try:
                 stockData = collect_data.collectData(industryStock, 2, aimDate=aimDate)
+                concentrationSum += stockData[-1].concentration()
+                concentrationCalcuSum += 1
                 if stockData != [] and collect_data.t_limit(industryStock, stockData):
                     limit += 1
             except Exception as e:
                 errors.append(e)
-        industryLimitDict[industry] = limit
+        industryLimitDict[industry] = {'limit': limit,
+                                       'concentration': 0 if concentrationCalcuSum == 0 else concentrationSum / concentrationCalcuSum}
 
-    print('processing industry limit...')
+    print('processing industry index...')
     toolBox.thread_pool_executor(processOne, industries, 10)
-    print('processing industry done')
+    print('processing industry index done')
     return industryLimitDict
 
 
@@ -162,4 +183,5 @@ def initStock(needReload: bool = True, extra: bool = False):
         updateLimitDetailData()
         updateStockListDailyIndex()
         updateMoneyFlow()
+        updateChipDetail()
     return stocks

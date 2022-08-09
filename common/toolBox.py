@@ -21,18 +21,3 @@ def errorHandler(e: Exception, arg=None):
     while tb:
         print(f'{arg} : <{tb.tb_frame.f_code.co_filename} line:{tb.tb_lineno} detail:{e.args[0]}>')
         tb = tb.tb_next
-
-
-def readScoreFromExcel(date):
-    excelDict = {}
-    try:
-        absPath = os.getcwd().replace('/dragon_s1','')
-        filePath = f'{absPath}/dragon_s1/result/{date}.xls'
-        data = xlrd.open_workbook(filePath)
-        sheet = data.sheet_by_index(0)
-        for i in range(1, sheet.nrows):
-            detail = sheet.row_values(i)
-            excelDict[detail[0]] = {'score': detail[8], 'white': detail[6], 'black': detail[7]}
-    except Exception as e:
-        errorHandler(e)
-    return excelDict

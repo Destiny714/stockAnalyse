@@ -132,3 +132,29 @@ class Tushare:
         for i in range(len(data)):
             details.append(data.iloc[i])
         return details
+
+    def chipDetail(self, date=dateHandler.lastTradeDay()):
+        details = []
+        data = self._instance.cyq_perf(**{
+            "ts_code": "",
+            "trade_date": date,
+            "start_date": "",
+            "end_date": "",
+            "limit": "",
+            "offset": ""
+        }, fields=[
+            "ts_code",
+            "trade_date",
+            "his_low",
+            "his_high",
+            "cost_5pct",
+            "cost_15pct",
+            "cost_50pct",
+            "cost_85pct",
+            "cost_95pct",
+            "weight_avg",
+            "winner_rate"
+        ])
+        for i in range(len(data)):
+            details.append(data.iloc[i])
+        return details

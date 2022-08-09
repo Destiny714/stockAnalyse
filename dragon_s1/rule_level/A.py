@@ -50,48 +50,49 @@ def rule7(height: int, score: int, T1S: int, T1F: int, black: int):
                 return True
 
 
-def rule8(height: int, score: int, T1S: int, T1F: int, black: int):
+def rule8(height: int, score: int, T1S: int, T1F: int, black: int, white: int):
     if height == 1 and score > 25:
         if T1S > 40 and T1F > 20:
-            if black < 2:
+            if black < 2 and white > 18:
                 return True
 
 
-def rule9(height: int, score: int, T1S: int, T1F: int, black: int):
+def rule9(height: int, score: int, T1S: int, T1F: int, black: int, white: int):
     if height == 1 and score > 35:
         if 30 < T1S < score and T1F > 25:
-            if black < 2:
+            if black < 2 and white > 18:
                 return True
 
 
-def rule10(height: int, score: int, T1S: int, black: int):
-    if height == 1 and score > 20:
-        if T1S > 30 and black == 0:
+def rule10(height: int, score: int, T1S: int, black: int, white: int):
+    if height == 1 and score > 28:
+        if T1S > score and black == 0 and white > 18:
             return True
 
 
 def rule11(height: int, score: int, T1S: int, T1F: int, black: int):
-    if height == 0 and score > 35:
-        if 30 < T1S < score and T1F > 25:
+    if height == 0 and score > 30:
+        if 25 < T1S < score and T1F > 25:
             if black < 2:
                 return True
 
 
-def rule12(height: int, score: int, T1S: int, T1F: int, black: int):
-    if height == 0 and score > 35:
-        if T1S > 35 and T1F > 30:
-            if black < 2:
+def rule12(height: int, score: int, T1S: int, T1F: int, black: int, white: int):
+    if height == 0 and score > 30:
+        if T1S > score and T1F > 25:
+            if black < 2 and white > 18:
                 return True
 
 
 class ruleA:
 
-    def __init__(self, height: int, score: int, T1S: int, T1F: int, black: int):
+    def __init__(self, height: int, score: int, T1S: int, T1F: int, black: int, white: int):
         self.height = height
         self.score = score
         self.T1S = T1S
         self.T1F = T1F
         self.black = black
+        self.white = white
 
     def filter(self):
         if rule1(self.height, self.score, self.T1S, self.T1F, self.black):
@@ -108,13 +109,13 @@ class ruleA:
             return True
         if rule7(self.height, self.score, self.T1S, self.T1F, self.black):
             return True
-        if rule8(self.height, self.score, self.T1S, self.T1F, self.black):
+        if rule8(self.height, self.score, self.T1S, self.T1F, self.black, self.white):
             return True
-        if rule9(self.height, self.score, self.T1S, self.T1F, self.black):
+        if rule9(self.height, self.score, self.T1S, self.T1F, self.black, self.white):
             return True
-        if rule10(self.height, self.score, self.T1S, self.black):
+        if rule10(self.height, self.score, self.T1S, self.black, self.white):
             return True
         if rule11(self.height, self.score, self.T1S, self.T1F, self.black):
             return True
-        if rule12(self.height, self.score, self.T1S, self.T1F, self.black):
+        if rule12(self.height, self.score, self.T1S, self.T1F, self.black, self.white):
             return True

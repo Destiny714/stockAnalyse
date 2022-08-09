@@ -37,9 +37,10 @@ def rule6(white: int, black: int):
         return True
 
 
-def rule7(score: int, T1S: int, black: int):
+def rule7(height: int, score: int, T1S: int, black: int):
     if score - T1S > 20 and black > 1:
-        return True
+        if T1S / height < 15:
+            return True
 
 
 class ruleF:
@@ -65,5 +66,5 @@ class ruleF:
             return True
         if rule6(self.white, self.black):
             return True
-        if rule7(self.score, self.T1S, self.black):
+        if rule7(self.height, self.score, self.T1S, self.black):
             return True

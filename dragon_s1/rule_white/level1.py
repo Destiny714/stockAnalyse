@@ -5,7 +5,7 @@
 # @Software: PyCharm
 from typing import List
 
-from common.collect_data import dataModel, limit, t_low_pct
+from common.collect_data import dataModel, limit, t_low_pct, t_limit, t_close_pct
 
 
 def rule2(data: List[dataModel]):

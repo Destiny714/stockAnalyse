@@ -93,19 +93,23 @@ def rule6(stock, data: List[dataModel]):
 
 
 def rule7(stock, data: List[dataModel]):
+    limitCount = 0
+    for i in range(3):
+        if t_limit(stock, data, i + 1):
+            limitCount += 1
+    if limitCount < 2:
+        return False
+    range30 = data[-34:-4]
+    for d in range30:
+        if d.pctChange() >= limit(stock):
+            return False
     if not (data[-4].turnover() > data[-3].turnover() > data[-2].turnover()):
         return False
-    flag = False
-    for i in range(2, 5):
-        if t_limit(stock, data, i - 1):
-            flag = True
-            break
-    if flag:
-        if model_1(stock, data, 1):
-            return False
-        if model_1(stock, data, 3):
-            return False
-        return True
+    if model_1(stock, data, 1):
+        return False
+    if model_1(stock, data, 3):
+        return False
+    return True
 
 
 def rule8(stock, data: List[dataModel]):
@@ -146,15 +150,15 @@ def rule10(stock, data: List[dataModel]):
 
 
 def rule11(stock, data: List[dataModel]):
-    count = 0
     for i in range(1, 5):
-        if data[-i].pctChange() < limit(stock):
-            return False
+        if not t_limit(stock, data, i - 1):
+            continue
+        if not t_limit(stock, data, i):
+            continue
         if t_open_pct(data, i - 1) < -0.03:
             matchTime = dateHandler.joinTimeToStamp(data[-i].date(), '10:30:00')
-            if data[-i].lastLimitTime() != 0 and data[-i].lastLimitTime() > matchTime:
-                count += 1
-    return count >= 1
+            if data[-i].lastLimitTime() > matchTime:
+                return True
 
 
 def rule12(data: List[dataModel]):
@@ -188,21 +192,17 @@ def rule14(stock, data: List[dataModel]):
 
 
 def rule15(stock, data: List[dataModel]):
-    if t_limit(stock, data, 1):
-        return False
-    if not t_limit(stock, data):
-        return False
-    err = None
-    try:
-        range30 = data[-30:]
-        range120 = data[-120:]
-        avg30 = sum([_.close() for _ in range30]) / 30
-        avg120 = sum([_.close() for _ in range120]) / 120
-        if avg30 < avg120:
-            return True
-    except Exception as e:
-        err = e
-        return False
+    plus = []
+    minus = []
+    for i in range(1, 21):
+        if t_limit(stock, data, i):
+            return False
+        if t_close_pct(data, i) > 0:
+            plus.append(data[-i - 1].volume())
+        else:
+            minus.append(data[-i - 1].volume())
+    if sum(plus) / len(plus) < sum(minus) / len(minus):
+        return True
 
 
 def rule16(data: List[dataModel]):
@@ -214,6 +214,17 @@ def rule16(data: List[dataModel]):
         return True
 
 
+def rule17(stock, data: List[dataModel]):
+    for i in range(2):
+        if t_low_pct(data, i) >= -0.005:
+            continue
+        if not t_limit(stock, data, i):
+            continue
+        matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '13:00:00')
+        if data[-i - 1].lastLimitTime() > matchTime:
+            return True
+
+
 def rule18(stock, data: List[dataModel]):
     if not t_limit(stock, data):
         return False
@@ -222,8 +233,10 @@ def rule18(stock, data: List[dataModel]):
         return False
     count = 0
     for i in range(5):
+        d = data[-i - 1]
         if t_open_pct(data, i) - t_low_pct(data, i) > 0.07:
-            count += 1
+            if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
+                count += 1
         if count >= 2:
             return True
 
@@ -264,6 +277,18 @@ def rule21(stock, data: List[dataModel]):
             return True
 
 
+def rule22(stock, data: List[dataModel]):
+    for i in range(3):
+        if not t_limit(stock, data, i):
+            return False
+        matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '10:00:00')
+        if data[-i - 1].firstLimitTime() <= matchTime:
+            return False
+        if data[-i - 1].lastLimitTime() <= matchTime:
+            return False
+    return True
+
+
 class levelF2:
     def __init__(self, stock: str, data: List[dataModel], virtual=None):
         self.level = 'F2'
@@ -293,8 +318,10 @@ class levelF2:
         self.shot_rule.append(14) if rule14(self.stock, self.data) else self.fail_rule.append(14)
         self.shot_rule.append(15) if rule15(self.stock, self.data) else self.fail_rule.append(15)
         self.shot_rule.append(16) if rule16(self.data) else self.fail_rule.append(16)
+        self.shot_rule.append(17) if rule17(self.stock, self.data) else self.fail_rule.append(17)
         self.shot_rule.append(18) if rule18(self.stock, self.data) else self.fail_rule.append(18)
         self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
         self.shot_rule.append(20) if rule20(self.stock, self.data) else self.fail_rule.append(20)
         self.shot_rule.append(21) if rule21(self.stock, self.data) else self.fail_rule.append(21)
+        self.shot_rule.append(22) if rule22(self.stock, self.data) else self.fail_rule.append(22)
         return self.result()

@@ -76,7 +76,16 @@ class Mysql:
                     f"sell_elg_amount double default 0," \
                     f"net_mf_vol int default 0," \
                     f"net_mf_amount double default 0," \
-                    f"trade_count int default 0)"
+                    f"trade_count int default 0," \
+                    f"his_low float default 0," \
+                    f"his_high float default 0," \
+                    f"cost_5pct float default 0," \
+                    f"cost_15pct float default 0," \
+                    f"cost_50pct float default 0," \
+                    f"cost_85pct float default 0," \
+                    f"cost_95pct float default 0," \
+                    f"weight_avg float default 0," \
+                    f"winner_rate float default 0)"
         self.action(output=False)
 
     def selectExistTable(self):
@@ -258,4 +267,31 @@ class Mysql:
                     f"net_mf_amount={data['net_mf_amount']}," \
                     f"trade_count={data['trade_count']} " \
                     f"WHERE date = {data['trade_date']}"
+        self.action(output=False)
+
+    def updateChipDetail(self, data):
+        self.word = f"UPDATE No{str(data['ts_code']).split('.')[0]} SET " \
+                    f"his_low={data['his_low']}," \
+                    f"his_high={data['his_high']}," \
+                    f"cost_5pct={data['cost_5pct']}," \
+                    f"cost_15pct={data['cost_15pct']}," \
+                    f"cost_50pct={data['cost_50pct']}," \
+                    f"cost_85pct={data['cost_85pct']}," \
+                    f"cost_95pct={data['cost_95pct']}," \
+                    f"weight_avg={data['weight_avg']}," \
+                    f"winner_rate={data['winner_rate']} " \
+                    f"WHERE date = {data['trade_date']}"
+        self.action(output=False)
+
+    def addColumn(self, table):
+        self.word = f"ALTER TABLE {table} " \
+                    f"ADD COLUMN his_low float default 0," \
+                    f"ADD COLUMN his_high float default 0," \
+                    f"ADD COLUMN cost_5pct float default 0," \
+                    f"ADD COLUMN cost_15pct float default 0," \
+                    f"ADD COLUMN cost_50pct float default 0," \
+                    f"ADD COLUMN cost_85pct float default 0," \
+                    f"ADD COLUMN cost_95pct float default 0," \
+                    f"ADD COLUMN weight_avg float default 0," \
+                    f"ADD COLUMN winner_rate float default 0"
         self.action(output=False)

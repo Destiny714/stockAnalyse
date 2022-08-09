@@ -108,6 +108,38 @@ class dataModel:
     def trade_count(self):
         return self.data[32]
 
+    def his_low(self):
+        return self.data[33]
+
+    def his_high(self):
+        return self.data[34]
+
+    def cost_5pct(self):
+        return self.data[35]
+
+    def cost_15pct(self):
+        return self.data[36]
+
+    def cost_50pct(self):
+        return self.data[37]
+
+    def cost_85pct(self):
+        return self.data[38]
+
+    def cost_95pct(self):
+        return self.data[39]
+
+    def weight_avg(self):
+        return self.data[40]
+
+    def winner_rate(self):
+        return self.data[41]
+
+    def concentration(self):
+        cost5pct = self.data[35]
+        cost95pct = self.data[39]
+        return (cost95pct - cost5pct) / (cost95pct + cost5pct)
+
 
 def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(), virtual=None) -> List[dataModel]:
     mysql = databaseApi.Mysql()
@@ -118,6 +150,8 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
     elif virtual == 's':
         modifyData = res[-1]
         nextDate = mysql.selectNextTradeDay(modifyData.date())
+        largePct = 1.05
+        smallPct = 0.95
         virtualData = [8888,
                        nextDate,
                        modifyData.close() * 1.08,
@@ -131,18 +165,43 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
                        modifyData.turnover() * 0.6,
                        dateHandler.joinTimeToStamp(nextDate, '09:45:00'),
                        dateHandler.joinTimeToStamp(nextDate, '09:45:00'),
-                       0, modifyData.buy_sm_vol(), modifyData.buy_sm_amount(), modifyData.sell_sm_vol(),
-                       modifyData.sell_sm_amount(), modifyData.buy_md_vol(), modifyData.buy_md_amount(),
-                       modifyData.sell_md_vol(), modifyData.sell_md_amount(), modifyData.buy_lg_vol(),
-                       modifyData.buy_lg_amount(), modifyData.sell_lg_vol(), modifyData.sell_lg_amount(),
-                       modifyData.buy_elg_vol(), modifyData.buy_elg_amount(), modifyData.sell_elg_vol(),
-                       modifyData.sell_elg_amount(), modifyData.net_mf_vol(), modifyData.net_mf_amount(),
-                       modifyData.trade_count()]
+                       0,
+                       modifyData.buy_sm_vol() * smallPct,
+                       modifyData.buy_sm_amount() * smallPct,
+                       modifyData.sell_sm_vol() * smallPct,
+                       modifyData.sell_sm_amount() * smallPct,
+                       modifyData.buy_md_vol() * smallPct,
+                       modifyData.buy_md_amount() * smallPct,
+                       modifyData.sell_md_vol() * smallPct,
+                       modifyData.sell_md_amount() * smallPct,
+                       modifyData.buy_lg_vol() * largePct,
+                       modifyData.buy_lg_amount() * largePct,
+                       modifyData.sell_lg_vol() * largePct,
+                       modifyData.sell_lg_amount() * largePct,
+                       modifyData.buy_elg_vol() * largePct,
+                       modifyData.buy_elg_amount() * largePct,
+                       modifyData.sell_elg_vol() * largePct,
+                       modifyData.sell_elg_amount() * largePct,
+                       sum([modifyData.buy_sm_vol() * smallPct, modifyData.buy_md_vol() * smallPct,
+                            modifyData.buy_lg_vol() * largePct, modifyData.buy_elg_vol() * largePct]),
+                       sum([modifyData.buy_sm_amount() * smallPct, modifyData.buy_md_amount() * smallPct,
+                            modifyData.buy_lg_amount() * largePct, modifyData.buy_elg_amount() * largePct]),
+                       modifyData.trade_count() * smallPct,
+                       modifyData.his_low(),
+                       modifyData.his_high(),
+                       modifyData.cost_5pct(),
+                       modifyData.cost_15pct(),
+                       modifyData.cost_50pct(),
+                       modifyData.cost_85pct(),
+                       modifyData.cost_95pct(),
+                       modifyData.weight_avg(),
+                       modifyData.winner_rate()]
         res.append(dataModel(virtualData))
     elif virtual == 'f':
         modifyData = res[-1]
         nextDate = mysql.selectNextTradeDay(modifyData.date())
-        plus = 1 if modifyData.pctChange() > limit(stock) else 0
+        largePct = 0.95
+        smallPct = 1.05
         virtualData = [8888,
                        nextDate,
                        modifyData.close() * 1.04,
@@ -156,13 +215,37 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
                        modifyData.turnover() * 1.4,
                        dateHandler.joinTimeToStamp(nextDate, '10:45:00'),
                        dateHandler.joinTimeToStamp(nextDate, '14:30:00'),
-                       1, modifyData.buy_sm_vol(), modifyData.buy_sm_amount(), modifyData.sell_sm_vol(),
-                       modifyData.sell_sm_amount(), modifyData.buy_md_vol(), modifyData.buy_md_amount(),
-                       modifyData.sell_md_vol(), modifyData.sell_md_amount(), modifyData.buy_lg_vol(),
-                       modifyData.buy_lg_amount(), modifyData.sell_lg_vol(), modifyData.sell_lg_amount(),
-                       modifyData.buy_elg_vol(), modifyData.buy_elg_amount(), modifyData.sell_elg_vol(),
-                       modifyData.sell_elg_amount(), modifyData.net_mf_vol(), modifyData.net_mf_amount(),
-                       modifyData.trade_count()]
+                       1,
+                       modifyData.buy_sm_vol() * smallPct,
+                       modifyData.buy_sm_amount() * smallPct,
+                       modifyData.sell_sm_vol() * smallPct,
+                       modifyData.sell_sm_amount() * smallPct,
+                       modifyData.buy_md_vol() * smallPct,
+                       modifyData.buy_md_amount() * smallPct,
+                       modifyData.sell_md_vol() * smallPct,
+                       modifyData.sell_md_amount() * smallPct,
+                       modifyData.buy_lg_vol() * largePct,
+                       modifyData.buy_lg_amount() * largePct,
+                       modifyData.sell_lg_vol() * largePct,
+                       modifyData.sell_lg_amount() * largePct,
+                       modifyData.buy_elg_vol() * largePct,
+                       modifyData.buy_elg_amount() * largePct,
+                       modifyData.sell_elg_vol() * largePct,
+                       modifyData.sell_elg_amount() * largePct,
+                       sum([modifyData.buy_sm_vol() * smallPct, modifyData.buy_md_vol() * smallPct,
+                            modifyData.buy_lg_vol() * largePct, modifyData.buy_elg_vol() * largePct]),
+                       sum([modifyData.buy_sm_amount() * smallPct, modifyData.buy_md_amount() * smallPct,
+                            modifyData.buy_lg_amount() * largePct, modifyData.buy_elg_amount() * largePct]),
+                       modifyData.trade_count() * smallPct,
+                       modifyData.his_low(),
+                       modifyData.his_high(),
+                       modifyData.cost_5pct(),
+                       modifyData.cost_15pct(),
+                       modifyData.cost_50pct(),
+                       modifyData.cost_85pct(),
+                       modifyData.cost_95pct(),
+                       modifyData.weight_avg(),
+                       modifyData.winner_rate()]
         res.append(dataModel(virtualData))
     return res
 

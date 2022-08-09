@@ -15,6 +15,7 @@ import rules
 from common import toolBox, dateHandler, concurrentActions, push
 
 if __name__ == '__main__':
+    aimDate = dateHandler.lastTradeDay()
     stocks = concurrentActions.initStock(needReload=True, extra=False)
     errors = []
     chosenStocks = [stock for stock in stocks if stock[:2] in ['00', '60']]
@@ -22,11 +23,11 @@ if __name__ == '__main__':
 
     def N(stock):
         try:
-            day2 = rules.twoDaySlideWindow(stock, aimDate=dateHandler.lastTradeDay())
+            day2 = rules.twoDaySlideWindow(stock, aimDate=aimDate)
             if day2:
                 print(f'{stock}-{day2}-二日')
                 push.bark_pusher('二日', f'{stock}-{day2}')
-            day3 = rules.threeDaySlideWindow(stock, aimDate=dateHandler.lastTradeDay())
+            day3 = rules.threeDaySlideWindow(stock, aimDate=aimDate)
             if day3:
                 print(f'{stock}-{day3}-三日')
                 push.bark_pusher('三日', f'{stock}-{day3}')
