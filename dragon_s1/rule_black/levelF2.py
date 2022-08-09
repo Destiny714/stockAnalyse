@@ -9,22 +9,6 @@ from common.collect_data import t_low_pct, t_open_pct, t_close_pct, t_high_pct, 
     collectData
 
 
-def rule1(stock, data: List[dataModel]):
-    if t_limit(stock, data, 3):
-        return False
-    if t_limit(stock, data, 4):
-        return False
-    if not t_limit(stock, data):
-        return False
-    if model_1(stock, data):
-        return False
-    flag = False
-    for i in range(2, 4):
-        if model_1(stock, data, i - 1):
-            flag = not flag
-    return flag
-
-
 def rule2(stock, data: List[dataModel]):
     if not t_limit(stock, data):
         return False
@@ -216,7 +200,7 @@ def rule16(data: List[dataModel]):
 
 def rule17(stock, data: List[dataModel]):
     for i in range(2):
-        if t_low_pct(data, i) >= -0.005:
+        if t_low_pct(data, i) >= -0.05:
             continue
         if not t_limit(stock, data, i):
             continue
@@ -242,6 +226,7 @@ def rule18(stock, data: List[dataModel]):
 
 
 def rule19(stock, data: List[dataModel]):
+    count = 0
     for i in range(3):
         if not t_limit(stock, data, i):
             return False
@@ -250,7 +235,10 @@ def rule19(stock, data: List[dataModel]):
         matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '09:47:00')
         if data[-i - 1].firstLimitTime() >= matchTime:
             return False
-    return True
+        d = data[-i - 1]
+        if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
+            count += 1
+    return count >= 2
 
 
 def rule20(stock, data: List[dataModel]):
@@ -302,7 +290,6 @@ class levelF2:
         return {'level': self.level, 'stock': self.stock, 'detail': self.shot_rule, 'result': self.shot_rule == []}
 
     def filter(self):
-        self.shot_rule.append(1) if rule1(self.stock, self.data) else self.fail_rule.append(1)
         self.shot_rule.append(2) if rule2(self.stock, self.data) else self.fail_rule.append(2)
         self.shot_rule.append(3) if rule3(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(3)
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)

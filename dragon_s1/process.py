@@ -14,12 +14,12 @@ from api import databaseApi, tushareApi
 from rule_black import levelF1, levelF2, levelF3, levelF4, levelF5
 from common import toolBox, concurrentActions, dateHandler, push
 from rule_white import level1, level2, level3, level4, level5, levelA1, levelA2, levelS1, levelS2
-from common.collect_data import collectData, t_open_pct, limit_height
+from common.collect_data import collectData, t_open_pct, limit_height, t_limit
 
 if __name__ == '__main__':
     stocks = concurrentActions.initStock(needReload=False, extra=False)
     tradeDays = databaseApi.Mysql().selectTradeDate()
-    aimDates = ['20220808']
+    aimDates = [dateHandler.lastTradeDay()]
 
 
     def process(aimDate):
@@ -68,10 +68,10 @@ if __name__ == '__main__':
                 score += len(l3['detail']) * 3
                 score += len(l4['detail']) * 5
                 score += len(l5['detail']) * 8
-                score += len(lA1['detail']) * 8
-                score += len(lA2['detail']) * 8
-                score += len(lS1['detail']) * 10
-                score += len(lS2['detail']) * 10
+                score += len(lA1['detail']) * 4
+                score += len(lA2['detail']) * 4
+                score += len(lS1['detail']) * 6
+                score += len(lS2['detail']) * 6
                 score -= len(lF1['detail']) * 5
                 score -= len(lF2['detail']) * 5
                 score -= len(lF3['detail']) * 8
@@ -81,14 +81,19 @@ if __name__ == '__main__':
                     stockDetail = databaseApi.Mysql().selectStockDetail(stock)
                     industry = databaseApi.Mysql().selectIndustryByStock(stock)
                     height = limit_height(stock, data)
+                    t1isLimit = t_limit(stock, data, 1)
                     T1S = virtualDict[stock]['s']
                     T1F = virtualDict[stock]['f']
+                    _S = int(score - excelDict[stock]['score'] if excelDict != {} else -8888)
                     level = 'B'
-                    if A.ruleA(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum).filter():
+                    if A.ruleA(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum, S=_S,
+                               t1isLimit=t1isLimit).filter():
                         level = 'A'
-                    if F.ruleF(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum).filter():
+                    if F.ruleF(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum,
+                               S=_S).filter():
                         level = 'F'
-                    if S.ruleS(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum).filter():
+                    if S.ruleS(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum, S=_S,
+                               t1isLimit=t1isLimit).filter():
                         level = 'S'
                     result = {
                         'code': stock,
@@ -104,7 +109,7 @@ if __name__ == '__main__':
                         'score': score,
                         'T1S': T1S,
                         'T1F': T1F,
-                        'S': int(score - excelDict[stock]['score'] if excelDict != {} else -8888),
+                        'S': _S,
                         'W': int(white_sum - excelDict[stock]['white'] if excelDict != {} else -8888),
                         'B': int(black_sum - excelDict[stock]['black'] if excelDict != {} else -8888),
                         'open_price': f'{round(t_open_pct(data) * 100, 2)}%',

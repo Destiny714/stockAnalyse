@@ -276,7 +276,7 @@ def rule21(stock, data: List[dataModel]):
         if data[-1].firstLimitTime() < matchTime:
             range20 = data[-21:-1]
             range30 = data[-31:-1]
-            if sum([_.close() for _ in range20]) / 20 > sum([_.close() for _ in range30]) / 30:
+            if sum([_.close() for _ in range20]) / 20 < sum([_.close() for _ in range30]) / 30:
                 return True
 
 
