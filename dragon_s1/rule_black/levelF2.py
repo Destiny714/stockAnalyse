@@ -277,6 +277,14 @@ def rule22(stock, data: List[dataModel]):
     return True
 
 
+def rule23(stock, data: List[dataModel]):
+    for i in range(2):
+        if t_limit(stock, data, i):
+            return False
+    if data[-1].concentration() - data[-2].concentration() > 0.02:
+        return True
+
+
 class levelF2:
     def __init__(self, stock: str, data: List[dataModel], virtual=None):
         self.level = 'F2'
@@ -311,4 +319,5 @@ class levelF2:
         self.shot_rule.append(20) if rule20(self.stock, self.data) else self.fail_rule.append(20)
         self.shot_rule.append(21) if rule21(self.stock, self.data) else self.fail_rule.append(21)
         self.shot_rule.append(22) if rule22(self.stock, self.data) else self.fail_rule.append(22)
+        self.shot_rule.append(23) if rule23(self.stock, self.data) else self.fail_rule.append(23)
         return self.result()

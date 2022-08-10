@@ -421,6 +421,30 @@ def rule32(stock, data: List[dataModel]):
                     return True
 
 
+def rule33(stock, data: List[dataModel]):
+    if t_limit(stock, data, 2):
+        return False
+    for i in range(2):
+        if not t_limit(stock, data, i):
+            return False
+        if t_open_pct(data, i) >= 0.03:
+            return False
+    if data[-1].turnover() > data[-2].turnover():
+        return True
+
+
+def rule34(stock, data: List[dataModel]):
+    if t_limit(stock, data, 2):
+        return False
+    for i in range(2):
+        if not t_limit(stock, data, i):
+            return False
+    if data[-1].turnover() > data[-2].turnover():
+        matchTime = dateHandler.joinTimeToStamp(data[-2].date(), '09:50:00')
+        if data[-2].firstLimitTime() < matchTime:
+            return True
+
+
 class levelF4:
     def __init__(self, stock: str, data: List[dataModel], virtual=None):
         self.level = 'F4'
@@ -466,4 +490,6 @@ class levelF4:
         self.shot_rule.append(30) if rule30(self.stock, self.data) else self.fail_rule.append(30)
         self.shot_rule.append(31) if rule31(self.stock, self.data) else self.fail_rule.append(31)
         self.shot_rule.append(32) if rule32(self.stock, self.data) else self.fail_rule.append(32)
+        self.shot_rule.append(33) if rule33(self.stock, self.data) else self.fail_rule.append(33)
+        self.shot_rule.append(34) if rule34(self.stock, self.data) else self.fail_rule.append(34)
         return self.result()

@@ -103,14 +103,16 @@ def rule8(stock, data: List[dataModel]):
                 return True
 
 
-def rule9(stock, data: List[dataModel]):
+def rule9(stock, data: List[dataModel], virtual=None):
     if not t_limit(stock, data, 1):
         return False
     if not t_limit(stock, data, 2):
         return False
     for i in range(2, 4):
         if t_open_pct(data, i - 1) < -0.04:
-            return True
+            gemData = collectData('399006', dateRange=5, aimDate=data[-i if virtual is None else -i - 1].date())
+            if t_low_pct(gemData) > -0.005:
+                return True
 
 
 def rule10(stock, data: List[dataModel]):
@@ -162,12 +164,13 @@ def rule13(data: List[dataModel]):
 
 
 def rule14(data: List[dataModel]):
-    flag = True
-    for i in range(1, 11):
-        if t_high_pct(data, i - 1) > 0.05:
-            flag = False
-            break
-    return flag
+    try:
+        for i in range(1, 31):
+            if t_high_pct(data, i - 1) > 0.05:
+                return False
+        return True
+    except:
+        return False
 
 
 def rule15(stock, data: List[dataModel]):
@@ -289,11 +292,11 @@ def rule23(data: List[dataModel]):
 
 def rule24(data: List[dataModel]):
     try:
-        range30 = data[-31:-1]
-        avg30 = sum([_.close() for _ in range30]) / 30
+        range55 = data[-56:-1]
+        avg55 = sum([_.close() for _ in range55]) / 55
         count = 0
         for i in range(1, 6):
-            if data[-i - 1].close() < avg30:
+            if data[-i - 1].close() < avg55:
                 count += 1
             if count >= 2:
                 return True
@@ -385,7 +388,7 @@ class levelF1:
         self.shot_rule.append(6) if rule6(self.data) else self.fail_rule.append(6)
         self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)
         self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
-        self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
+        self.shot_rule.append(9) if rule9(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.stock, self.data) else self.fail_rule.append(10)
         self.shot_rule.append(11) if rule11(self.stock, self.data) else self.fail_rule.append(11)
         self.shot_rule.append(12) if rule12(self.stock, self.data) else self.fail_rule.append(12)

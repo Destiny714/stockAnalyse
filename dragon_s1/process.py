@@ -17,7 +17,7 @@ from rule_white import level1, level2, level3, level4, level5, levelA1, levelA2,
 from common.collect_data import collectData, t_open_pct, limit_height, t_limit
 
 if __name__ == '__main__':
-    stocks = concurrentActions.initStock(needReload=False, extra=False)
+    stocks = concurrentActions.initStock(needReload=False, extra=True)
     tradeDays = databaseApi.Mysql().selectTradeDate()
     aimDates = [dateHandler.lastTradeDay()]
 
@@ -68,10 +68,10 @@ if __name__ == '__main__':
                 score += len(l3['detail']) * 3
                 score += len(l4['detail']) * 5
                 score += len(l5['detail']) * 8
-                score += len(lA1['detail']) * 4
-                score += len(lA2['detail']) * 4
-                score += len(lS1['detail']) * 6
-                score += len(lS2['detail']) * 6
+                score += len(lA1['detail']) * 3
+                score += len(lA2['detail']) * 3
+                score += len(lS1['detail']) * 5
+                score += len(lS2['detail']) * 5
                 score -= len(lF1['detail']) * 5
                 score -= len(lF2['detail']) * 5
                 score -= len(lF3['detail']) * 8

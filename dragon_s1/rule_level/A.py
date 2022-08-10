@@ -17,9 +17,9 @@ def rule2(height: int, white: int, black: int):
             return True
 
 
-def rule3(height: int, score: int, T1S: int, black: int, S: int):
+def rule3(height: int, T1S: int, black: int, S: int):
     if height > 1 and S > 40:
-        if T1S > score and black < 2:
+        if T1S > 80 and black < 2:
             return True
 
 
@@ -45,7 +45,7 @@ def rule6(height: int, score: int, T1S: int, T1F: int, black: int, white: int):
 
 def rule7(height: int, score: int, T1S: int, black: int, white: int):
     if height == 1 and score > 55:
-        if T1S > score and black == 0:
+        if T1S - score > 10 and black == 0:
             if white > 20:
                 return True
 
@@ -65,6 +65,26 @@ def rule9(height: int, score: int, T1S: int, T1F: int, black: int, white: int, t
                     return True
 
 
+def rule10(height: int, score: int, T1S: int, black: int, white: int, t1isLimit: bool, S: int):
+    if height < 2 and S > 30:
+        if white > 20 and score > 50:
+            if T1S > score and black < 2:
+                return not t1isLimit
+
+
+def rule11(height: int, score: int, T1S: int, black: int, white: int, t1isLimit: bool, S: int):
+    if height < 2 and S > 20:
+        if white > 20 and T1S - score > 10:
+            if black < 2:
+                return not t1isLimit
+
+
+def rule12(height: int, score: int, black: int, white: int):
+    if height > 3 and score > 70:
+        if white > 25 and black < 2:
+            return True
+
+
 class ruleA:
 
     def __init__(self, height: int, score: int, T1S: int, T1F: int, black: int, white: int, S: int, t1isLimit: bool):
@@ -82,7 +102,7 @@ class ruleA:
             return True
         if rule2(self.height, self.white, self.black):
             return True
-        if rule3(self.height, self.score, self.T1S, self.black, self.S):
+        if rule3(self.height, self.T1S, self.black, self.S):
             return True
         if rule4(self.height, self.score, self.T1S, self.black):
             return True
@@ -95,4 +115,10 @@ class ruleA:
         if rule8(self.height, self.score, self.T1S, self.T1F, self.black, self.white):
             return True
         if rule9(self.height, self.score, self.T1S, self.T1F, self.black, self.white, self.t1isLimit):
+            return True
+        if rule10(self.height, self.score, self.T1S, self.black, self.white, self.t1isLimit, self.S):
+            return True
+        if rule11(self.height, self.score, self.T1S, self.black, self.white, self.t1isLimit, self.S):
+            return True
+        if rule12(self.height, self.score, self.black, self.white):
             return True

@@ -225,7 +225,7 @@ def rule17(data: List[dataModel], virtual=None):
     for i in range(1, 5):
         if t_open_pct(data, i - 1) > 0.09 and t_low_pct(data, i - 1) < 0.03:
             gemData = collectData('399006', dateRange=5, aimDate=data[-i if virtual is None else -i - 1].date())
-            if t_open_pct(gemData) > -0.005:
+            if t_low_pct(gemData) > -0.005:
                 return True
 
 
