@@ -145,13 +145,6 @@ def rule11(stock, data: List[dataModel]):
                 return True
 
 
-def rule12(data: List[dataModel]):
-    start = data[-9].close()
-    close = data[-1].close()
-    if (close - start) / start > 0.9:
-        return True
-
-
 def rule13(stock, data: List[dataModel]):
     flag = False
     for i in range(1, 6):
@@ -285,6 +278,16 @@ def rule23(stock, data: List[dataModel]):
         return True
 
 
+def rule24(stock, data: List[dataModel]):
+    if t_limit(stock, data, 1):
+        return False
+    if not t_limit(stock, data):
+        return False
+    matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:40:00')
+    if data[-1].firstLimitTime() < matchTime:
+        return True
+
+
 class levelF2:
     def __init__(self, stock: str, data: List[dataModel], virtual=None):
         self.level = 'F2'
@@ -308,7 +311,6 @@ class levelF2:
         self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.stock, self.data) else self.fail_rule.append(10)
         self.shot_rule.append(11) if rule11(self.stock, self.data) else self.fail_rule.append(11)
-        self.shot_rule.append(12) if rule12(self.data) else self.fail_rule.append(12)
         self.shot_rule.append(13) if rule13(self.stock, self.data) else self.fail_rule.append(13)
         self.shot_rule.append(14) if rule14(self.stock, self.data) else self.fail_rule.append(14)
         self.shot_rule.append(15) if rule15(self.stock, self.data) else self.fail_rule.append(15)
@@ -320,4 +322,5 @@ class levelF2:
         self.shot_rule.append(21) if rule21(self.stock, self.data) else self.fail_rule.append(21)
         self.shot_rule.append(22) if rule22(self.stock, self.data) else self.fail_rule.append(22)
         self.shot_rule.append(23) if rule23(self.stock, self.data) else self.fail_rule.append(23)
+        self.shot_rule.append(24) if rule24(self.stock, self.data) else self.fail_rule.append(24)
         return self.result()

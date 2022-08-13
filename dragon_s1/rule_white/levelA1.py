@@ -10,7 +10,7 @@ from common.collect_data import dataModel, t_limit
 
 def rule1(data: List[dataModel]):
     d = data[-1]
-    if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() > 0.7:
+    if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() > 0.65:
         if d.buy_elg_vol() > d.sell_elg_vol():
             if d.buy_elg_vol() + d.buy_lg_vol() > d.sell_elg_vol() + d.sell_lg_vol():
                 return True
@@ -26,7 +26,7 @@ def rule2(data: List[dataModel]):
 
 def rule3(data: List[dataModel]):
     d = data[-1]
-    if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() > 0.4:
+    if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() > 0.45:
         if d.buy_elg_vol() > d.sell_elg_vol():
             if d.buy_elg_vol() + d.buy_lg_vol() > d.sell_elg_vol() + d.sell_lg_vol():
                 return True
@@ -34,7 +34,7 @@ def rule3(data: List[dataModel]):
 
 def rule4(data: List[dataModel]):
     d = data[-1]
-    if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() > 0.3:
+    if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() > 0.35:
         if d.buy_elg_vol() > d.sell_elg_vol():
             if d.buy_elg_vol() + d.buy_lg_vol() > d.sell_elg_vol() + d.sell_lg_vol():
                 return True

@@ -166,7 +166,7 @@ def rule13(data: List[dataModel]):
 def rule14(data: List[dataModel]):
     try:
         for i in range(1, 31):
-            if t_high_pct(data, i - 1) > 0.05:
+            if t_high_pct(data, i - 1) > 0.06:
                 return False
         return True
     except:

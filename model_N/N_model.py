@@ -8,8 +8,8 @@ import sys
 import warnings
 
 warnings.filterwarnings('ignore')
-
-sys.path.append(os.getcwd().replace('/model_N', ''))
+#
+# sys.path.append(os.getcwd().replace('/model_N', ''))
 
 import rules
 from common import toolBox, dateHandler, concurrentActions, push

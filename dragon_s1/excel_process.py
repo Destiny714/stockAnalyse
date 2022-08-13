@@ -12,8 +12,7 @@ from common.toolBox import errorHandler
 cols = [
     'code', 'name', 'industry',
     'ptg_industry', 'level',
-    'AJ', 'INJ', 'height',
-    'white', 'black', 'score',
+    'AJ', 'height','white', 'black', 'score',
     'T1S', 'T1F', 'S', 'W', 'B',
     'open_price', 'date', 'details', 'T1S_detail', 'T1F_detail'
 ]
@@ -42,7 +41,7 @@ def readScoreFromExcel(date):
         sheet = data.sheet_by_index(0)
         for i in range(1, sheet.nrows):
             detail = sheet.row_values(i)
-            excelDict[detail[0]] = {'score': detail[10], 'white': detail[8], 'black': detail[9]}
+            excelDict[detail[0]] = {'score': detail[9], 'white': detail[7], 'black': detail[8]}
     except Exception as e:
         errorHandler(e)
     return excelDict

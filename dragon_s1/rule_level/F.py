@@ -42,16 +42,22 @@ def rule7(score: int, T1S: int, black: int):
             return True
 
 
+def rule8(score: int, height: int, T1S: int):
+    if height > 0:
+        if score / height < 15 and T1S / height < 15:
+            return True
+
+
 class ruleF:
 
     def __init__(self, height: int, score: int, T1S: int, T1F: int, white: int, black: int, S: int):
         self.S = S
-        self.height = height
-        self.score = score
         self.T1S = T1S
         self.T1F = T1F
         self.white = white
         self.black = black
+        self.score = score
+        self.height = height
 
     def filter(self):
         if rule1(self.height, self.score):
@@ -67,4 +73,6 @@ class ruleF:
         if rule6(self.white, self.black):
             return True
         if rule7(self.score, self.T1S, self.black):
+            return True
+        if rule8(self.score, self.height, self.T1S):
             return True

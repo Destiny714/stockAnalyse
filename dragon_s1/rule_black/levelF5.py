@@ -18,8 +18,9 @@ def rule1(data: List[dataModel]):
 
 
 def rule2(stock, data: List[dataModel]):
-    if not t_limit(stock, data):
-        return False
+    for i in range(2):
+        if not t_limit(stock, data, i):
+            return False
     matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '10:30:00')
     if data[-1].firstLimitTime() <= matchTime:
         return False
@@ -59,7 +60,10 @@ def rule5(data: List[dataModel]):
         return True
 
 
-def rule6(data: List[dataModel]):
+def rule6(stock, data: List[dataModel]):
+    for i in range(2):
+        if not t_limit(stock, data, i):
+            return False
     d = data[-2]
     if d.buy_elg_vol() + d.buy_lg_vol() < d.sell_elg_vol() + d.sell_lg_vol():
         if d.buy_elg_vol() < d.sell_elg_vol():
@@ -86,5 +90,5 @@ class levelF5:
         self.shot_rule.append(3) if rule3(self.data) else self.fail_rule.append(3)
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         self.shot_rule.append(5) if rule5(self.data) else self.fail_rule.append(5)
-        self.shot_rule.append(6) if rule6(self.data) else self.fail_rule.append(6)
+        self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
         return self.result()

@@ -410,15 +410,18 @@ def rule31(stock, data: List[dataModel]):
 
 
 def rule32(stock, data: List[dataModel]):
-    for i in range(3, 63):
-        if not t_limit(stock, data, i - 1):
-            continue
-        if t_limit(stock, data, i - 2):
-            continue
-        if data[-i + 1].turnover() > 1.5 * data[-1].turnover():
-            if data[-i + 1].high() > data[-1].close():
-                if t_limit(stock, data):
-                    return True
+    try:
+        for i in range(3, 93):
+            if not t_limit(stock, data, i):
+                continue
+            if t_limit(stock, data, i - 1):
+                continue
+            if data[-i].turnover() > 0.8 * data[-1].turnover():
+                if data[-i].high() * 1.02 > data[-1].close():
+                    if t_limit(stock, data):
+                        return True
+    except:
+        return False
 
 
 def rule33(stock, data: List[dataModel]):
@@ -440,9 +443,48 @@ def rule34(stock, data: List[dataModel]):
         if not t_limit(stock, data, i):
             return False
     if data[-1].turnover() > data[-2].turnover():
-        matchTime = dateHandler.joinTimeToStamp(data[-2].date(), '09:50:00')
+        matchTime = dateHandler.joinTimeToStamp(data[-2].date(), '09:40:00')
         if data[-2].firstLimitTime() < matchTime:
             return True
+
+
+def rule35(stock, data: List[dataModel]):
+    try:
+        for i in range(3, 93):
+            if not t_limit(stock, data, i):
+                continue
+            if t_limit(stock, data, i - 1):
+                continue
+            if data[-i].turnover() > 0.8 * data[-1].turnover():
+                if data[-i].high() * 1.02 > data[-1].close():
+                    if not t_limit(stock, data):
+                        continue
+                    if t_limit(stock, data, 1):
+                        continue
+                    if data[-1].limitOpenTime() > 3:
+                        return True
+    except:
+        return False
+
+
+def rule36(stock, data: List[dataModel]):
+    try:
+        for i in range(3, 93):
+            if not t_limit(stock, data, i):
+                continue
+            if t_limit(stock, data, i - 1):
+                continue
+            if data[-i].turnover() > 0.8 * data[-1].turnover():
+                if data[-i].high() * 1.02 > data[-1].close():
+                    if not t_limit(stock, data):
+                        continue
+                    if t_limit(stock, data, 1):
+                        continue
+                    matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:40:00')
+                    if data[-1].firstLimitTime() < matchTime:
+                        return True
+    except:
+        return False
 
 
 class levelF4:
@@ -492,4 +534,6 @@ class levelF4:
         self.shot_rule.append(32) if rule32(self.stock, self.data) else self.fail_rule.append(32)
         self.shot_rule.append(33) if rule33(self.stock, self.data) else self.fail_rule.append(33)
         self.shot_rule.append(34) if rule34(self.stock, self.data) else self.fail_rule.append(34)
+        self.shot_rule.append(35) if rule35(self.stock, self.data) else self.fail_rule.append(35)
+        self.shot_rule.append(36) if rule36(self.stock, self.data) else self.fail_rule.append(36)
         return self.result()

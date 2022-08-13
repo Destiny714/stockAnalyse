@@ -143,6 +143,17 @@ def rule9(stock, data: List[dataModel]):
             return True
 
 
+def rule10(stock, data: List[dataModel]):
+    for i in range(1, 11):
+        if not t_limit(stock, data, i):
+            continue
+        if t_limit(stock, data, i + 1):
+            continue
+        if t_open_pct(data, i - 1) <= 0.045:
+            continue
+        # TODO:930
+
+
 def rule11(stock, data: List[dataModel]):
     for i in range(1, 4):
         if not t_limit(stock, data, i - 1):

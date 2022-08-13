@@ -109,10 +109,10 @@ def rule7(stock, data: List[dataModel]):
 def rule8(stock, data: List[dataModel]):
     if not t_limit(stock, data):
         return False
-    for i in range(3):
+    for i in range(4):
         if t_limit(stock, data, i + 1):
             return False
-    if data[-2].close() > data[-3].close() > data[-4].close():
+    if data[-2].close() > data[-3].close() > data[-4].close() > data[-5].close():
         return True
 
 
@@ -194,16 +194,6 @@ def rule14(data: List[dataModel]):
     range20 = data[-20:]
     range30 = data[-30:]
     if max([_.close() for _ in range20]) < sum([_.close() for _ in range30]) / 30:
-        return True
-
-
-def rule15(stock, data: List[dataModel]):
-    if t_limit(stock, data, 1):
-        return False
-    if not t_limit(stock, data):
-        return False
-    range20 = data[-21:-1]
-    if data[-1].turnover() > max([_.turnover() for _ in range20]) * 4:
         return True
 
 
@@ -372,7 +362,6 @@ class levelF3:
         self.shot_rule.append(12) if rule12(self.stock, self.data) else self.fail_rule.append(12)
         self.shot_rule.append(13) if rule13(self.stock, self.data) else self.fail_rule.append(13)
         self.shot_rule.append(14) if rule14(self.data) else self.fail_rule.append(14)
-        self.shot_rule.append(15) if rule15(self.stock, self.data) else self.fail_rule.append(15)
         self.shot_rule.append(16) if rule16(self.stock, self.data) else self.fail_rule.append(16)
         self.shot_rule.append(17) if rule17(self.data, self.virtual) else self.fail_rule.append(17)
         self.shot_rule.append(18) if rule18(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(18)

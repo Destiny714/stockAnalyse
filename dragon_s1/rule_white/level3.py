@@ -369,6 +369,72 @@ def rule32(stock, data: List[dataModel]):
         return True
 
 
+def rule33(data: List[dataModel]):
+    try:
+        badCount = 0
+        for i in range(50):
+            j = i + 1
+            ma = [data[-_] for _ in range(j, j + 60)]
+            avg = sum(_.close() for _ in ma) / len(ma)
+            if data[-i - 1].close() <= avg:
+                badCount += 1
+            if badCount > 4:
+                return False
+        return True
+    except:
+        return False
+
+
+def rule34(data: List[dataModel]):
+    try:
+        badCount = 0
+        for i in range(40):
+            j = i + 1
+            ma = [data[-_] for _ in range(j, j + 30)]
+            avg = sum(_.close() for _ in ma) / len(ma)
+            if data[-i - 1].close() <= avg:
+                badCount += 1
+            if badCount > 4:
+                return False
+        return True
+    except:
+        return False
+
+
+def rule35(data: List[dataModel]):
+    try:
+        badCount = 0
+        for i in range(30):
+            j = i + 1
+            ma = [data[-_] for _ in range(j, j + 20)]
+            avg = sum(_.close() for _ in ma) / len(ma)
+            if data[-i - 1].close() <= avg:
+                badCount += 1
+            if badCount > 4:
+                return False
+        return True
+    except:
+        return False
+
+
+def rule36(stock, data: List[dataModel]):
+    try:
+        badCount = 0
+        for i in range(15):
+            if t_limit(stock, data, i):
+                continue
+            j = i + 1
+            ma = [data[-_] for _ in range(j, j + 20)]
+            avg = sum(_.close() for _ in ma) / len(ma)
+            if data[-i - 1].close() < avg:
+                badCount += 1
+            if badCount > 1:
+                return False
+        return True
+    except:
+        return False
+
+
 class level3:
     def __init__(self, stock: str, data: List[dataModel], virtual=None):
         self.level = 3
@@ -414,4 +480,8 @@ class level3:
         self.shot_rule.append(30) if rule30(self.stock, self.data) else self.fail_rule.append(30)
         self.shot_rule.append(31) if rule31(self.stock, self.data) else self.fail_rule.append(31)
         self.shot_rule.append(32) if rule32(self.stock, self.data) else self.fail_rule.append(32)
+        self.shot_rule.append(33) if rule33(self.data) else self.fail_rule.append(33)
+        self.shot_rule.append(34) if rule34(self.data) else self.fail_rule.append(34)
+        self.shot_rule.append(35) if rule35(self.data) else self.fail_rule.append(35)
+        self.shot_rule.append(36) if rule36(self.stock, self.data) else self.fail_rule.append(36)
         return self.result()
