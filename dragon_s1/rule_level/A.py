@@ -32,30 +32,31 @@ def rule4(height: int, score: int, T1S: int, black: int):
             return True
 
 
-def rule5(height: int, score: int, T1S: int, T1F: int, black: int, white: int):
-    if height == 1 and score > 60:
-        if T1S > score and T1F > score:
-            if black == 0 and white > 20:
-                return True
+def rule5(height: int, score: int, T1S: int, T1F: int, black: int, white: int, S: int, aj: float):
+    if height == 1 and white > 30:
+        if T1S - score > 10 and T1F > score:
+            if black == 0:
+                if S > 0 and aj < 15:
+                    return True
 
 
 def rule6(height: int, score: int, T1S: int, black: int, white: int):
-    if height == 1 and score > 70:
+    if height == 1 and score > 60:
         if T1S > score:
             if black < 2 and white > 20:
                 return True
 
 
-def rule7(height: int, score: int, T1S: int, black: int, white: int):
-    if height == 1 and score > 60:
-        if T1S - score > 10 and black == 0:
-            if white > 20:
+def rule7(height: int, score: int, T1S: int, T1F: int, black: int, white: int):
+    if height == 1 and score > 40:
+        if T1S - score > 20 and T1F > score:
+            if white > 20 and black == 0:
                 return True
 
 
 def rule8(height: int, score: int, T1S: int, T1F: int, black: int, white: int, aj: float):
-    if height == 0 and score > 70:
-        if T1S > score and T1F > score:
+    if height == 0 and score > 50:
+        if T1S - score > 10 and T1F > score and T1S > score:
             if black < 2 and white > 20:
                 if aj < 20:
                     return True
@@ -95,9 +96,9 @@ def rule11(height: int, score: int, T1S: int, T1F: int, black: int, white: int, 
                             return True
 
 
-def rule12(height: int, score: int, T1S: int, black: int, white: int):
-    if height > 2 and 70 < score < T1S:
-        if white > 25 and black < 2:
+def rule12(height: int, score: int, black: int, white: int):
+    if height > 2 and score > 80:
+        if white > 30 and black < 2:
             return True
 
 
@@ -125,11 +126,11 @@ class ruleA:
             return True
         if rule4(self.height, self.score, self.T1S, self.black):
             return True
-        if rule5(self.height, self.score, self.T1S, self.T1F, self.black, self.white):
+        if rule5(self.height, self.score, self.T1S, self.T1F, self.black, self.white, self.S, self.aj):
             return True
         if rule6(self.height, self.score, self.T1S, self.black, self.white):
             return True
-        if rule7(self.height, self.score, self.T1S, self.black, self.white):
+        if rule7(self.height, self.score, self.T1S, self.T1F, self.black, self.white):
             return True
         if rule8(self.height, self.score, self.T1S, self.T1F, self.black, self.white, self.aj):
             return True
@@ -141,5 +142,5 @@ class ruleA:
         if rule11(self.height, self.score, self.T1S, self.T1F, self.black, self.white, self.data, self.S, self.stock,
                   self.aj):
             return True
-        if rule12(self.height, self.score, self.T1S, self.black, self.white):
+        if rule12(self.height, self.score, self.black, self.white):
             return True

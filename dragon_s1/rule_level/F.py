@@ -53,9 +53,22 @@ def rule9(F5: int):
         return True
 
 
+def rule10(score: int, height: int, T1S: int, hitPlus: bool):
+    if height > 1 and score > T1S:
+        if not hitPlus:
+            return True
+
+
+def rule11(score: int, height: int, T1S: int, black: int):
+    if height > 1 and black > 2:
+        if score < T1S:
+            return True
+
+
 class ruleF:
 
-    def __init__(self, height: int, score: int, T1S: int, T1F: int, white: int, black: int, S: int, F5: int):
+    def __init__(self, height: int, score: int, T1S: int, T1F: int, white: int, black: int, S: int, F5: int,
+                 hitPlus: bool):
         self.S = S
         self.F5 = F5
         self.T1S = T1S
@@ -64,6 +77,7 @@ class ruleF:
         self.black = black
         self.score = score
         self.height = height
+        self.hitPlus = hitPlus
 
     def filter(self):
         if rule1(self.height, self.score):
@@ -83,4 +97,8 @@ class ruleF:
         if rule8(self.score, self.height, self.T1S):
             return True
         if rule9(self.F5):
+            return True
+        if rule10(self.score, self.height, self.T1S, self.hitPlus):
+            return True
+        if rule11(self.score, self.height, self.T1S, self.black):
             return True

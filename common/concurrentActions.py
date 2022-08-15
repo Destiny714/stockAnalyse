@@ -90,18 +90,18 @@ def createTableIfNotExist(stockList):
 
     def checkOne(stock):
         mysql = Mysql()
+        print(f'create {stock}')
         mysql.createTableForStock(stock)
 
     toolBox.thread_pool_executor(checkOne, stockList)
     print('stock table update done')
 
 
-def updateGem():
-    start = Mysql().selectGemUpdateDate()
-    if int(start) < int(dateHandler.lastTradeDay()):
-        data = Tushare().indexData(start=str(int(start) + 1), end=dateHandler.lastTradeDay())
-        for d in data:
-            databaseApi.Mysql().insertOneRecord(d)
+def updateShIndex(start=dateHandler.lastTradeDay(), end=dateHandler.lastTradeDay()):
+    data = Tushare().indexData(start=start, end=end)
+    for d in data:
+        print(d['trade_date'])
+        databaseApi.Mysql().insertShIndex(d)
 
 
 def updateMoneyFlow(aimDate=dateHandler.lastTradeDay()):
@@ -136,7 +136,6 @@ def updateChipDetail(aimDate=dateHandler.lastTradeDay()):
 
 
 def updateTimeDataToday():
-    print(f'updating time data today')
     errs = []
     stocks = Mysql().selectAllStock()
 
@@ -152,6 +151,7 @@ def updateTimeDataToday():
     checkDate = extApi.getTimeDataToday('399001')['date']
     if checkDate != dateHandler.lastTradeDay():
         return
+    print(f'updating {checkDate} time data')
     toolBox.thread_pool_executor(updateOne, stocks, 20)
     if len(errs) != 0:
         toolBox.thread_pool_executor(updateOne, errs, 20)
@@ -186,11 +186,12 @@ def initStock(needReload: bool = True, extra: bool = False):
     mysql = databaseApi.Mysql()
     stocks = mysql.selectAllStock()
     if needReload:
-        updateGem()
+        updateShIndex()
         updateStockList()
+        oldStocks = stocks
         stocks = mysql.selectAllStock()
         stockDetailVersion = mysql.selectDetailUpdateDate()
-        createTableIfNotExist(stocks)
+        createTableIfNotExist([stock for stock in stocks if stock not in oldStocks])
         mysql.stockListUpdateDate(dateHandler.lastTradeDay())
         if int(stockDetailVersion) < int(dateHandler.lastTradeDay()):
             fullDates = mysql.selectTradeDate()

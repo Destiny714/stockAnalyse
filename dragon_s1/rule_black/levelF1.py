@@ -110,7 +110,7 @@ def rule9(stock, data: List[dataModel], virtual=None):
         return False
     for i in range(2, 4):
         if t_open_pct(data, i - 1) < -0.04:
-            gemData = collectData('399006', dateRange=5, aimDate=data[-i if virtual is None else -i - 1].date())
+            gemData = collectData('ShIndex', dateRange=5, aimDate=data[-i if virtual is None else -i - 1].date())
             if t_low_pct(gemData) > -0.005:
                 return True
 
@@ -248,7 +248,7 @@ def rule20(stock, data: List[dataModel], virtual=None):
     if not t_limit(stock, data, 1):
         return False
     if data[-1].lastLimitTime() > data[-2].lastLimitTime() + dateHandler.timeDelta(data[-2].date(), data[-1].date()):
-        gemData = collectData('399006', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
+        gemData = collectData('ShIndex', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
         if t_low_pct(gemData) > -0.005:
             return True
 
@@ -277,7 +277,9 @@ def rule22(stock, data: List[dataModel]):
             continue
         matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '10:30:00')
         if data[-i - 1].lastLimitTime() > matchTime:
-            return True
+            d = data[-i]
+            if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
+                return True
 
 
 def rule23(data: List[dataModel]):
@@ -387,7 +389,7 @@ def rule31(data: List[dataModel]):
             d = data[-i - 1]
             if d.close() > data[-1].close():
                 count += 1
-            if count >= 50:
+            if count >= 80:
                 return True
     except:
         return False

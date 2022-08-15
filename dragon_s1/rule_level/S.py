@@ -33,9 +33,9 @@ def rule4(height: int, score: int, T1S: int, black: int, S: int):
 
 
 def rule5(height: int, score: int, T1S: int, T1F: int, black: int, white: int, S: int, aj: float):
-    if height == 1 and score > 40:
+    if height == 1 and T1S - score > 10:
         if T1S > score and T1F > score:
-            if black == 0 and white > 25:
+            if black == 0 and white > 40:
                 if S > 0 and aj < 15:
                     return True
 
@@ -49,16 +49,16 @@ def rule6(height: int, score: int, T1S: int, T1F: int, black: int, white: int, S
 
 
 def rule7(height: int, score: int, T1S: int, T1F: int, black: int, white: int, S: int, aj: float):
-    if height == 1 and score > 65:
-        if (T1S - score) > 10 and T1F > score:
+    if height == 1 and score > 50:
+        if (T1S - score) > 20 and T1F > score:
             if white > 25 and black == 0:
                 if S > 0 and aj < 15:
                     return True
 
 
 def rule8(height: int, score: int, T1S: int, T1F: int, black: int, white: int, S: int, aj: float):
-    if height == 0 and score > 70:
-        if (T1S - score) > 10 and T1F > score:
+    if height == 0 and score > 60:
+        if (T1S - score) > 10 and T1F > score and T1F > 55:
             if black == 0 and white > 25:
                 if S > 0 and aj < 15:
                     return True
@@ -100,11 +100,10 @@ def rule11(height: int, score: int, T1S: int, T1F: int, black: int, white: int, 
                             return True
 
 
-def rule12(height: int, score: int, T1S: int, black: int, white: int):
-    if height > 2 and score > 80:
-        if T1S > score:
-            if white > 30 and black == 0:
-                return True
+def rule12(height: int, score: int, black: int, white: int):
+    if height > 2 and score > 90:
+        if white > 35 and black == 0:
+            return True
 
 
 class ruleS:
@@ -148,5 +147,5 @@ class ruleS:
         if rule11(self.height, self.score, self.T1S, self.T1F, self.black, self.white, self.data, self.S, self.stock,
                   self.aj):
             return True
-        if rule12(self.height, self.score, self.T1S, self.black, self.white):
+        if rule12(self.height, self.score, self.black, self.white):
             return True

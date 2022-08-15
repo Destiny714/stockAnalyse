@@ -363,40 +363,31 @@ def rule26(data: List[dataModel]):
         return True
 
 
-def rule27(data: List[dataModel]):
-    try:
-        range30 = data[-31:-1]
-        avg30 = sum([_.close() for _ in range30]) / 30
-        count = 0
-        for i in range(1, 51):
-            if data[-i - 1].close() > avg30:
-                count += 1
-            if count >= 40:
-                return True
-    except:
-        return False
-
-
-def rule28(data: List[dataModel]):
-    try:
-        range20 = data[-21:-1]
-        avg20 = sum([_.close() for _ in range20]) / 20
-        count = 0
-        for i in range(1, 31):
-            if data[-i - 1].close() > avg20:
-                count += 1
-            if count >= 25:
-                return True
-    except:
-        return False
-
-
 def rule29(data: List[dataModel]):
     for i in range(3):
         d = data[-i - 1]
         if not ((d.buy_elg_vol() + d.buy_lg_vol()) > (d.sell_elg_vol() + d.sell_lg_vol())):
             return False
     return True
+
+
+def rule30(data: List[dataModel]):
+    try:
+        for i in range(30):
+            j = i + 1
+            ma20 = [data[-_] for _ in range(j, j + 20)]
+            ma30 = [data[-_] for _ in range(j, j + 30)]
+            ma60 = [data[-_] for _ in range(j, j + 60)]
+            avg20 = sum(_.close() for _ in ma20) / len(ma20)
+            avg30 = sum(_.close() for _ in ma30) / len(ma30)
+            avg60 = sum(_.close() for _ in ma60) / len(ma60)
+            if not (avg30 > avg60):
+                return False
+            if not (avg20 > avg30):
+                return False
+        return True
+    except:
+        return False
 
 
 class level4:
@@ -436,7 +427,6 @@ class level4:
         self.shot_rule.append(24) if rule24(self.stock, self.data) else self.fail_rule.append(24)
         self.shot_rule.append(25) if rule25(self.stock, self.data) else self.fail_rule.append(25)
         self.shot_rule.append(26) if rule26(self.data) else self.fail_rule.append(26)
-        self.shot_rule.append(27) if rule27(self.data) else self.fail_rule.append(27)
-        self.shot_rule.append(28) if rule28(self.data) else self.fail_rule.append(28)
         self.shot_rule.append(29) if rule29(self.data) else self.fail_rule.append(29)
+        self.shot_rule.append(30) if rule30(self.data) else self.fail_rule.append(30)
         return self.result()

@@ -109,11 +109,12 @@ def rule7(stock, data: List[dataModel]):
 def rule8(stock, data: List[dataModel]):
     if not t_limit(stock, data):
         return False
-    for i in range(4):
+    for i in range(3):
         if t_limit(stock, data, i + 1):
             return False
-    if data[-2].close() > data[-3].close() > data[-4].close() > data[-5].close():
-        return True
+    if data[-2].close() > data[-3].close() > data[-4].close():
+        if data[-2].close() / data[-5].close() > 1.1:
+            return True
 
 
 def rule9(stock, data: List[dataModel]):
@@ -153,7 +154,7 @@ def rule11(stock, data: List[dataModel], virtual=None):
         return False
     matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
     if data[-1].firstLimitTime() > matchTime and data[-1].lastLimitTime() > matchTime:
-        gemData = collectData('399006', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
+        gemData = collectData('ShIndex', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
         if t_low_pct(gemData) > -0.005:
             return True
 
@@ -197,6 +198,13 @@ def rule14(data: List[dataModel]):
         return True
 
 
+def rule15(stock, data: List[dataModel]):
+    if t_limit(stock, data, 1):
+        return False
+    if data[-1].turnover() > (sum([_.turnover() for _ in data[-2:-32]]) / 30) * 4:
+        return True
+
+
 def rule16(stock, data: List[dataModel]):
     if t_limit(stock, data, 2):
         return False
@@ -214,9 +222,11 @@ def rule16(stock, data: List[dataModel]):
 def rule17(data: List[dataModel], virtual=None):
     for i in range(1, 5):
         if t_open_pct(data, i - 1) > 0.09 and t_low_pct(data, i - 1) < 0.03:
-            gemData = collectData('399006', dateRange=5, aimDate=data[-i if virtual is None else -i - 1].date())
+            gemData = collectData('ShIndex', dateRange=5, aimDate=data[-i if virtual is None else -i - 1].date())
             if t_low_pct(gemData) > -0.005:
-                return True
+                d = data[-i]
+                if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
+                    return True
 
 
 def rule18(stock, data: List[dataModel], virtual=None):
@@ -227,7 +237,7 @@ def rule18(stock, data: List[dataModel], virtual=None):
     if data[-1].limitOpenTime() <= 3:
         return False
     if data[-1].turnover() > 3 * data[-2].turnover():
-        gemData = collectData('399006', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
+        gemData = collectData('ShIndex', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
         if t_low_pct(gemData) > -0.005:
             return True
 
@@ -251,9 +261,11 @@ def rule20(stock, data: List[dataModel], virtual):
             return False
     if data[-1].limitOpenTime() <= 2:
         return False
-    gemData = collectData('399006', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
+    gemData = collectData('ShIndex', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
     if t_low_pct(gemData) > -0.005:
-        return True
+        d = data[-1]
+        if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
+            return True
 
 
 def rule21(stock, data: List[dataModel]):
@@ -330,13 +342,15 @@ def rule26(stock, data: List[dataModel], virtual=None):
             return False
     if data[-2].limitOpenTime() <= 2:
         return False
-    gemData = collectData('399006', dateRange=5, aimDate=data[-2 if virtual is None else -3].date())
+    gemData = collectData('ShIndex', dateRange=5, aimDate=data[-2 if virtual is None else -3].date())
     if t_low_pct(gemData) > -0.005:
         return True
 
 
 def rule27(stock, data: List[dataModel]):
     try:
+        if not t_limit(stock, data):
+            return False
         count = 0
         range90 = data[-90:]
         highPrice = max([_.high() for _ in range90])
@@ -353,6 +367,20 @@ def rule27(stock, data: List[dataModel]):
                 return True
     except:
         return False
+
+
+def rule28(data: List[dataModel], virtual=None):
+    count = 0
+    for i in range(5):
+        if t_open_pct(data, i) <= 0.09:
+            continue
+        if t_low_pct(data, i) >= 0.05:
+            continue
+        gemData = collectData('ShIndex', dateRange=5, aimDate=data[-i - 1 if virtual is None else -i - 2].date())
+        if t_low_pct(gemData) > -0.005:
+            count += 1
+        if count >= 2:
+            return True
 
 
 class levelF3:
@@ -382,6 +410,7 @@ class levelF3:
         self.shot_rule.append(12) if rule12(self.stock, self.data) else self.fail_rule.append(12)
         self.shot_rule.append(13) if rule13(self.stock, self.data) else self.fail_rule.append(13)
         self.shot_rule.append(14) if rule14(self.data) else self.fail_rule.append(14)
+        self.shot_rule.append(15) if rule15(self.stock, self.data) else self.fail_rule.append(15)
         self.shot_rule.append(16) if rule16(self.stock, self.data) else self.fail_rule.append(16)
         self.shot_rule.append(17) if rule17(self.data, self.virtual) else self.fail_rule.append(17)
         self.shot_rule.append(18) if rule18(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(18)
@@ -394,4 +423,5 @@ class levelF3:
         self.shot_rule.append(25) if rule25(self.stock, self.data) else self.fail_rule.append(25)
         self.shot_rule.append(26) if rule26(self.stock, self.data, self.virtual) else self.fail_rule.append(26)
         self.shot_rule.append(27) if rule27(self.stock, self.data) else self.fail_rule.append(27)
+        self.shot_rule.append(28) if rule28(self.data, virtual=self.virtual) else self.fail_rule.append(28)
         return self.result()

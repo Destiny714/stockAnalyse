@@ -12,7 +12,10 @@
 # sys.path.append(os.getcwd().replace('/model_N', ''))
 
 import rules
+import warnings
 from common import toolBox, dateHandler, concurrentActions, push
+
+warnings.filterwarnings('ignore')
 
 if __name__ == '__main__':
     aimDate = dateHandler.lastTradeDay()

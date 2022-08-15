@@ -46,7 +46,7 @@ def rule3(stock, data: List[dataModel], virtual=None):
     if data[-1].turnover() <= 3 * data[-2].turnover():
         return False
     if data[-1].firstLimitTime() > data[-2].firstLimitTime() + dateHandler.timeDelta(data[-2].date(), data[-1].date()):
-        gemData = collectData('399006', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
+        gemData = collectData('ShIndex', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
         if t_low_pct(gemData) > -0.005:
             return True
 

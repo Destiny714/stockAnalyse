@@ -162,7 +162,7 @@ def rule12(stock, data: List[dataModel], virtual=None):
     if not t_limit(stock, data):
         return False
     if data[-1].limitOpenTime() > 3:
-        gemData = collectData('399006', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
+        gemData = collectData('ShIndex', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
         if t_low_pct(gemData) > -0.005:
             return True
 
@@ -212,7 +212,9 @@ def rule16(stock, data: List[dataModel]):
         if not t_limit(stock, data, i):
             continue
         if data[-i - 1].limitOpenTime() > 3:
-            return True
+            d = data[-i - 1]
+            if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
+                return True
 
 
 def rule17(stock, data: List[dataModel]):
@@ -269,7 +271,7 @@ def rule21(stock, data: List[dataModel], virtual=None):
         return False
     if data[-1].lastLimitTime() <= data[-2].lastLimitTime() + dateHandler.timeDelta(data[-2].date(), data[-1].date()):
         return False
-    gemData = collectData('399006', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
+    gemData = collectData('ShIndex', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
     if t_low_pct(gemData) > -0.005:
         return True
 
@@ -290,7 +292,7 @@ def rule23(stock, data: List[dataModel]):
     for i in range(1, 4):
         if not t_limit(stock, data, i - 1):
             return False
-    if data[-2].turnover() >= data[-3].turnover():
+    if data[-2].turnover() <= data[-3].turnover():
         return False
     if data[-1].turnover() <= data[-2].turnover():
         return False
@@ -310,7 +312,7 @@ def rule24(stock, data: List[dataModel], virtual=None):
     if data[-2].limitOpenTime() <= 1:
         return False
     if data[-1].lastLimitTime() > data[-2].lastLimitTime() + dateHandler.timeDelta(data[-2].date(), data[-1].date()):
-        gemData = collectData('399006', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
+        gemData = collectData('ShIndex', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
         if t_low_pct(gemData) > -0.005:
             return True
 
@@ -450,7 +452,7 @@ def rule34(stock, data: List[dataModel]):
 
 def rule35(stock, data: List[dataModel]):
     try:
-        for i in range(3, 93):
+        for i in range(3, 153):
             if not t_limit(stock, data, i):
                 continue
             if t_limit(stock, data, i - 1):
@@ -469,7 +471,7 @@ def rule35(stock, data: List[dataModel]):
 
 def rule36(stock, data: List[dataModel]):
     try:
-        for i in range(3, 93):
+        for i in range(3, 153):
             if not t_limit(stock, data, i):
                 continue
             if t_limit(stock, data, i - 1):
@@ -490,13 +492,15 @@ def rule36(stock, data: List[dataModel]):
 def rule37(data: List[dataModel]):
     try:
         badCount = 0
-        for i in range(40):
+        for i in range(30):
             j = i + 1
-            ma = [data[-_] for _ in range(j, j + 30)]
-            avg = sum(_.close() for _ in ma) / len(ma)
-            if data[-i - 1].close() < avg:
+            ma30 = [data[-_] for _ in range(j, j + 30)]
+            ma60 = [data[-_] for _ in range(j, j + 60)]
+            avg30 = sum(_.close() for _ in ma30) / len(ma30)
+            avg60 = sum(_.close() for _ in ma60) / len(ma60)
+            if avg30 < avg60:
                 badCount += 1
-            if badCount >= 3:
+            if badCount >= 1:
                 return True
     except:
         return False
@@ -512,8 +516,26 @@ def rule38(stock, data: List[dataModel]):
         limitMinute = dateHandler.getMinute(limitTime)
         limitMinuteLast = dateHandler.lastMinute(limitMinute)
         time = data[-1].time()
-        if time[limitMinute] < time[limitMinuteLast] * 3:
+        if time[limitMinute] < time[limitMinuteLast] * 2:
             return True
+    except:
+        return False
+
+
+def rule39(data: List[dataModel], virtual=None):
+    try:
+        badCount = 0
+        for i in range(20):
+            j = i + 1
+            ma30 = [data[-_] for _ in range(j, j + 30)]
+            avg30 = sum(_.close() for _ in ma30) / len(ma30)
+            if data[-i - 1].close() < avg30:
+                gemData = collectData('ShIndex', dateRange=5,
+                                      aimDate=data[-i - 1 if virtual is None else -i - 2].date())
+                if t_low_pct(gemData) > -0.005:
+                    badCount += 1
+            if badCount >= 3:
+                return True
     except:
         return False
 
@@ -569,4 +591,5 @@ class levelF4:
         self.shot_rule.append(36) if rule36(self.stock, self.data) else self.fail_rule.append(36)
         self.shot_rule.append(37) if rule37(self.data) else self.fail_rule.append(37)
         self.shot_rule.append(38) if rule38(self.stock, self.data) else self.fail_rule.append(38)
+        self.shot_rule.append(39) if rule39(self.data, virtual=self.virtual) else self.fail_rule.append(39)
         return self.result()

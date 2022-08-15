@@ -20,7 +20,7 @@ from rule_white import level1, level2, level3, level4, level5, levelA1, levelA2,
 if __name__ == '__main__':
     stocks = concurrentActions.initStock(needReload=False, extra=False)
     tradeDays = databaseApi.Mysql().selectTradeDate()
-    aimDates = [dateHandler.lastTradeDay()]
+    aimDates = ['20220812','20220815']
 
 
     def process(aimDate):
@@ -86,12 +86,13 @@ if __name__ == '__main__':
                     T1F = virtualDict[stock]['f']
                     _S = int(score - excelDict[stock]['score'] if excelDict != {} else -8888)
                     AJ = round(data[-1].concentration() * 100, 2)
+                    hitPlus = (len(lA1['detail']) + len(lA2['detail']) + len(lS1['detail']) + len(lS2['detail']) > 0)
                     level = 'B'
                     if A.ruleA(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum, S=_S,
                                data=data, aj=AJ, stock=stock).filter():
                         level = 'A'
                     if F.ruleF(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum,
-                               S=_S, F5=len(lF5['detail'])).filter():
+                               S=_S, F5=len(lF5['detail']), hitPlus=hitPlus).filter():
                         level = 'F'
                     if S.ruleS(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum, S=_S,
                                data=data, aj=AJ, stock=stock).filter():

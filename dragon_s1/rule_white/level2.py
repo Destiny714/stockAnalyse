@@ -159,6 +159,14 @@ def rule18(stock, data: List[dataModel]):
         return False
 
 
+def rule19(stock, data: List[dataModel]):
+    if not t_limit(stock, data, 1):
+        range5 = data[-2:-7]
+        avg = sum([_.turnover() for _ in range5]) / 5
+        if avg < 5:
+            return True
+
+
 class level2:
     def __init__(self, stock: str, data: List[dataModel]):
         self.level = 2
@@ -189,4 +197,5 @@ class level2:
         self.shot_rule.append(16) if rule16(self.data) else self.fail_rule.append(16)
         self.shot_rule.append(17) if rule17(self.stock, self.data) else self.fail_rule.append(17)
         self.shot_rule.append(18) if rule18(self.stock, self.data) else self.fail_rule.append(18)
+        self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
         return self.result()

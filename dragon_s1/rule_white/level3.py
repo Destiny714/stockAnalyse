@@ -256,7 +256,7 @@ def rule22(stock, data: List[dataModel], virtual=None):
     if t_low_pct(data) <= -0.05:
         return False
     if t_open_pct(data) > 0.01:
-        gemData = collectData('399006', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
+        gemData = collectData('ShIndex', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
         if t_close_pct(gemData) < -0.02:
             return True
 

@@ -55,7 +55,7 @@ def rule3(data: List[dataModel], virtual=None):
         if t_low_pct(data, i - 1) <= -0.02:
             continue
         if t_open_pct(data, i - 1) > 0:
-            gemData = collectData('399006', dateRange=5, aimDate=data[-i if virtual is None else -i - 1].date())
+            gemData = collectData('ShIndex', dateRange=5, aimDate=data[-i if virtual is None else -i - 1].date())
             if t_open_pct(gemData) < -0.02:
                 return True
 

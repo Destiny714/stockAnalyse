@@ -40,7 +40,7 @@ class Tushare:
             details.append(data.iloc[i])
         return details
 
-    def indexData(self, start: str, end: str, code: str = '399006.SZ'):
+    def indexData(self, start: str, end: str, code: str = '000001.SH'):
         details = []
         data = self._instance.index_daily(ts_code=code, start_date=start, end_date=end)
         for i in range(len(data)):

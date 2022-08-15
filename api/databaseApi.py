@@ -85,13 +85,14 @@ class Mysql:
                     f"cost_85pct float default 0," \
                     f"cost_95pct float default 0," \
                     f"weight_avg float default 0," \
-                    f"winner_rate float default 0)"
+                    f"winner_rate float default 0," \
+                    f"time json NULL)"
         self.action(output=False)
 
     def selectExistTable(self):
         self.word = 'show tables'
         data = self.action(output=True)
-        dontDelete = ['stockList', 'tradeCalender', 'version', 'No399006', 'stockIndexList']
+        dontDelete = ['stockList', 'tradeCalender', 'version', 'stockIndexList', 'NoShIndex']
         return [_[0] for _ in data if _[0] not in dontDelete]
 
     def selectAllStock(self):
@@ -133,6 +134,13 @@ class Mysql:
 
     def insertOneRecord(self, data):
         self.word = f"INSERT ignore INTO No{str(data['ts_code']).split('.')[0]} " \
+                    f"(date,open,close,preClose,high,low,pctChange,volume,amount) VALUES " \
+                    f"('{data['trade_date']}',{data['open']},{data['close']},{data['pre_close']}," \
+                    f"{data['high']},{data['low']},{data['pct_chg']},{data['vol']},{data['amount']})"
+        self.action(output=False)
+
+    def insertShIndex(self, data):
+        self.word = f"INSERT ignore INTO NoShIndex " \
                     f"(date,open,close,preClose,high,low,pctChange,volume,amount) VALUES " \
                     f"('{data['trade_date']}',{data['open']},{data['close']},{data['pre_close']}," \
                     f"{data['high']},{data['low']},{data['pct_chg']},{data['vol']},{data['amount']})"
@@ -187,8 +195,8 @@ class Mysql:
         data = self.action(output=True)
         return data
 
-    def selectGemUpdateDate(self):
-        self.word = f"SELECT date FROM No399006 ORDER BY id DESC LIMIT 1"
+    def selectShIndexUpdateDate(self):
+        self.word = f"SELECT date FROM NoshIndex ORDER BY id DESC LIMIT 1"
         data = self.action(output=True)
         return data[0][0]
 
@@ -202,29 +210,12 @@ class Mysql:
         date = self.action(output=True)
         return date[0][0]
 
-    def selectIndexUpdateDate(self):
-        self.word = 'SELECT stockIndexUpdateDate FROM version'
-        date = self.action(output=True)
-        return date[0][0]
-
     def stockDetailUpdateDate(self, date):
         self.word = f"UPDATE version SET stockDetailUpdateDate='{date}'"
         self.action(output=False)
 
     def stockListUpdateDate(self, date):
         self.word = f"UPDATE version SET stockListUpdateDate='{date}'"
-        self.action(output=False)
-
-    def stockIndexUpdateDate(self, date):
-        self.word = f"UPDATE version SET stockIndexUpdateDate='{date}'"
-        self.action(output=False)
-
-    def addLimitDetail(self, table):
-        self.word = f"ALTER TABLE {table} ADD COLUMN firstLimitTime BIGINT default 0"
-        self.action(output=False)
-        self.word = f"ALTER TABLE {table} ADD COLUMN lastLimitTime BIGINT default 0"
-        self.action(output=False)
-        self.word = f"ALTER TABLE {table} ADD COLUMN openTime INT default 0"
         self.action(output=False)
 
     def updateLimitDetailData(self, data):
