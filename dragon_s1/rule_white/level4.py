@@ -5,9 +5,8 @@
 # @Software: PyCharm
 
 from typing import List
-from common.dateHandler import timeDelta
-from common.collect_data import t_low_pct, t_close_pct, t_open_pct, limit, dataModel, model_t, t_limit, \
-    model_1
+from common.dateHandler import timeDelta, getMinute, lastMinute
+from common.collect_data import t_low_pct, t_close_pct, t_open_pct, limit, dataModel, model_t, t_limit, model_1
 
 
 def rule1(stock, data: List[dataModel]):
@@ -144,14 +143,19 @@ def rule9(stock, data: List[dataModel]):
 
 
 def rule10(stock, data: List[dataModel]):
-    for i in range(1, 11):
-        if not t_limit(stock, data, i):
-            continue
-        if t_limit(stock, data, i + 1):
-            continue
-        if t_open_pct(data, i - 1) <= 0.045:
-            continue
-        # TODO:930
+    try:
+        for i in range(1, 11):
+            if not t_limit(stock, data, i):
+                continue
+            if t_limit(stock, data, i + 1):
+                continue
+            if t_open_pct(data, i - 1) <= 0.045:
+                continue
+            time = data[-i].time()
+            if time['0930'] > data[-i - 1].volume() / 12:
+                return True
+    except:
+        return False
 
 
 def rule11(stock, data: List[dataModel]):
@@ -194,6 +198,39 @@ def rule13(stock, data: List[dataModel]):
         if t_open_pct(data) > 0.01:
             if data[-3].turnover() < data[-4].turnover() < data[-2].turnover():
                 return True
+
+
+def rule14(stock, data: List[dataModel]):
+    try:
+        if model_1(stock, data, 1):
+            return False
+        if not t_limit(stock, data, 1):
+            return False
+        limitTime = data[-2].firstLimitTime()
+        limitMinute = getMinute(limitTime)
+        limitMinuteLast = lastMinute(limitMinute)
+        time = data[-2].time()
+        if time[limitMinute] > time[limitMinuteLast] * 3:
+            if data[-2].limitOpenTime() == 0:
+                return True
+    except:
+        return False
+
+
+def rule15(stock, data: List[dataModel]):
+    try:
+        if model_1(stock, data):
+            return False
+        if not t_limit(stock, data):
+            return False
+        limitTime = data[-1].firstLimitTime()
+        limitMinute = getMinute(limitTime)
+        limitMinuteLast = lastMinute(limitMinute)
+        time = data[-1].time()
+        if time[limitMinute] > time[limitMinuteLast] * 10:
+            return True
+    except:
+        return False
 
 
 def rule16(stock, data: List[dataModel]):
@@ -382,9 +419,12 @@ class level4:
         self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)
         self.shot_rule.append(8) if rule8(self.data) else self.fail_rule.append(8)
         self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
+        self.shot_rule.append(10) if rule10(self.stock, self.data) else self.fail_rule.append(10)
         self.shot_rule.append(11) if rule11(self.stock, self.data) else self.fail_rule.append(11)
         self.shot_rule.append(12) if rule12(self.stock, self.data) else self.fail_rule.append(12)
         self.shot_rule.append(13) if rule13(self.stock, self.data) else self.fail_rule.append(13)
+        self.shot_rule.append(14) if rule14(self.stock, self.data) else self.fail_rule.append(14)
+        self.shot_rule.append(15) if rule15(self.stock, self.data) else self.fail_rule.append(15)
         self.shot_rule.append(16) if rule16(self.stock, self.data) else self.fail_rule.append(16)
         self.shot_rule.append(17) if rule17(self.stock, self.data) else self.fail_rule.append(17)
         self.shot_rule.append(18) if rule18(self.stock, self.data) else self.fail_rule.append(18)

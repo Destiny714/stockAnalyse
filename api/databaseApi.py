@@ -283,15 +283,10 @@ class Mysql:
                     f"WHERE date = {data['trade_date']}"
         self.action(output=False)
 
+    def updateTimeData(self, json: dict):
+        self.word = f"UPDATE No{json['symbol']} SET time='{json['data']}' WHERE date='{json['date']}'"
+        self.action(output=False)
+
     def addColumn(self, table):
-        self.word = f"ALTER TABLE {table} " \
-                    f"ADD COLUMN his_low float default 0," \
-                    f"ADD COLUMN his_high float default 0," \
-                    f"ADD COLUMN cost_5pct float default 0," \
-                    f"ADD COLUMN cost_15pct float default 0," \
-                    f"ADD COLUMN cost_50pct float default 0," \
-                    f"ADD COLUMN cost_85pct float default 0," \
-                    f"ADD COLUMN cost_95pct float default 0," \
-                    f"ADD COLUMN weight_avg float default 0," \
-                    f"ADD COLUMN winner_rate float default 0"
+        self.word = f"ALTER TABLE {table} ADD COLUMN time json NULL"
         self.action(output=False)

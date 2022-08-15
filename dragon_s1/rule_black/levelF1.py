@@ -367,6 +367,32 @@ def rule29(stock, data: List[dataModel]):
             return True
 
 
+def rule30(stock, data: List[dataModel]):
+    if not t_limit(stock, data, 3):
+        return False
+    if not t_limit(stock, data):
+        return False
+    if t_limit(stock, data, 2):
+        return False
+    if t_limit(stock, data, 1):
+        return False
+    if data[-1].turnover() < data[-4].turnover() * 0.8:
+        return True
+
+
+def rule31(data: List[dataModel]):
+    try:
+        count = 0
+        for i in range(1, 181):
+            d = data[-i - 1]
+            if d.close() > data[-1].close():
+                count += 1
+            if count >= 50:
+                return True
+    except:
+        return False
+
+
 class levelF1:
     def __init__(self, stock: str, data: List[dataModel], virtual=None):
         self.level = 'F1'
@@ -409,4 +435,6 @@ class levelF1:
         self.shot_rule.append(27) if rule27(self.data) else self.fail_rule.append(27)
         self.shot_rule.append(28) if rule28(self.stock, self.data) else self.fail_rule.append(28)
         self.shot_rule.append(29) if rule29(self.stock, self.data) else self.fail_rule.append(29)
+        self.shot_rule.append(30) if rule30(self.stock, self.data) else self.fail_rule.append(30)
+        self.shot_rule.append(31) if rule31(self.data) else self.fail_rule.append(31)
         return self.result()

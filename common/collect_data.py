@@ -3,6 +3,7 @@
 # @Author  : Destiny_
 # @File    : collect_data.py
 # @Software: PyCharm
+import json
 from typing import List
 from api import databaseApi
 from common import dateHandler
@@ -135,6 +136,9 @@ class dataModel:
     def winner_rate(self):
         return self.data[41]
 
+    def time(self) -> dict:
+        return json.loads(self.data[42])
+
     def concentration(self):
         cost5pct = self.data[35]
         cost95pct = self.data[39]
@@ -195,7 +199,8 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
                        modifyData.cost_85pct(),
                        modifyData.cost_95pct(),
                        modifyData.weight_avg(),
-                       modifyData.winner_rate()]
+                       modifyData.winner_rate(),
+                       modifyData.time()]
         res.append(dataModel(virtualData))
     elif virtual == 'f':
         modifyData = res[-1]
@@ -245,7 +250,8 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
                        modifyData.cost_85pct(),
                        modifyData.cost_95pct(),
                        modifyData.weight_avg(),
-                       modifyData.winner_rate()]
+                       modifyData.winner_rate(),
+                       modifyData.time()]
         res.append(dataModel(virtualData))
     return res
 

@@ -9,6 +9,19 @@ from common.collect_data import t_low_pct, t_open_pct, t_close_pct, t_high_pct, 
     collectData
 
 
+def rule1(stock, data: List[dataModel]):
+    count = 0
+    if not (data[-3].turnover() < data[-2].turnover() < data[-1].turnover()):
+        return False
+    for i in range(3):
+        if not t_limit(stock, data, i):
+            return False
+        if data[-i - 1].limitOpenTime() > 2:
+            count += 1
+        if count >= 2:
+            return True
+
+
 def rule2(stock, data: List[dataModel]):
     if not t_limit(stock, data):
         return False
@@ -279,8 +292,9 @@ def rule23(stock, data: List[dataModel]):
 
 
 def rule24(stock, data: List[dataModel]):
-    if t_limit(stock, data, 1):
-        return False
+    for i in range(3):
+        if t_limit(stock, data, i + 1):
+            return False
     if not t_limit(stock, data):
         return False
     matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:40:00')
@@ -301,6 +315,7 @@ class levelF2:
         return {'level': self.level, 'stock': self.stock, 'detail': self.shot_rule, 'result': self.shot_rule == []}
 
     def filter(self):
+        self.shot_rule.append(1) if rule1(self.stock, self.data) else self.fail_rule.append(1)
         self.shot_rule.append(2) if rule2(self.stock, self.data) else self.fail_rule.append(2)
         self.shot_rule.append(3) if rule3(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(3)
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)

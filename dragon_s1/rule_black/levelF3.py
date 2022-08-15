@@ -335,6 +335,26 @@ def rule26(stock, data: List[dataModel], virtual=None):
         return True
 
 
+def rule27(stock, data: List[dataModel]):
+    try:
+        count = 0
+        range90 = data[-90:]
+        highPrice = max([_.high() for _ in range90])
+        if data[-1].close() >= highPrice:
+            return False
+        for i in range(3, 93):
+            if not t_limit(stock, data, i):
+                continue
+            if t_limit(stock, data, i - 1):
+                continue
+            if t_open_pct(data, i - 1) < 0.045:
+                count += 1
+            if count >= 2:
+                return True
+    except:
+        return False
+
+
 class levelF3:
     def __init__(self, stock: str, data: List[dataModel], virtual=None):
         self.level = 'F3'
@@ -373,4 +393,5 @@ class levelF3:
         self.shot_rule.append(24) if rule24(self.stock, self.data) else self.fail_rule.append(24)
         self.shot_rule.append(25) if rule25(self.stock, self.data) else self.fail_rule.append(25)
         self.shot_rule.append(26) if rule26(self.stock, self.data, self.virtual) else self.fail_rule.append(26)
+        self.shot_rule.append(27) if rule27(self.stock, self.data) else self.fail_rule.append(27)
         return self.result()

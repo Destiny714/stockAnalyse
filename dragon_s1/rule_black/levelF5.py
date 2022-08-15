@@ -73,6 +73,17 @@ def rule6(stock, data: List[dataModel]):
                     return True
 
 
+def rule7(data: List[dataModel]):
+    count = 0
+    for i in range(5):
+        d = data[-i - 1]
+        if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
+            if d.buy_elg_vol() < d.sell_elg_vol():
+                count += 1
+        if count >= 3:
+            return True
+
+
 class levelF5:
     def __init__(self, stock: str, data: List[dataModel]):
         self.level = 'F5'
@@ -91,4 +102,5 @@ class levelF5:
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         self.shot_rule.append(5) if rule5(self.data) else self.fail_rule.append(5)
         self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
+        self.shot_rule.append(7) if rule7(self.data) else self.fail_rule.append(7)
         return self.result()

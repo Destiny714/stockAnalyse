@@ -3,6 +3,7 @@
 # @Author  : Destiny_
 # @File    : concurrentActions.py
 # @Software: PyCharm
+from api import extApi
 from api import databaseApi
 from api.databaseApi import Mysql
 from api.tushareApi import Tushare
@@ -134,6 +135,29 @@ def updateChipDetail(aimDate=dateHandler.lastTradeDay()):
     print(f'{aimDate} chip detail update done')
 
 
+def updateTimeDataToday():
+    print(f'updating time data today')
+    errs = []
+    stocks = Mysql().selectAllStock()
+
+    def updateOne(stock):
+        data = extApi.getTimeDataToday(stock)
+        if data is None:
+            print(f'{stock} update time data error')
+            errs.append(stock)
+            return
+        client = Mysql()
+        client.updateTimeData(json=data)
+
+    checkDate = extApi.getTimeDataToday('399001')['date']
+    if checkDate != dateHandler.lastTradeDay():
+        return
+    toolBox.thread_pool_executor(updateOne, stocks, 20)
+    if len(errs) != 0:
+        toolBox.thread_pool_executor(updateOne, errs, 20)
+    print(f'update time data done')
+
+
 def industryIndex(aimDate=dateHandler.lastTradeDay()):
     industries = databaseApi.Mysql().selectAllIndustry()
     errors = []
@@ -141,21 +165,16 @@ def industryIndex(aimDate=dateHandler.lastTradeDay()):
 
     def processOne(industry):
         limit = 0
-        concentrationSum = 0
-        concentrationCalcuSum = 0
         mysql = databaseApi.Mysql()
         industryStocks = mysql.selectStockByIndustry(industry)
         for industryStock in industryStocks:
             try:
                 stockData = collect_data.collectData(industryStock, 2, aimDate=aimDate)
-                concentrationSum += stockData[-1].concentration()
-                concentrationCalcuSum += 1
                 if stockData != [] and collect_data.t_limit(industryStock, stockData):
                     limit += 1
             except Exception as e:
                 errors.append(e)
-        industryLimitDict[industry] = {'limit': limit,
-                                       'concentration': 0 if concentrationCalcuSum == 0 else concentrationSum / concentrationCalcuSum}
+        industryLimitDict[industry] = {'limit': limit}
 
     print('processing industry index...')
     toolBox.thread_pool_executor(processOne, industries, 10)
@@ -184,4 +203,5 @@ def initStock(needReload: bool = True, extra: bool = False):
         updateStockListDailyIndex()
         updateMoneyFlow()
         updateChipDetail()
+        updateTimeDataToday()
     return stocks

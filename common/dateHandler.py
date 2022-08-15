@@ -36,7 +36,7 @@ def lastTradeDay(date=None):
     today = today2str() if date is None else date
     tradeDays = databaseApi.Mysql().selectTradeDate()
     if today in tradeDays:
-        matchTime = joinTimeToStamp(today,'16:00:00')
+        matchTime = joinTimeToStamp(today, '16:00:00')
         if time.time() < matchTime:
             return databaseApi.Mysql().selectLastTradeDate(today)
         else:
@@ -63,3 +63,26 @@ def timeDelta(start: str, end: str):
     endDate = datetime.datetime.strptime(end, '%Y%m%d')
     delta = endDate - startDate
     return (delta.days * 86400).__abs__()
+
+
+def getMinute(stamp: int):
+    res = datetime.datetime.fromtimestamp(stamp)
+    hour = res.hour
+    minute = res.minute
+    return f'{0 if hour < 10 else ""}{hour}{0 if minute < 10 else ""}{minute}'
+
+
+def nextMinute(now: str):
+    result = datetime.datetime.strptime(f'2022-02-22 {now[0:2]}:{now[2:4]}:00', '%Y-%m-%d %H:%M:%S')
+    nxt = result + datetime.timedelta(minutes=1)
+    hour = nxt.hour
+    minute = nxt.minute
+    return f'{0 if hour < 10 else ""}{hour}{0 if minute < 10 else ""}{minute}'
+
+
+def lastMinute(now: str):
+    result = datetime.datetime.strptime(f'2022-02-22 {now[0:2]}:{now[2:4]}:00', '%Y-%m-%d %H:%M:%S')
+    nxt = result - datetime.timedelta(minutes=1)
+    hour = nxt.hour
+    minute = nxt.minute
+    return f'{0 if hour < 10 else ""}{hour}{0 if minute < 10 else ""}{minute}'

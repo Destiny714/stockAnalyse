@@ -20,11 +20,11 @@ from rule_white import level1, level2, level3, level4, level5, levelA1, levelA2,
 if __name__ == '__main__':
     stocks = concurrentActions.initStock(needReload=False, extra=False)
     tradeDays = databaseApi.Mysql().selectTradeDate()
-    aimDates = ['20220810', '20220811']
+    aimDates = [dateHandler.lastTradeDay()]
 
 
     def process(aimDate):
-        industryLimitDict = concurrentActions.industryIndex(aimDate=aimDate)
+        industryIndexDict = concurrentActions.industryIndex(aimDate=aimDate)
         limitUpCount = len(tushareApi.Tushare().allLimitUpDetail(date=aimDate))
         errors = []
         excelDatas = []
@@ -77,7 +77,7 @@ if __name__ == '__main__':
                 score -= len(lF2['detail']) * 5
                 score -= len(lF3['detail']) * 8
                 score -= len(lF4['detail']) * 8
-                score -= len(lF5['detail']) * 12
+                score -= len(lF5['detail']) * 10
                 if virtual is None:
                     stockDetail = databaseApi.Mysql().selectStockDetail(stock)
                     industry = databaseApi.Mysql().selectIndustryByStock(stock)
@@ -91,7 +91,7 @@ if __name__ == '__main__':
                                data=data, aj=AJ, stock=stock).filter():
                         level = 'A'
                     if F.ruleF(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum,
-                               S=_S).filter():
+                               S=_S, F5=len(lF5['detail'])).filter():
                         level = 'F'
                     if S.ruleS(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum, S=_S,
                                data=data, aj=AJ, stock=stock).filter():
@@ -100,7 +100,7 @@ if __name__ == '__main__':
                         'code': stock,
                         'name': stockDetail[2],
                         'industry': stockDetail[3],
-                        'ptg_industry': f'{industryLimitDict[industry]["limit"]}/{limitUpCount}',
+                        'ptg_industry': f'{industryIndexDict[industry]["limit"]}/{limitUpCount}',
                         'AJ': AJ,
                         'level': level,
                         'height': height,

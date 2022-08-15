@@ -487,6 +487,37 @@ def rule36(stock, data: List[dataModel]):
         return False
 
 
+def rule37(data: List[dataModel]):
+    try:
+        badCount = 0
+        for i in range(40):
+            j = i + 1
+            ma = [data[-_] for _ in range(j, j + 30)]
+            avg = sum(_.close() for _ in ma) / len(ma)
+            if data[-i - 1].close() < avg:
+                badCount += 1
+            if badCount >= 3:
+                return True
+    except:
+        return False
+
+
+def rule38(stock, data: List[dataModel]):
+    try:
+        if model_1(stock, data):
+            return False
+        if not t_limit(stock, data):
+            return False
+        limitTime = data[-1].firstLimitTime()
+        limitMinute = dateHandler.getMinute(limitTime)
+        limitMinuteLast = dateHandler.lastMinute(limitMinute)
+        time = data[-1].time()
+        if time[limitMinute] < time[limitMinuteLast] * 3:
+            return True
+    except:
+        return False
+
+
 class levelF4:
     def __init__(self, stock: str, data: List[dataModel], virtual=None):
         self.level = 'F4'
@@ -536,4 +567,6 @@ class levelF4:
         self.shot_rule.append(34) if rule34(self.stock, self.data) else self.fail_rule.append(34)
         self.shot_rule.append(35) if rule35(self.stock, self.data) else self.fail_rule.append(35)
         self.shot_rule.append(36) if rule36(self.stock, self.data) else self.fail_rule.append(36)
+        self.shot_rule.append(37) if rule37(self.data) else self.fail_rule.append(37)
+        self.shot_rule.append(38) if rule38(self.stock, self.data) else self.fail_rule.append(38)
         return self.result()
