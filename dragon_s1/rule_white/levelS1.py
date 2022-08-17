@@ -19,9 +19,9 @@ def rule1(stock, data: List[dataModel]):
         return False
     if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.4:
         return False
-    if (d.buy_elg_vol() + d.buy_lg_vol()) <= (d.sell_elg_vol() + d.sell_lg_vol()):
-        return False
-    return True
+    if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+            d.buy_elg_vol() + d.buy_lg_vol()) > 0.2:
+        return True
 
 
 def rule2(stock, data: List[dataModel]):
@@ -31,9 +31,9 @@ def rule2(stock, data: List[dataModel]):
     d = data[-1]
     if d.buy_elg_vol() / d.volume() <= 0.35:
         return False
-    if (d.buy_elg_vol() + d.buy_lg_vol()) <= (d.sell_elg_vol() + d.sell_lg_vol()):
-        return False
-    return True
+    if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+            d.buy_elg_vol() + d.buy_lg_vol()) > 0.2:
+        return True
 
 
 def rule3(stock, data: List[dataModel]):
@@ -49,9 +49,9 @@ def rule3(stock, data: List[dataModel]):
         return False
     if d.buy_elg_vol() <= d.sell_elg_vol():
         return False
-    if (d.buy_elg_vol() + d.buy_lg_vol()) <= (d.sell_elg_vol() + d.sell_lg_vol()):
-        return False
-    return True
+    if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+            d.buy_elg_vol() + d.buy_lg_vol()) > 0.2:
+        return True
 
 
 def rule4(stock, data: List[dataModel]):
@@ -63,13 +63,13 @@ def rule4(stock, data: List[dataModel]):
     d = data[-1]
     if d.buy_elg_vol() / d.volume() <= 0.3:
         return False
-    if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.45:
+    if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.5:
         return False
     if d.buy_lg_vol() / d.volume() <= 0.18:
         return False
-    if (d.buy_elg_vol() + d.buy_lg_vol()) <= (d.sell_elg_vol() + d.sell_lg_vol()):
-        return False
-    return True
+    if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+            d.buy_elg_vol() + d.buy_lg_vol()) > 0.2:
+        return True
 
 
 class levelS1:

@@ -203,7 +203,7 @@ def rule15(stock, data: List[dataModel]):
             return True
 
 
-def rule16(stock, data: List[dataModel]):
+def rule16(stock, data: List[dataModel], virtual=None):
     for i in range(5):
         if t_open_pct(data, i) <= limit(stock) / 100:
             continue
@@ -214,7 +214,10 @@ def rule16(stock, data: List[dataModel]):
         if data[-i - 1].limitOpenTime() > 3:
             d = data[-i - 1]
             if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
-                return True
+                gemData = collectData('ShIndex', dateRange=5,
+                                      aimDate=data[-i - 1 if virtual is None else -i - 2].date())
+                if t_low_pct(gemData) > -0.005:
+                    return True
 
 
 def rule17(stock, data: List[dataModel]):
@@ -288,11 +291,11 @@ def rule22(stock, data: List[dataModel]):
         return True
 
 
-def rule23(stock, data: List[dataModel]):
+def rule23(stock, data: List[dataModel], virtual=None):
     for i in range(1, 4):
         if not t_limit(stock, data, i - 1):
             return False
-    if data[-2].turnover() <= data[-3].turnover():
+    if data[-2].turnover() >= data[-3].turnover():
         return False
     if data[-1].turnover() <= data[-2].turnover():
         return False
@@ -301,7 +304,9 @@ def rule23(stock, data: List[dataModel]):
     if data[-1].limitOpenTime() <= 2:
         return False
     if t_open_pct(data, 2) < t_open_pct(data, 1) < t_open_pct(data, 0):
-        return True
+        gemData = collectData('ShIndex', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
+        if t_low_pct(gemData) > -0.005:
+            return True
 
 
 def rule24(stock, data: List[dataModel], virtual=None):
@@ -516,8 +521,10 @@ def rule38(stock, data: List[dataModel]):
         limitMinute = dateHandler.getMinute(limitTime)
         limitMinuteLast = dateHandler.lastMinute(limitMinute)
         time = data[-1].time()
-        if time[limitMinute] < time[limitMinuteLast] * 2:
-            return True
+        if time[limitMinute] < time[limitMinuteLast] * 3:
+            d = data[-1]
+            if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() < 0.4:
+                return True
     except:
         return False
 
@@ -538,6 +545,33 @@ def rule39(data: List[dataModel], virtual=None):
                 return True
     except:
         return False
+
+
+def rule40(data: List[dataModel]):
+    try:
+        badCount = 0
+        for i in range(10):
+            j = i + 1
+            ma20 = [data[-_] for _ in range(j, j + 20)]
+            avg20 = sum(_.close() for _ in ma20) / len(ma20)
+            if data[-i - 1].close() < avg20:
+                badCount += 1
+            if badCount >= 3:
+                return True
+    except:
+        return False
+
+
+def rule41(stock, data: List[dataModel]):
+    for i in range(6, 156):
+        if not t_limit(stock, data, i):
+            continue
+        if t_limit(stock, data, i - 1):
+            continue
+        nxt = data[-i]
+        if nxt.turnover() > data[-1].turnover() * 0.8:
+            if nxt.high() > max([_.close() for _ in data[-6:-1]]):
+                return True
 
 
 class levelF4:
@@ -568,14 +602,14 @@ class levelF4:
         self.shot_rule.append(13) if rule13(self.stock, self.data) else self.fail_rule.append(13)
         self.shot_rule.append(14) if rule14(self.stock, self.data) else self.fail_rule.append(14)
         self.shot_rule.append(15) if rule15(self.stock, self.data) else self.fail_rule.append(15)
-        self.shot_rule.append(16) if rule16(self.stock, self.data) else self.fail_rule.append(16)
+        self.shot_rule.append(16) if rule16(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(16)
         self.shot_rule.append(17) if rule17(self.stock, self.data) else self.fail_rule.append(17)
         self.shot_rule.append(18) if rule18(self.data) else self.fail_rule.append(18)
         self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
         self.shot_rule.append(20) if rule20(self.stock, self.data) else self.fail_rule.append(20)
         self.shot_rule.append(21) if rule21(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(21)
         self.shot_rule.append(22) if rule22(self.stock, self.data) else self.fail_rule.append(22)
-        self.shot_rule.append(23) if rule23(self.stock, self.data) else self.fail_rule.append(23)
+        self.shot_rule.append(23) if rule23(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(23)
         self.shot_rule.append(24) if rule24(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(24)
         self.shot_rule.append(25) if rule25(self.stock, self.data) else self.fail_rule.append(25)
         self.shot_rule.append(26) if rule26(self.stock, self.data) else self.fail_rule.append(26)
@@ -592,4 +626,6 @@ class levelF4:
         self.shot_rule.append(37) if rule37(self.data) else self.fail_rule.append(37)
         self.shot_rule.append(38) if rule38(self.stock, self.data) else self.fail_rule.append(38)
         self.shot_rule.append(39) if rule39(self.data, virtual=self.virtual) else self.fail_rule.append(39)
+        self.shot_rule.append(40) if rule40(self.data) else self.fail_rule.append(40)
+        self.shot_rule.append(41) if rule41(self.stock, self.data) else self.fail_rule.append(41)
         return self.result()

@@ -14,7 +14,7 @@ def rule1(stock, data: List[dataModel]):
         return False
     if not t_limit(stock, data, 1):
         return False
-    if t_low_pct(data) < -0.005 and t_low_pct(data, 1) < -0.005:
+    if t_low_pct(data) < -0.01 and t_low_pct(data, 1) < -0.01:
         return True
 
 
@@ -118,11 +118,12 @@ def rule9(stock, data: List[dataModel], virtual=None):
 def rule10(stock, data: List[dataModel]):
     count = 0
     for i in range(1, 6):
+        if not t_limit(stock, data, i - 1):
+            continue
         if t_low_pct(data, i - 1) < -0.055 and t_high_pct(data, i - 1) > limit(stock) / 100:
             count += 1
-            if count >= 2:
-                return True
-    return count >= 2
+        if count >= 2:
+            return True
 
 
 def rule11(stock, data: List[dataModel]):
@@ -278,7 +279,7 @@ def rule22(stock, data: List[dataModel]):
         matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '10:30:00')
         if data[-i - 1].lastLimitTime() > matchTime:
             d = data[-i]
-            if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
+            if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() < 0.5 and d.buy_elg_vol() < d.sell_elg_vol():
                 return True
 
 

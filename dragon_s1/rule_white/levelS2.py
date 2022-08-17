@@ -12,13 +12,15 @@ def rule1(stock, data: List[dataModel]):
     for i in range(3):
         if not t_limit(stock, data, i):
             return False
-    if data[-1].buy_elg_vol() / data[-1].volume() <= 0.45:
+    d = data[-1]
+    if d.buy_elg_vol() / d.volume() <= 0.45:
         return False
-    if (data[-1].buy_elg_vol() + data[-1].buy_lg_vol()) / data[-1].volume() <= 0.65:
+    if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.65:
         return False
-    if data[-1].buy_elg_vol() <= data[-1].sell_elg_vol():
+    if d.buy_elg_vol() <= d.sell_elg_vol():
         return False
-    if (data[-1].buy_elg_vol() + data[-1].buy_lg_vol()) > (data[-1].sell_elg_vol() + data[-1].sell_lg_vol()):
+    if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+            d.buy_elg_vol() + d.buy_lg_vol()) > 0.2:
         return True
 
 
@@ -28,14 +30,27 @@ def rule2(stock, data: List[dataModel]):
     for i in range(2):
         if not t_limit(stock, data, i):
             return False
-    if data[-1].buy_elg_vol() / data[-1].volume() <= 0.4:
+    d = data[-1]
+    if d.buy_elg_vol() / d.volume() <= 0.4:
         return False
-    if (data[-1].buy_elg_vol() + data[-1].buy_lg_vol()) / data[-1].volume() <= 0.7:
+    if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.7:
         return False
-    if data[-1].buy_elg_vol() <= data[-1].sell_elg_vol():
+    if d.buy_elg_vol() <= d.sell_elg_vol():
         return False
-    if (data[-1].buy_elg_vol() + data[-1].buy_lg_vol()) > (data[-1].sell_elg_vol() + data[-1].sell_lg_vol()):
+    if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+            d.buy_elg_vol() + d.buy_lg_vol()) > 0.2:
         return True
+
+
+def rule3(data: List[dataModel]):
+    for i in range(2):
+        d = data[-i - 1]
+        if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+                d.buy_elg_vol() + d.buy_lg_vol()) <= 0.2:
+            return False
+        if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.5:
+            return False
+    return True
 
 
 class levelS2:
@@ -52,4 +67,5 @@ class levelS2:
     def filter(self):
         self.shot_rule.append(1) if rule1(self.stock, self.data) else self.fail_rule.append(1)
         self.shot_rule.append(2) if rule2(self.stock, self.data) else self.fail_rule.append(2)
+        self.shot_rule.append(3) if rule3(self.data) else self.fail_rule.append(3)
         return self.result()

@@ -15,7 +15,8 @@ def rule1(stock, data: List[dataModel]):
     d = data[-1]
     if d.buy_elg_vol() / d.volume() > 0.45:
         if d.buy_elg_vol() > d.sell_elg_vol():
-            if d.buy_elg_vol() + d.buy_lg_vol() > d.sell_elg_vol() + d.sell_lg_vol():
+            if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+                    d.buy_elg_vol() + d.buy_lg_vol()) > 0.2:
                 return True
 
 
@@ -26,7 +27,8 @@ def rule2(stock, data: List[dataModel]):
     d = data[-1]
     if d.buy_elg_vol() / d.volume() > 0.35:
         if d.buy_elg_vol() > d.sell_elg_vol():
-            if d.buy_elg_vol() + d.buy_lg_vol() > d.sell_elg_vol() + d.sell_lg_vol():
+            if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+                    d.buy_elg_vol() + d.buy_lg_vol()) > 0.2:
                 return True
 
 
@@ -37,7 +39,8 @@ def rule3(stock, data: List[dataModel]):
     d = data[-1]
     if d.buy_elg_vol() / d.volume() > 0.25:
         if d.buy_elg_vol() > d.sell_elg_vol():
-            if d.buy_elg_vol() + d.buy_lg_vol() > d.sell_elg_vol() + d.sell_lg_vol():
+            if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+                    d.buy_elg_vol() + d.buy_lg_vol()) > 0.2:
                 return True
 
 
@@ -51,7 +54,8 @@ def rule4(stock, data: List[dataModel]):
             return False
         if d.buy_elg_vol() <= d.sell_elg_vol():
             return False
-        if d.buy_elg_vol() + d.buy_lg_vol() <= d.sell_elg_vol() + d.sell_lg_vol():
+        if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+                d.buy_elg_vol() + d.buy_lg_vol()) <= 0.2:
             return False
     return True
 
@@ -65,7 +69,8 @@ def rule5(stock, data: List[dataModel]):
             return False
         if d.buy_elg_vol() <= d.sell_elg_vol():
             return False
-        if d.buy_elg_vol() + d.buy_lg_vol() <= d.sell_elg_vol() + d.sell_lg_vol():
+        if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+                d.buy_elg_vol() + d.buy_lg_vol()) <= 0.2:
             return False
     return True
 

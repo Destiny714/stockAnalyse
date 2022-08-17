@@ -100,7 +100,6 @@ def createTableIfNotExist(stockList):
 def updateShIndex(start=dateHandler.lastTradeDay(), end=dateHandler.lastTradeDay()):
     data = Tushare().indexData(start=start, end=end)
     for d in data:
-        print(d['trade_date'])
         databaseApi.Mysql().insertShIndex(d)
 
 
@@ -140,21 +139,25 @@ def updateTimeDataToday():
     stocks = Mysql().selectAllStock()
 
     def updateOne(stock):
-        data = extApi.getTimeDataToday(stock)
-        if data is None:
-            print(f'{stock} update time data error')
+        try:
+            data = extApi.getTimeDataToday(stock)
+            if data is None:
+                print(f'{stock} update time data error')
+                errs.append(stock)
+                return
+            client = Mysql()
+            client.updateTimeData(json=data)
+        except:
             errs.append(stock)
-            return
-        client = Mysql()
-        client.updateTimeData(json=data)
+            print(f'{stock} update time data error')
 
     checkDate = extApi.getTimeDataToday('399001')['date']
     if checkDate != dateHandler.lastTradeDay():
         return
     print(f'updating {checkDate} time data')
-    toolBox.thread_pool_executor(updateOne, stocks, 20)
+    toolBox.thread_pool_executor(updateOne, stocks, 15)
     if len(errs) != 0:
-        toolBox.thread_pool_executor(updateOne, errs, 20)
+        toolBox.thread_pool_executor(updateOne, errs, 15)
     print(f'update time data done')
 
 

@@ -6,7 +6,7 @@
 from typing import List
 
 from common import dateHandler
-from common.collect_data import dataModel, model_1, t_limit
+from common.collect_data import dataModel, model_1, t_limit, t_high_pct
 
 
 def rule1(data: List[dataModel]):
@@ -98,6 +98,39 @@ def rule8(stock, data: List[dataModel]):
     return True
 
 
+def rule9(data: List[dataModel]):
+    if t_high_pct(data) > 0.06:
+        d1 = data[-1]
+        d2 = data[-2]
+        if (d1.buy_elg_vol() + d2.buy_elg_vol() - d1.sell_elg_vol() - d2.sell_elg_vol()) / (
+                d1.buy_elg_vol() + d2.buy_elg_vol()) < 0.3:
+            return True
+
+
+def rule10(data: List[dataModel]):
+    if t_high_pct(data) > 0.06:
+        d = data[-1]
+        if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() < 0.5:
+            return True
+
+
+def rule11(data: List[dataModel]):
+    for i in range(2):
+        d = data[-i - 1]
+        if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+                d.buy_elg_vol() + d.buy_lg_vol()) >= 0.15:
+            return False
+    return True
+
+
+def rule12(data: List[dataModel]):
+    d = data[-1]
+    if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+            d.buy_elg_vol() + d.buy_lg_vol()) < 0.2:
+        if d.buy_elg_vol() < d.sell_elg_vol():
+            return True
+
+
 class levelF5:
     def __init__(self, stock: str, data: List[dataModel]):
         self.level = 'F5'
@@ -118,4 +151,8 @@ class levelF5:
         self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
         self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)
         self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
+        self.shot_rule.append(9) if rule9(self.data) else self.fail_rule.append(9)
+        self.shot_rule.append(10) if rule10(self.data) else self.fail_rule.append(10)
+        self.shot_rule.append(11) if rule11(self.data) else self.fail_rule.append(11)
+        self.shot_rule.append(12) if rule12(self.data) else self.fail_rule.append(12)
         return self.result()

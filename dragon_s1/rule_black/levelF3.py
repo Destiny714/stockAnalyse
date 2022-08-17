@@ -201,7 +201,7 @@ def rule14(data: List[dataModel]):
 def rule15(stock, data: List[dataModel]):
     if t_limit(stock, data, 1):
         return False
-    if data[-1].turnover() > (sum([_.turnover() for _ in data[-2:-32]]) / 30) * 4:
+    if data[-1].turnover() > (sum([_.turnover() for _ in data[-21:-1]]) / 20) * 4:
         return True
 
 
@@ -225,8 +225,9 @@ def rule17(data: List[dataModel], virtual=None):
             gemData = collectData('ShIndex', dateRange=5, aimDate=data[-i if virtual is None else -i - 1].date())
             if t_low_pct(gemData) > -0.005:
                 d = data[-i]
-                if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
-                    return True
+                if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() < 0.5 and d.buy_elg_vol() < d.sell_elg_vol():
+                    if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
+                        return True
 
 
 def rule18(stock, data: List[dataModel], virtual=None):
@@ -264,7 +265,7 @@ def rule20(stock, data: List[dataModel], virtual):
     gemData = collectData('ShIndex', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
     if t_low_pct(gemData) > -0.005:
         d = data[-1]
-        if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
+        if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() < 0.5 and d.buy_elg_vol() < d.sell_elg_vol():
             return True
 
 

@@ -161,7 +161,7 @@ def rule18(stock, data: List[dataModel]):
 
 def rule19(stock, data: List[dataModel]):
     if not t_limit(stock, data, 1):
-        range5 = data[-2:-7]
+        range5 = data[-6:-1]
         avg = sum([_.turnover() for _ in range5]) / 5
         if avg < 5:
             return True

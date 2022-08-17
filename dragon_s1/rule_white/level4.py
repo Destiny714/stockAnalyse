@@ -363,14 +363,6 @@ def rule26(data: List[dataModel]):
         return True
 
 
-def rule29(data: List[dataModel]):
-    for i in range(3):
-        d = data[-i - 1]
-        if not ((d.buy_elg_vol() + d.buy_lg_vol()) > (d.sell_elg_vol() + d.sell_lg_vol())):
-            return False
-    return True
-
-
 def rule30(data: List[dataModel]):
     try:
         for i in range(30):
@@ -427,6 +419,5 @@ class level4:
         self.shot_rule.append(24) if rule24(self.stock, self.data) else self.fail_rule.append(24)
         self.shot_rule.append(25) if rule25(self.stock, self.data) else self.fail_rule.append(25)
         self.shot_rule.append(26) if rule26(self.data) else self.fail_rule.append(26)
-        self.shot_rule.append(29) if rule29(self.data) else self.fail_rule.append(29)
         self.shot_rule.append(30) if rule30(self.data) else self.fail_rule.append(30)
         return self.result()
