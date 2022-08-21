@@ -55,8 +55,8 @@ class Mysql:
                     f"volume double not null," \
                     f"amount double not null," \
                     f"turnover double default 0," \
-                    f"firstLimitTime BIGINT default 0," \
-                    f"lastLimitTime BIGINT default 0," \
+                    f"firstLimitTime BIGINT default 6666666666," \
+                    f"lastLimitTime BIGINT default 6666666666," \
                     f"openTime int default 0," \
                     f"buy_sm_vol int default 0," \
                     f"buy_sm_amount double default 0," \
@@ -278,6 +278,14 @@ class Mysql:
         self.word = f"UPDATE No{json['symbol']} SET time='{json['data']}' WHERE date='{json['date']}'"
         self.action(output=False)
 
-    def addColumn(self, table):
-        self.word = f"ALTER TABLE {table} ADD COLUMN time json NULL"
+    def changeColumn(self, table):
+        print(table)
+        self.word = f"ALTER TABLE {table} change COLUMN firstLimitTime firstLimitTime BIGINT default 6666666666,change COLUMN lastLimitTime lastLimitTime BIGINT default 6666666666"
+        self.action(output=False)
+
+    def updateTMP(self, table):
+        print(table)
+        self.word = f"UPDATE {table} SET firstLimitTime=6666666666 WHERE firstLimitTime=4090665600"
+        self.action(output=False)
+        self.word = f"UPDATE {table} SET lastLimitTime=6666666666 WHERE lastLimitTime=4090665600"
         self.action(output=False)

@@ -22,7 +22,7 @@ def updateStockList():
     data = Tushare().allStocks()
     mysql = Mysql()
     for d in data:
-        if d['symbol'][0] != '8':
+        if d['symbol'][0] not in ['4', '8']:
             mysql.insertStockDetail(d)
     print('stock list update done')
 
@@ -90,7 +90,6 @@ def createTableIfNotExist(stockList):
 
     def checkOne(stock):
         mysql = Mysql()
-        print(f'create {stock}')
         mysql.createTableForStock(stock)
 
     toolBox.thread_pool_executor(checkOne, stockList)
@@ -191,10 +190,9 @@ def initStock(needReload: bool = True, extra: bool = False):
     if needReload:
         updateShIndex()
         updateStockList()
-        oldStocks = stocks
         stocks = mysql.selectAllStock()
         stockDetailVersion = mysql.selectDetailUpdateDate()
-        createTableIfNotExist([stock for stock in stocks if stock not in oldStocks])
+        createTableIfNotExist(stocks)
         mysql.stockListUpdateDate(dateHandler.lastTradeDay())
         if int(stockDetailVersion) < int(dateHandler.lastTradeDay()):
             fullDates = mysql.selectTradeDate()

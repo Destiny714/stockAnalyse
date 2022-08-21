@@ -8,8 +8,7 @@ from typing import List
 
 from common import dateHandler
 from common.collect_data import t_low_pct, t_close_pct, t_open_pct, t_high_pct, limit, dataModel, model_1, model_t, \
-    t_limit, \
-    collectData
+    t_limit
 
 
 def rule1(stock, data: List[dataModel]):
@@ -50,13 +49,12 @@ def rule2(stock, data: List[dataModel]):
         return True
 
 
-def rule3(data: List[dataModel], virtual=None):
+def rule3(data: List[dataModel], index: List[dataModel]):
     for i in range(1, 3):
         if t_low_pct(data, i - 1) <= -0.02:
             continue
         if t_open_pct(data, i - 1) > 0:
-            gemData = collectData('ShIndex', dateRange=5, aimDate=data[-i if virtual is None else -i - 1].date())
-            if t_open_pct(gemData) < -0.02:
+            if t_open_pct(index, i - 1) < -0.02:
                 return True
 
 
@@ -214,11 +212,11 @@ def rule15(stock, data: List[dataModel]):
 
 
 class level5:
-    def __init__(self, stock: str, data: List[dataModel], virtual=None):
+    def __init__(self, stock: str, data: List[dataModel], index: List[dataModel]):
         self.level = 5
         self.data = data
+        self.index = index
         self.stock = stock
-        self.virtual = virtual
         self.shot_rule: list = []
         self.fail_rule: list = []
 
@@ -228,7 +226,7 @@ class level5:
     def filter(self):
         self.shot_rule.append(1) if rule1(self.stock, self.data) else self.fail_rule.append(1)
         self.shot_rule.append(2) if rule2(self.stock, self.data) else self.fail_rule.append(2)
-        self.shot_rule.append(3) if rule3(self.data, self.virtual) else self.fail_rule.append(3)
+        self.shot_rule.append(3) if rule3(self.data, self.index) else self.fail_rule.append(3)
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
         self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)

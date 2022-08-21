@@ -8,8 +8,7 @@ from typing import List
 
 from common import dateHandler
 from common.collect_data import t_low_pct, t_close_pct, t_open_pct, t_high_pct, limit, dataModel, model_1, model_t, \
-    t_limit, \
-    collectData
+    t_limit
 
 
 def rule1(stock, data: List[dataModel]):
@@ -145,18 +144,23 @@ def rule10(stock, data: List[dataModel]):
             return True
 
 
-def rule11(stock, data: List[dataModel], virtual=None):
-    if model_1(stock, data, 1):
-        return False
-    if not t_limit(stock, data, 1):
-        return False
-    if data[-1].turnover() <= 1.8 * data[-2].turnover():
-        return False
-    matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
-    if data[-1].firstLimitTime() > matchTime and data[-1].lastLimitTime() > matchTime:
-        gemData = collectData('ShIndex', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
-        if t_low_pct(gemData) > -0.005:
-            return True
+def rule11(stock, data: List[dataModel], index: List[dataModel]):
+    try:
+        if model_1(stock, data, 1):
+            return False
+        if not t_limit(stock, data, 1):
+            return False
+        if data[-1].turnover() <= 1.8 * data[-2].turnover():
+            return False
+        matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
+        if data[-1].firstLimitTime() > matchTime and data[-1].lastLimitTime() > matchTime:
+            time = data[-1].time()
+            limitMinute = dateHandler.getMinute(data[-1].firstLimitTime())
+            if time[limitMinute] < 100000:
+                if t_low_pct(index) > -0.01:
+                    return True
+    except:
+        pass
 
 
 def rule12(stock, data: List[dataModel]):
@@ -219,28 +223,32 @@ def rule16(stock, data: List[dataModel]):
             return True
 
 
-def rule17(data: List[dataModel], virtual=None):
+def rule17(data: List[dataModel], index: List[dataModel]):
     for i in range(1, 5):
         if t_open_pct(data, i - 1) > 0.09 and t_low_pct(data, i - 1) < 0.03:
-            gemData = collectData('ShIndex', dateRange=5, aimDate=data[-i if virtual is None else -i - 1].date())
-            if t_low_pct(gemData) > -0.005:
+            if t_low_pct(index, i - 1) > -0.01:
                 d = data[-i]
                 if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() < 0.5 and d.buy_elg_vol() < d.sell_elg_vol():
                     if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
                         return True
 
 
-def rule18(stock, data: List[dataModel], virtual=None):
-    if not t_limit(stock, data, 1):
-        return False
-    if model_1(stock, data, 1):
-        return False
-    if data[-1].limitOpenTime() <= 3:
-        return False
-    if data[-1].turnover() > 3 * data[-2].turnover():
-        gemData = collectData('ShIndex', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
-        if t_low_pct(gemData) > -0.005:
-            return True
+def rule18(stock, data: List[dataModel], index: List[dataModel]):
+    try:
+        if not t_limit(stock, data, 1):
+            return False
+        if model_1(stock, data, 1):
+            return False
+        if data[-1].limitOpenTime() <= 3:
+            return False
+        if data[-1].turnover() > 3 * data[-2].turnover():
+            time = data[-1].time()
+            limitMinute = dateHandler.getMinute(data[-1].firstLimitTime())
+            if time[limitMinute] < 100000:
+                if t_low_pct(index) > -0.01:
+                    return True
+    except:
+        pass
 
 
 def rule19(stock, data: List[dataModel]):
@@ -256,17 +264,26 @@ def rule19(stock, data: List[dataModel]):
         return True
 
 
-def rule20(stock, data: List[dataModel], virtual):
-    for i in range(2):
-        if not t_limit(stock, data, i):
+def rule20(stock, data: List[dataModel], index: List[dataModel]):
+    try:
+        for i in range(2):
+            if not t_limit(stock, data, i):
+                return False
+        if data[-1].limitOpenTime() <= 2:
             return False
-    if data[-1].limitOpenTime() <= 2:
-        return False
-    gemData = collectData('ShIndex', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
-    if t_low_pct(gemData) > -0.005:
-        d = data[-1]
-        if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() < 0.5 and d.buy_elg_vol() < d.sell_elg_vol():
-            return True
+        matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
+        if data[-1].firstLimitTime() <= matchTime:
+            return False
+        time = data[-1].time()
+        limitMinute = dateHandler.getMinute(data[-1].firstLimitTime())
+        if time[limitMinute] >= 100000:
+            return False
+        if t_low_pct(index) > -0.01:
+            d = data[-1]
+            if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() < 0.5 and d.buy_elg_vol() < d.sell_elg_vol():
+                return True
+    except:
+        pass
 
 
 def rule21(stock, data: List[dataModel]):
@@ -284,14 +301,12 @@ def rule21(stock, data: List[dataModel]):
 
 
 def rule22(data: List[dataModel]):
-    err = None
     try:
         for i in range(-661, -120):
             range10 = data[i:i + 10]
             if range10[-1].close() / range10[0].close() > 1.8:
                 return True
-    except Exception as e:
-        err = e
+    except:
         return False
 
 
@@ -337,14 +352,13 @@ def rule25(stock, data: List[dataModel]):
                         continue
 
 
-def rule26(stock, data: List[dataModel], virtual=None):
+def rule26(stock, data: List[dataModel], index: List[dataModel]):
     for i in range(2):
         if not t_limit(stock, data, i + 1):
             return False
     if data[-2].limitOpenTime() <= 2:
         return False
-    gemData = collectData('ShIndex', dateRange=5, aimDate=data[-2 if virtual is None else -3].date())
-    if t_low_pct(gemData) > -0.005:
+    if t_low_pct(index, 1) > -0.01:
         return True
 
 
@@ -360,6 +374,8 @@ def rule27(stock, data: List[dataModel]):
         for i in range(3, 93):
             if not t_limit(stock, data, i):
                 continue
+            if t_limit(stock, data, i + 1):
+                continue
             if t_limit(stock, data, i - 1):
                 continue
             if t_open_pct(data, i - 1) < 0.045:
@@ -370,26 +386,25 @@ def rule27(stock, data: List[dataModel]):
         return False
 
 
-def rule28(data: List[dataModel], virtual=None):
+def rule28(data: List[dataModel], index: List[dataModel]):
     count = 0
     for i in range(5):
         if t_open_pct(data, i) <= 0.09:
             continue
         if t_low_pct(data, i) >= 0.05:
             continue
-        gemData = collectData('ShIndex', dateRange=5, aimDate=data[-i - 1 if virtual is None else -i - 2].date())
-        if t_low_pct(gemData) > -0.005:
+        if t_low_pct(index, i) > -0.01:
             count += 1
         if count >= 2:
             return True
 
 
 class levelF3:
-    def __init__(self, stock: str, data: List[dataModel], virtual=None):
+    def __init__(self, stock: str, data: List[dataModel], index: List[dataModel]):
         self.level = 'F3'
         self.data = data
+        self.index = index
         self.stock = stock
-        self.virtual = virtual
         self.shot_rule: list = []
         self.fail_rule: list = []
 
@@ -407,22 +422,22 @@ class levelF3:
         self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
         self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.stock, self.data) else self.fail_rule.append(10)
-        self.shot_rule.append(11) if rule11(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(11)
+        self.shot_rule.append(11) if rule11(self.stock, self.data, self.index) else self.fail_rule.append(11)
         self.shot_rule.append(12) if rule12(self.stock, self.data) else self.fail_rule.append(12)
         self.shot_rule.append(13) if rule13(self.stock, self.data) else self.fail_rule.append(13)
         self.shot_rule.append(14) if rule14(self.data) else self.fail_rule.append(14)
         self.shot_rule.append(15) if rule15(self.stock, self.data) else self.fail_rule.append(15)
         self.shot_rule.append(16) if rule16(self.stock, self.data) else self.fail_rule.append(16)
-        self.shot_rule.append(17) if rule17(self.data, self.virtual) else self.fail_rule.append(17)
-        self.shot_rule.append(18) if rule18(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(18)
+        self.shot_rule.append(17) if rule17(self.data, self.index) else self.fail_rule.append(17)
+        self.shot_rule.append(18) if rule18(self.stock, self.data, self.index) else self.fail_rule.append(18)
         self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
-        self.shot_rule.append(20) if rule20(self.stock, self.data, self.virtual) else self.fail_rule.append(20)
+        self.shot_rule.append(20) if rule20(self.stock, self.data, self.index) else self.fail_rule.append(20)
         self.shot_rule.append(21) if rule21(self.stock, self.data) else self.fail_rule.append(21)
         self.shot_rule.append(22) if rule22(self.data) else self.fail_rule.append(22)
         self.shot_rule.append(23) if rule23(self.stock, self.data) else self.fail_rule.append(23)
         self.shot_rule.append(24) if rule24(self.stock, self.data) else self.fail_rule.append(24)
         self.shot_rule.append(25) if rule25(self.stock, self.data) else self.fail_rule.append(25)
-        self.shot_rule.append(26) if rule26(self.stock, self.data, self.virtual) else self.fail_rule.append(26)
+        self.shot_rule.append(26) if rule26(self.stock, self.data, self.index) else self.fail_rule.append(26)
         self.shot_rule.append(27) if rule27(self.stock, self.data) else self.fail_rule.append(27)
-        self.shot_rule.append(28) if rule28(self.data, virtual=self.virtual) else self.fail_rule.append(28)
+        self.shot_rule.append(28) if rule28(self.data, self.index) else self.fail_rule.append(28)
         return self.result()

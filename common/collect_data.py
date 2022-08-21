@@ -13,6 +13,12 @@ class dataModel:
     def __init__(self, data):
         self.data = data
 
+    def __setitem__(self, key, value):
+        self.data[key] = value
+
+    def __getitem__(self, item):
+        return self.data[item]
+
     def date(self):
         return self.data[1]
 
@@ -143,6 +149,22 @@ class dataModel:
         cost5pct = self.data[35]
         cost95pct = self.data[39]
         return (cost95pct - cost5pct) / (cost95pct + cost5pct)
+
+
+def collectIndexData(index, dateRange: int = 500, aimDate=dateHandler.lastTradeDay()) -> List[dataModel]:
+    mysql = databaseApi.Mysql()
+    allData = mysql.selectOneAllData(stock=index, dateRange=dateRange, aimDate=aimDate)
+    res = [dataModel(_) for _ in allData]
+    return res
+
+
+def virtualIndexData(data: List[dataModel], nextTradeDay) -> List[dataModel]:
+    res = data
+    modifyData = list(res[-1])
+    modifyData[0] = 8888
+    modifyData[1] = nextTradeDay
+    res.append(dataModel(modifyData))
+    return res
 
 
 def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(), virtual=None) -> List[dataModel]:

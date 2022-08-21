@@ -9,48 +9,63 @@ from common.collect_data import dataModel, t_limit
 
 
 def rule1(stock, data: List[dataModel]):
-    for i in range(3):
-        if not t_limit(stock, data, i):
+    try:
+        for i in range(3):
+            if not t_limit(stock, data, i):
+                return False
+        d = data[-1]
+        if d.buy_elg_vol() / d.volume() <= 0.45:
             return False
-    d = data[-1]
-    if d.buy_elg_vol() / d.volume() <= 0.45:
-        return False
-    if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.65:
-        return False
-    if d.buy_elg_vol() <= d.sell_elg_vol():
-        return False
-    if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-            d.buy_elg_vol() + d.buy_lg_vol()) > 0.2:
-        return True
+        if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.65:
+            return False
+        if d.buy_elg_vol() <= d.sell_elg_vol():
+            return False
+        if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() <= 0.5:
+            return False
+        if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+                d.buy_elg_vol() + d.buy_lg_vol()) > 0.2:
+            return True
+    except:
+        pass
 
 
 def rule2(stock, data: List[dataModel]):
-    if t_limit(stock, data, 2):
-        return False
-    for i in range(2):
-        if not t_limit(stock, data, i):
+    try:
+        if t_limit(stock, data, 2):
             return False
-    d = data[-1]
-    if d.buy_elg_vol() / d.volume() <= 0.4:
-        return False
-    if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.7:
-        return False
-    if d.buy_elg_vol() <= d.sell_elg_vol():
-        return False
-    if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-            d.buy_elg_vol() + d.buy_lg_vol()) > 0.2:
-        return True
+        for i in range(2):
+            if not t_limit(stock, data, i):
+                return False
+        d = data[-1]
+        if d.buy_elg_vol() / d.volume() <= 0.4:
+            return False
+        if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.7:
+            return False
+        if d.buy_elg_vol() <= d.sell_elg_vol():
+            return False
+        if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() <= 0.5:
+            return False
+        if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+                d.buy_elg_vol() + d.buy_lg_vol()) > 0.2:
+            return True
+    except:
+        pass
 
 
 def rule3(data: List[dataModel]):
-    for i in range(2):
-        d = data[-i - 1]
-        if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                d.buy_elg_vol() + d.buy_lg_vol()) <= 0.2:
-            return False
-        if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.5:
-            return False
-    return True
+    try:
+        for i in range(2):
+            d = data[-i - 1]
+            if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+                    d.buy_elg_vol() + d.buy_lg_vol()) <= 0.2:
+                return False
+            if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.5:
+                return False
+            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() <= 0.5:
+                return False
+        return True
+    except:
+        pass
 
 
 class levelS2:

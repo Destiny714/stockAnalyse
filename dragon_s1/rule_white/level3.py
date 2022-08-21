@@ -5,7 +5,7 @@
 # @Software: PyCharm
 from common import dateHandler
 from typing import List
-from common.collect_data import limit, dataModel, t_open_pct, t_close_pct, t_low_pct, t_limit, model_1, collectData
+from common.collect_data import limit, dataModel, t_open_pct, t_close_pct, t_low_pct, t_limit, model_1
 
 
 def rule1(stock, data: List[dataModel]):
@@ -91,7 +91,6 @@ def rule7(stock, data: List[dataModel]):
 
 
 def rule8(stock, data: List[dataModel]):
-    err = None
     try:
         if not t_limit(stock, data):
             return False
@@ -102,8 +101,7 @@ def rule8(stock, data: List[dataModel]):
                 range440 = data[-441:-1]
                 if data[-1].close() > max([_.high() for _ in range440]):
                     return True
-    except Exception as e:
-        err = e
+    except:
         return False
 
 
@@ -128,7 +126,6 @@ def rule10(stock, data: List[dataModel]):
 
 
 def rule11(stock, data: List[dataModel]):
-    err = None
     try:
         range10 = data[-10:]
         range60 = data[-60:]
@@ -139,8 +136,7 @@ def rule11(stock, data: List[dataModel]):
                     for i in range(1, 61):
                         if data[-i].pctChange() > limit(stock):
                             return True
-    except Exception as e:
-        err = e
+    except:
         return False
 
 
@@ -149,13 +145,11 @@ def rule12(stock, data: List[dataModel]):
         return False
     if t_limit(stock, data, 1):
         return False
-    err = None
     try:
         range220 = data[-221:-1]
         if data[-1].close() * 1.1 > max([_.close() for _ in range220]):
             return True
-    except Exception as e:
-        err = e
+    except:
         return False
 
 
@@ -166,7 +160,6 @@ def rule13(data: List[dataModel]):
 
 
 def rule14(data: List[dataModel]):
-    err = None
     try:
         flag = False
         for i in range(1, 3):
@@ -177,8 +170,7 @@ def rule14(data: List[dataModel]):
             range220 = data[-221:-1]
             if data[-1].close() > 0.95 * max([_.high() for _ in range220]):
                 return True
-    except Exception as e:
-        err = e
+    except:
         return False
 
 
@@ -250,19 +242,17 @@ def rule21(data: List[dataModel]):
                 return True
 
 
-def rule22(stock, data: List[dataModel], virtual=None):
+def rule22(stock, data: List[dataModel], index: List[dataModel]):
     if not t_limit(stock, data):
         return False
     if t_low_pct(data) <= -0.05:
         return False
     if t_open_pct(data) > 0.01:
-        gemData = collectData('ShIndex', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
-        if t_close_pct(gemData) < -0.02:
+        if t_close_pct(index) < -0.02:
             return True
 
 
 def rule23(stock, data: List[dataModel]):
-    err = None
     try:
         for i in range(1, 3):
             d = data[-i]
@@ -274,8 +264,7 @@ def rule23(stock, data: List[dataModel]):
                 continue
             if d.close() > max([_.close() for _ in data[-440 - i:-i]]):
                 return True
-    except Exception as e:
-        err = e
+    except:
         return False
 
 
@@ -436,11 +425,11 @@ def rule36(stock, data: List[dataModel]):
 
 
 class level3:
-    def __init__(self, stock: str, data: List[dataModel], virtual=None):
+    def __init__(self, stock: str, data: List[dataModel], index: List[dataModel]):
         self.level = 3
         self.data = data
+        self.index = index
         self.stock = stock
-        self.virtual = virtual
         self.shot_rule: list = []
         self.fail_rule: list = []
 
@@ -469,7 +458,7 @@ class level3:
         self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
         self.shot_rule.append(20) if rule20(self.stock, self.data) else self.fail_rule.append(20)
         self.shot_rule.append(21) if rule21(self.data) else self.fail_rule.append(21)
-        self.shot_rule.append(22) if rule22(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(22)
+        self.shot_rule.append(22) if rule22(self.stock, self.data, self.index) else self.fail_rule.append(22)
         self.shot_rule.append(23) if rule23(self.stock, self.data) else self.fail_rule.append(23)
         self.shot_rule.append(24) if rule24(self.stock, self.data) else self.fail_rule.append(24)
         self.shot_rule.append(25) if rule25(self.stock, self.data) else self.fail_rule.append(25)

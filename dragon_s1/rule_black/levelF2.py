@@ -5,8 +5,7 @@
 # @Software: PyCharm
 from typing import List
 from common import dateHandler
-from common.collect_data import t_low_pct, t_open_pct, t_close_pct, t_high_pct, limit, dataModel, model_1, t_limit, \
-    collectData
+from common.collect_data import t_low_pct, t_open_pct, t_close_pct, t_high_pct, limit, dataModel, model_1, t_limit
 
 
 def rule1(stock, data: List[dataModel]):
@@ -23,32 +22,38 @@ def rule1(stock, data: List[dataModel]):
 
 
 def rule2(stock, data: List[dataModel]):
-    if not t_limit(stock, data):
-        return False
-    if not t_limit(stock, data, 1):
-        return False
-    if not t_limit(stock, data, 2):
-        return False
+    for i in range(3):
+        if not t_limit(stock, data, i):
+            return False
+        if model_1(stock, data, i):
+            return False
     if data[-1].turnover() > 1.5 * data[-2].turnover():
         if data[-2].turnover() > 1.5 * data[-3].turnover():
             return True
 
 
-def rule3(stock, data: List[dataModel], virtual=None):
-    if not t_limit(stock, data):
-        return False
-    if not t_limit(stock, data, 1):
-        return False
-    if model_1(stock, data):
-        return False
-    if model_1(stock, data, 1):
-        return False
-    if data[-1].turnover() <= 3 * data[-2].turnover():
-        return False
-    if data[-1].firstLimitTime() > data[-2].firstLimitTime() + dateHandler.timeDelta(data[-2].date(), data[-1].date()):
-        gemData = collectData('ShIndex', dateRange=5, aimDate=data[-1 if virtual is None else -2].date())
-        if t_low_pct(gemData) > -0.005:
-            return True
+def rule3(stock, data: List[dataModel], index: List[dataModel]):
+    try:
+        if not t_limit(stock, data):
+            return False
+        if not t_limit(stock, data, 1):
+            return False
+        if model_1(stock, data):
+            return False
+        if model_1(stock, data, 1):
+            return False
+        if data[-1].turnover() <= 3 * data[-2].turnover():
+            return False
+        matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
+        if data[-1].firstLimitTime() <= matchTime:
+            return False
+        time = data[-1].time()
+        limitMinute = dateHandler.getMinute(data[-1].firstLimitTime())
+        if time[limitMinute] < 100000:
+            if t_low_pct(index) > -0.01:
+                return True
+    except:
+        pass
 
 
 def rule4(stock, data: List[dataModel]):
@@ -167,7 +172,7 @@ def rule12(stock, data: List[dataModel]):
         return False
     if t_limit(stock, data, 1):
         return False
-    if data[-2].turnover() > data[-1].turnover():
+    if data[-2].turnover() * 0.7 > data[-1].turnover():
         if data[-2].high() > data[-1].high():
             return True
 
@@ -246,19 +251,23 @@ def rule18(stock, data: List[dataModel]):
 
 
 def rule19(stock, data: List[dataModel]):
-    count = 0
-    for i in range(3):
-        if not t_limit(stock, data, i):
-            return False
-        if model_1(stock, data, i):
-            return False
-        matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '09:47:00')
-        if data[-i - 1].firstLimitTime() >= matchTime:
-            return False
-        d = data[-i - 1]
-        if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
-            count += 1
-    return count >= 2
+    try:
+        count = 0
+        for i in range(3):
+            if not t_limit(stock, data, i):
+                return False
+            if model_1(stock, data, i):
+                return False
+            matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '09:47:00')
+            if data[-i - 1].firstLimitTime() >= matchTime:
+                return False
+            d = data[-i - 1]
+            if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+                    d.sell_elg_vol() + d.sell_lg_vol()) < 0.2:
+                count += 1
+        return count >= 2
+    except:
+        pass
 
 
 def rule20(stock, data: List[dataModel]):
@@ -311,17 +320,19 @@ def rule24(stock, data: List[dataModel]):
             return False
     if not t_limit(stock, data):
         return False
+    if model_1(stock, data):
+        return False
     matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:40:00')
     if data[-1].firstLimitTime() < matchTime:
         return True
 
 
 class levelF2:
-    def __init__(self, stock: str, data: List[dataModel], virtual=None):
+    def __init__(self, stock: str, data: List[dataModel], index: List[dataModel]):
         self.level = 'F2'
         self.data = data
+        self.index = index
         self.stock = stock
-        self.virtual = virtual
         self.shot_rule: list = []
         self.fail_rule: list = []
 
@@ -331,7 +342,7 @@ class levelF2:
     def filter(self):
         self.shot_rule.append(1) if rule1(self.stock, self.data) else self.fail_rule.append(1)
         self.shot_rule.append(2) if rule2(self.stock, self.data) else self.fail_rule.append(2)
-        self.shot_rule.append(3) if rule3(self.stock, self.data, virtual=self.virtual) else self.fail_rule.append(3)
+        self.shot_rule.append(3) if rule3(self.stock, self.data, self.index) else self.fail_rule.append(3)
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         self.shot_rule.append(5) if rule5(self.stock, self.data) else self.fail_rule.append(5)
         self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
