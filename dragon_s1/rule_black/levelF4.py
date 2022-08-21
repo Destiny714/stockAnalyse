@@ -254,30 +254,48 @@ def rule20(stock, data: List[dataModel]):
 
 
 def rule21(stock, data: List[dataModel], index: List[dataModel]):
-    if t_limit(stock, data, 2):
-        return False
-    if not t_limit(stock, data, 1):
-        return False
-    if not t_limit(stock, data):
-        return False
-    if data[-1].firstLimitTime() <= data[-2].firstLimitTime() + dateHandler.timeDelta(data[-2].date(), data[-1].date()):
-        return False
-    if data[-1].lastLimitTime() <= data[-2].lastLimitTime() + dateHandler.timeDelta(data[-2].date(), data[-1].date()):
-        return False
-    if t_low_pct(index) > -0.01:
-        return True
+    try:
+        if data[-1].limitOpenTime() == 0:
+            return False
+        if t_limit(stock, data, 2):
+            return False
+        if not t_limit(stock, data, 1):
+            return False
+        if not t_limit(stock, data):
+            return False
+        if data[-1].firstLimitTime() <= data[-2].firstLimitTime() + dateHandler.timeDelta(data[-2].date(),
+                                                                                          data[-1].date()):
+            return False
+        if data[-1].lastLimitTime() <= data[-2].lastLimitTime() + dateHandler.timeDelta(data[-2].date(),
+                                                                                        data[-1].date()):
+            return False
+        if t_low_pct(index) > -0.01:
+            time = data[-1].time()
+            limitMinute = dateHandler.getMinute(data[-1].firstLimitTime())
+            if time[limitMinute] < 100000:
+                return True
+    except:
+        pass
 
 
 def rule22(stock, data: List[dataModel]):
-    if t_limit(stock, data, 2):
-        return False
-    if not t_limit(stock, data, 1):
-        return False
-    if not t_limit(stock, data):
-        return False
-    matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '10:30:00')
-    if data[-1].firstLimitTime() > matchTime and data[-1].lastLimitTime() > matchTime:
-        return True
+    try:
+        if data[-1].limitOpenTime() == 0:
+            return False
+        if t_limit(stock, data, 2):
+            return False
+        if not t_limit(stock, data, 1):
+            return False
+        if not t_limit(stock, data):
+            return False
+        matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '10:30:00')
+        if data[-1].firstLimitTime() > matchTime and data[-1].lastLimitTime() > matchTime:
+            time = data[-1].time()
+            limitMinute = dateHandler.getMinute(data[-1].firstLimitTime())
+            if time[limitMinute] < 100000:
+                return True
+    except:
+        pass
 
 
 def rule23(stock, data: List[dataModel], index: List[dataModel]):
@@ -394,34 +412,45 @@ def rule29(stock, data: List[dataModel]):
 
 
 def rule30(stock, data: List[dataModel]):
-    if t_limit(stock, data, 2):
-        return False
-    if not t_limit(stock, data, 1):
-        return False
-    if not t_limit(stock, data):
-        return False
-    if data[-1].turnover() <= data[-2].turnover() * 0.8:
-        return False
-    if t_open_pct(data) >= 0.045:
-        return False
-    matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:50:00')
-    if data[-1].firstLimitTime() > matchTime:
-        return True
+    try:
+        if t_limit(stock, data, 2):
+            return False
+        if not t_limit(stock, data, 1):
+            return False
+        if not t_limit(stock, data):
+            return False
+        if data[-1].turnover() <= data[-2].turnover() * 0.8:
+            return False
+        if t_open_pct(data) >= 0.045:
+            return False
+        matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:50:00')
+        if data[-1].firstLimitTime() > matchTime:
+            time = data[-1].time()
+            limitMinute = dateHandler.getMinute(data[-1].firstLimitTime())
+            if time[limitMinute] < 100000:
+                return True
+    except:
+        pass
 
 
 def rule31(stock, data: List[dataModel]):
-    if t_limit(stock, data, 2):
-        return False
-    if not t_limit(stock, data, 1):
-        return False
-    if not t_limit(stock, data):
-        return False
-    if data[-1].turnover() <= data[-2].turnover():
-        return False
-    range5 = data[-7:-2]
-    if data[-2].turnover() > 3 * (sum([_.turnover() for _ in range5]) / 5):
-        if data[-1].amount() < 500000:
-            return True
+    try:
+        if t_limit(stock, data, 2):
+            return False
+        if not t_limit(stock, data, 1):
+            return False
+        if not t_limit(stock, data):
+            return False
+        if data[-1].turnover() <= data[-2].turnover():
+            return False
+        range5 = data[-7:-2]
+        if data[-2].turnover() > 3 * (sum([_.turnover() for _ in range5]) / 5):
+            time = data[-1].time()
+            limitMinute = dateHandler.getMinute(data[-1].firstLimitTime())
+            if time[limitMinute] < 100000:
+                return True
+    except:
+        pass
 
 
 def rule32(stock, data: List[dataModel]):
@@ -554,7 +583,7 @@ def rule39(data: List[dataModel], index: List[dataModel]):
         badCount = 0
         for i in range(40):
             j = i + 1
-            ma = [data[-_] for _ in range(j, j + 60)]
+            ma = [data[-_] for _ in range(j, j + 30)]
             avg = sum(_.close() for _ in ma) / len(ma)
             if data[-i - 1].close() < avg:
                 if t_low_pct(index, i) > -0.01:
@@ -570,11 +599,11 @@ def rule40(data: List[dataModel]):
         badCount = 0
         for i in range(10):
             j = i + 1
-            ma = [data[-_] for _ in range(j, j + 20)]
+            ma = [data[-_] for _ in range(j, j + 5)]
             avg = sum(_.close() for _ in ma) / len(ma)
             if data[-i - 1].close() < avg:
                 badCount += 1
-            if badCount >= 3:
+            if badCount >= 2:
                 return True
     except:
         return False
@@ -599,7 +628,7 @@ def rule42(data: List[dataModel], index: List[dataModel]):
         badCount = 0
         for i in range(20):
             j = i + 1
-            ma = [data[-_] for _ in range(j, j + 30)]
+            ma = [data[-_] for _ in range(j, j + 10)]
             avg = sum(_.close() for _ in ma) / len(ma)
             if data[-i - 1].close() < avg:
                 if t_low_pct(index, i) > -0.01:

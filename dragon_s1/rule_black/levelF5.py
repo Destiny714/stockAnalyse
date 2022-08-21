@@ -9,9 +9,9 @@ from common import dateHandler
 from common.collect_data import dataModel, model_1, t_limit, t_high_pct
 
 
-def rule1(data: List[dataModel]):
+def rule1(stock, data: List[dataModel]):
     try:
-        if t_high_pct(data) <= 0.05:
+        if not t_limit(stock, data, 1):
             return False
         d = data[-2]
         if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
@@ -33,7 +33,8 @@ def rule2(stock, data: List[dataModel]):
         if data[-1].firstLimitTime() <= matchTime:
             return False
         d = data[-2]
-        if d.buy_elg_vol() + d.buy_lg_vol() < d.sell_elg_vol() + d.sell_lg_vol():
+        if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+                d.buy_elg_vol() + d.buy_lg_vol()) < 0.2:
             if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() < 0.2:
                 return True
     except:
@@ -47,7 +48,7 @@ def rule3(data: List[dataModel]):
             if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
                     d.buy_elg_vol() + d.buy_lg_vol()) >= 0.2:
                 return False
-            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() >= 0.2:
+            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() >= 0.3:
                 return False
         return True
     except:
@@ -202,7 +203,7 @@ class levelF5:
         return {'level': self.level, 'stock': self.stock, 'detail': self.shot_rule, 'result': self.shot_rule == []}
 
     def filter(self):
-        self.shot_rule.append(1) if rule1(self.data) else self.fail_rule.append(1)
+        self.shot_rule.append(1) if rule1(self.stock, self.data) else self.fail_rule.append(1)
         self.shot_rule.append(2) if rule2(self.stock, self.data) else self.fail_rule.append(2)
         self.shot_rule.append(3) if rule3(self.data) else self.fail_rule.append(3)
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)

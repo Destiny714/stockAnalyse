@@ -17,7 +17,7 @@ def rule1(stock, data: List[dataModel]):
         if d.buy_elg_vol() / d.volume() > 0.45:
             if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.4:
                 if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                        d.buy_elg_vol() + d.buy_lg_vol()) > 0.1:
+                        d.buy_elg_vol() + d.buy_lg_vol()) > 0.15:
                     return True
     except:
         pass
@@ -32,7 +32,7 @@ def rule2(stock, data: List[dataModel]):
         if d.buy_elg_vol() / d.volume() > 0.35:
             if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.4:
                 if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                        d.buy_elg_vol() + d.buy_lg_vol()) > 0.1:
+                        d.buy_elg_vol() + d.buy_lg_vol()) > 0.15:
                     return True
     except:
         pass
@@ -47,7 +47,7 @@ def rule3(stock, data: List[dataModel]):
         if d.buy_elg_vol() / d.volume() > 0.25:
             if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.4:
                 if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                        d.buy_elg_vol() + d.buy_lg_vol()) > 0.1:
+                        d.buy_elg_vol() + d.buy_lg_vol()) > 0.15:
                     return True
     except:
         pass
@@ -65,7 +65,7 @@ def rule4(stock, data: List[dataModel]):
             if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() <= 0.4:
                 return False
             if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                    d.buy_elg_vol() + d.buy_lg_vol()) <= 0.1:
+                    d.buy_elg_vol() + d.buy_lg_vol()) <= 0.15:
                 return False
         return True
     except:

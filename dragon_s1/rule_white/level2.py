@@ -17,14 +17,12 @@ def rule1(data: List[dataModel]):
 
 
 def rule2(data: List[dataModel]):
-    err = None
     try:
         range60 = data[-60:]
         range220 = data[-220:]
         if max([_.turnover() for _ in range60]) > 5 * sum([_.turnover() for _ in range220]) / 220:
             return True
-    except Exception as e:
-        err = e
+    except:
         return False
 
 

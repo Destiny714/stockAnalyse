@@ -5,7 +5,7 @@
 # @Software: PyCharm
 from typing import List
 
-from common.collect_data import dataModel, limit, t_low_pct, t_limit, t_close_pct
+from common.collect_data import dataModel, limit, t_low_pct
 
 
 def rule2(data: List[dataModel]):
@@ -70,14 +70,12 @@ def rule9(data: List[dataModel]):
 
 
 def rule10(data: List[dataModel]):
-    err = None
     try:
         range3month = data[-90:]
         range3year = data[-660:]
         if max([_.turnover() for _ in range3month]) > sum([_.turnover() for _ in range3year]) / 660:
             return True
-    except Exception as e:
-        err = e
+    except:
         return False
 
 

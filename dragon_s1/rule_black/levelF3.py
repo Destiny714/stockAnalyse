@@ -378,6 +378,8 @@ def rule27(stock, data: List[dataModel]):
                 continue
             if t_limit(stock, data, i - 1):
                 continue
+            if t_limit(stock, data, i - 2):
+                continue
             if t_open_pct(data, i - 1) < 0.045:
                 count += 1
             if count >= 2:

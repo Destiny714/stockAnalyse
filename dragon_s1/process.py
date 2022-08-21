@@ -20,7 +20,7 @@ from common.collect_data import collectData, t_open_pct, limit_height, collectIn
 if __name__ == '__main__':
     stocks = concurrentActions.initStock(needReload=False, extra=False)
     tradeDays = databaseApi.Mysql().selectTradeDate()
-    aimDates = [_ for _ in tradeDays if 20220815 <= int(_) <= 20220819]
+    aimDates = [dateHandler.lastTradeDay()]
 
 
     def process(aimDate):
@@ -49,7 +49,7 @@ if __name__ == '__main__':
                 l1 = level1.level1(stock, data).filter()
                 l2 = level2.level2(stock, data).filter()
                 l3 = level3.level3(stock, data, index).filter()
-                l4 = level4.level4(stock, data).filter()
+                l4 = level4.level4(stock, data, index).filter()
                 l5 = level5.level5(stock, data, index).filter()
                 l6 = level6.level6(stock, data, index).filter()
                 lA1 = levelA1.levelA1(stock, data).filter()
@@ -142,6 +142,7 @@ if __name__ == '__main__':
                     virtualDict[stock][f'{virtual}_detail'] = details
                     print(f'virtual {str(virtual).upper()} {stock}')
             except (IndexError, ValueError, KeyError, TypeError) as e:
+                print(e)
                 errors.append([stock, e])
 
         toolBox.thread_pool_executor(processOneStock, [{'stock': stock, 'virtual': 's'} for stock in stocks], 10)
