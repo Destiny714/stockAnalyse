@@ -148,7 +148,14 @@ class dataModel:
     def concentration(self):
         cost5pct = self.data[35]
         cost95pct = self.data[39]
+        if cost95pct + cost5pct == 0:
+            return 100
         return (cost95pct - cost5pct) / (cost95pct + cost5pct)
+
+    def timeVol(self, timeStamp: int):
+        time = json.loads(self.data[42])
+        limitMinute = dateHandler.getMinute(timeStamp)
+        return time[limitMinute]
 
 
 def collectIndexData(index, dateRange: int = 500, aimDate=dateHandler.lastTradeDay()) -> List[dataModel]:
@@ -279,19 +286,19 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
 
 
 def t_low_pct(data: List[dataModel], plus: int = 0):
-    return data[-plus - 1].low() / data[-plus - 2].close() - 1
+    return (data[-plus - 1].low() / data[-plus - 2].close()) - 1
 
 
 def t_high_pct(data: List[dataModel], plus: int = 0):
-    return data[-plus - 1].high() / data[-plus - 2].close() - 1
+    return (data[-plus - 1].high() / data[-plus - 2].close()) - 1
 
 
 def t_close_pct(data: List[dataModel], plus: int = 0):
-    return data[-plus - 1].close() / data[-plus - 2].close() - 1
+    return (data[-plus - 1].close() / data[-plus - 2].close()) - 1
 
 
 def t_open_pct(data: List[dataModel], plus: int = 0):
-    return data[-plus - 1].open() / data[-plus - 2].close() - 1
+    return (data[-plus - 1].open() / data[-plus - 2].close()) - 1
 
 
 def limit(stock: str) -> float:

@@ -219,10 +219,14 @@ class Mysql:
         self.action(output=False)
 
     def updateLimitDetailData(self, data):
+        firstTime = data['first_time']
+        lastTime = data['last_time']
+        new_firstTime = f'{0 if len(firstTime[:-4]) == 1 else ""}{firstTime[:-4]}:{firstTime[-4:-2]}:{firstTime[-2:]}' if firstTime != '' else '09:30:00'
+        new_lastTime = f'{0 if len(lastTime[:-4]) == 1 else ""}{lastTime[:-4]}:{lastTime[-4:-2]}:{lastTime[-2:]}' if lastTime != '' else '09:30:00'
         self.word = f"UPDATE No{str(data['ts_code']).split('.')[0]} SET " \
-                    f"firstLimitTime={dateHandler.joinTimeToStamp(data['trade_date'], data['first_time'] if data['first_time'] != '' else '09:30:00')}," \
-                    f"lastLimitTime={dateHandler.joinTimeToStamp(data['trade_date'], data['last_time'] if data['last_time'] != '' else '09:30:00')}," \
-                    f"openTime={data['open_times']} " \
+                    f"firstLimitTime = {dateHandler.joinTimeToStamp(data['trade_date'], new_firstTime)}," \
+                    f"lastLimitTime = {dateHandler.joinTimeToStamp(data['trade_date'], new_lastTime)}," \
+                    f"openTime = {data['open_times']} " \
                     f"WHERE date = '{data['trade_date']}'"
         self.action(output=False)
 

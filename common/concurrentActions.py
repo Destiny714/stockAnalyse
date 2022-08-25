@@ -160,6 +160,39 @@ def updateTimeDataToday():
     print(f'update time data done')
 
 
+def rankingLimitTime(aimDate=dateHandler.lastTradeDay()) -> list:
+    print('ranking limit time')
+    client = Mysql()
+    stocks = client.selectAllStock()
+    datas = {}
+
+    def addData(stock):
+        try:
+            data = collect_data.collectData(stock, dateRange=5, aimDate=aimDate)
+            for i in range(3):
+                if not collect_data.t_limit(stock, data, i):
+                    return
+                if collect_data.model_1(stock, data):
+                    return
+                limitTime = data[-1].firstLimitTime()
+                if limitTime in datas.keys():
+                    datas[limitTime].append(stock)
+                else:
+                    datas[limitTime] = [stock]
+        except:
+            pass
+
+    toolBox.thread_pool_executor(addData, stocks)
+
+    rankList = [{'time': _, 'stocks': datas[_]} for _ in datas.keys()]
+
+    def rank(d):
+        return d['time']
+
+    rankList.sort(key=rank)
+    return rankList[0]['stocks']
+
+
 def industryIndex(aimDate=dateHandler.lastTradeDay()):
     industries = databaseApi.Mysql().selectAllIndustry()
     errors = []

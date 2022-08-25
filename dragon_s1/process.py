@@ -8,16 +8,20 @@
 # import sys
 #
 # sys.path.append(os.getcwd().replace('/dragon_s1', ''))
+import warnings
+
+import pymysql
 
 import excel_process
 from rule_level import A, S, F
 from api import databaseApi, tushareApi
 from common import toolBox, concurrentActions, dateHandler, push
 from rule_black import levelF1, levelF2, levelF3, levelF4, levelF5
-from rule_white import level1, level2, level3, level4, level5, level6, levelA1, levelA2, levelS1, levelS2
+from rule_white import level1, level2, level3, level4, level5, level6, levelA1, levelA2, levelA3
 from common.collect_data import collectData, t_open_pct, limit_height, collectIndexData, virtualIndexData
 
 if __name__ == '__main__':
+    warnings.filterwarnings('ignore')
     stocks = concurrentActions.initStock(needReload=False, extra=False)
     tradeDays = databaseApi.Mysql().selectTradeDate()
     aimDates = [dateHandler.lastTradeDay()]
@@ -25,7 +29,8 @@ if __name__ == '__main__':
 
     def process(aimDate):
         industryIndexDict = concurrentActions.industryIndex(aimDate=aimDate)
-        limitUpCount = len(tushareApi.Tushare().allLimitUpDetail(date=aimDate))
+        limitUpCount = tushareApi.Tushare().dailyLimitCount(date=aimDate)
+        limitTimeRank = concurrentActions.rankingLimitTime(aimDate)
         errors = []
         excelDatas = []
         virtualDict = {f'{stock}': {} for stock in stocks}
@@ -50,18 +55,17 @@ if __name__ == '__main__':
                 l2 = level2.level2(stock, data).filter()
                 l3 = level3.level3(stock, data, index).filter()
                 l4 = level4.level4(stock, data, index).filter()
-                l5 = level5.level5(stock, data, index).filter()
+                l5 = level5.level5(stock, data, index, limitTimeRank).filter()
                 l6 = level6.level6(stock, data, index).filter()
                 lA1 = levelA1.levelA1(stock, data).filter()
                 lA2 = levelA2.levelA2(stock, data).filter()
-                lS1 = levelS1.levelS1(stock, data).filter()
-                lS2 = levelS2.levelS2(stock, data).filter()
+                lA3 = levelA3.levelA3(stock, data).filter()
                 lF1 = levelF1.levelF1(stock, data, index).filter()
                 lF2 = levelF2.levelF2(stock, data, index).filter()
                 lF3 = levelF3.levelF3(stock, data, index).filter()
                 lF4 = levelF4.levelF4(stock, data, index).filter()
                 lF5 = levelF5.levelF5(stock, data).filter()
-                for white in [l1, l2, l3, l4, l5, l6, lA1, lA2, lS1, lS2]:
+                for white in [l1, l2, l3, l4, l5, l6, lA1, lA2, lA3]:
                     if virtual is None:
                         white_sum += len(white['detail'])
                     if white['result']:
@@ -72,20 +76,19 @@ if __name__ == '__main__':
                     if black['result'] is False:
                         details[black['level']] = black['detail']
                 score += len(l1['detail']) * 1
-                score += len(l2['detail']) * 2
-                score += len(l3['detail']) * 3
-                score += len(l4['detail']) * 5
-                score += len(l5['detail']) * 8
-                score += len(l6['detail']) * 10
-                score += len(lA1['detail']) * 5
-                score += len(lA2['detail']) * 5
-                score += len(lS1['detail']) * 6
-                score += len(lS2['detail']) * 6
-                score -= len(lF1['detail']) * 5
-                score -= len(lF2['detail']) * 5
-                score -= len(lF3['detail']) * 8
-                score -= len(lF4['detail']) * 8
-                score -= len(lF5['detail']) * 10
+                score += len(l2['detail']) * 1
+                score += len(l3['detail']) * 2
+                score += len(l4['detail']) * 4
+                score += len(l5['detail']) * 5
+                score += len(l6['detail']) * 7
+                score += len(lA1['detail']) * 4
+                score += len(lA2['detail']) * 4
+                score += len(lA3['detail']) * 4
+                score -= len(lF1['detail']) * 4
+                score -= len(lF2['detail']) * 4
+                score -= len(lF3['detail']) * 5
+                score -= len(lF4['detail']) * 5
+                score -= len(lF5['detail']) * 7
                 if virtual is None:
                     stockDetail = databaseApi.Mysql().selectStockDetail(stock)
                     industry = stockDetail[3]
@@ -99,7 +102,7 @@ if __name__ == '__main__':
                                 t0Day.buy_elg_vol() + t0Day.buy_lg_vol())) * 100, 2)
                     TF = -8888 if t0Day.buy_elg_vol() == 0 else round(
                         ((t0Day.buy_elg_vol() - t0Day.sell_elg_vol()) / t0Day.buy_elg_vol()) * 100, 2)
-                    hitPlus = (len(lA1['detail']) + len(lA2['detail']) + len(lS1['detail']) + len(lS2['detail'])) > 0
+                    hitPlus = (len(lA1['detail']) + len(lA2['detail']) + len(lA3['detail'])) > 0
                     level = 'B'
                     if A.ruleA(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum, S=_S,
                                data=data, aj=AJ, stock=stock).filter():
@@ -141,8 +144,7 @@ if __name__ == '__main__':
                     virtualDict[stock][virtual] = score
                     virtualDict[stock][f'{virtual}_detail'] = details
                     print(f'virtual {str(virtual).upper()} {stock}')
-            except (IndexError, ValueError, KeyError, TypeError) as e:
-                print(e)
+            except (IndexError, ValueError, KeyError, TypeError, pymysql.Error) as e:
                 errors.append([stock, e])
 
         toolBox.thread_pool_executor(processOneStock, [{'stock': stock, 'virtual': 's'} for stock in stocks], 10)
@@ -165,7 +167,6 @@ if __name__ == '__main__':
                 errStock, errStockDetail[2], errStockDetail[3],
                 f'{industryIndexDict[errStockDetail[3]]["limit"]}/{limitUpCount}',
                 'N/A', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '0%', aimDate, '', '', ''
-
             ])
 
         excel_process.write(aimDate, excelDatas)

@@ -54,6 +54,12 @@ def rule2(stock, data: List[dataModel]):
 
 def rule3(data: List[dataModel]):
     try:
+        d0 = data[-1]
+        if d0.limitOpenTime() > 0:
+            return False
+        if (d0.buy_elg_vol() + d0.buy_lg_vol() - d0.sell_elg_vol() - d0.sell_lg_vol()) / (
+                d0.buy_elg_vol() + d0.buy_lg_vol()) <= 0.2:
+            return False
         count = 0
         for i in range(5):
             d = data[-i - 1]
@@ -80,6 +86,12 @@ def rule3(data: List[dataModel]):
 
 def rule4(stock, data: List[dataModel]):
     try:
+        d0 = data[-1]
+        if d0.limitOpenTime() > 0:
+            return False
+        if (d0.buy_elg_vol() + d0.buy_lg_vol() - d0.sell_elg_vol() - d0.sell_lg_vol()) / (
+                d0.buy_elg_vol() + d0.buy_lg_vol()) <= 0.2:
+            return False
         count = 0
         for i in range(10):
             if t_limit(stock, data, i):
@@ -104,6 +116,13 @@ def rule4(stock, data: List[dataModel]):
 
 def rule5(stock, data: List[dataModel]):
     try:
+        d0 = data[-1]
+        if d0.limitOpenTime() > 0:
+            return False
+        if (d0.buy_elg_vol() + d0.buy_lg_vol() - d0.sell_elg_vol() - d0.sell_lg_vol()) / (
+                d0.buy_elg_vol() + d0.buy_lg_vol()) <= 0.2:
+            return False
+        _flag = False
         for i in range(4, 21):
             if not t_limit(stock, data, i):
                 continue
@@ -126,6 +145,10 @@ def rule5(stock, data: List[dataModel]):
                 prev10 = [data[-_] for _ in range(k, k + 10)]
                 if d.close() <= sum([_.close() for _ in prev10]) / len(prev10):
                     return False
+            _flag = True
+            break
+        if not _flag:
+            return False
         for i in range(30):
             j = i + 1
             d = data[-i - 1]

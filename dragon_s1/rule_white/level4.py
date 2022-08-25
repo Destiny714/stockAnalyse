@@ -6,7 +6,8 @@
 
 from typing import List
 from common.dateHandler import timeDelta, getMinute, lastMinute
-from common.collect_data import t_low_pct, t_close_pct, t_open_pct, limit, dataModel, model_t, t_limit, model_1
+from common.collect_data import t_low_pct, t_close_pct, t_open_pct, limit, dataModel, model_t, t_limit, model_1, \
+    t_high_pct
 
 
 def rule1(stock, data: List[dataModel]):
@@ -29,17 +30,16 @@ def rule1(stock, data: List[dataModel]):
 
 def rule2(stock, data: List[dataModel]):
     try:
-        if not t_limit(stock, data):
-            return False
-        if t_low_pct(data) <= 0.06:
-            return False
-        if t_close_pct(data) <= limit(stock) / 100:
-            return False
-        if not (0.08 < t_open_pct(data) < limit(stock) / 100):
-            return False
-        range220 = data[-221:-1]
-        if data[-1].close() > max([_.high() for _ in range220]):
-            return True
+        for i in range(30):
+            if not t_limit(stock, data, i):
+                continue
+            if t_low_pct(data, i) <= 0.06:
+                continue
+            if not (0.08 < t_open_pct(data, i) < limit(stock) / 100):
+                continue
+            range220 = data[-221 - i:-1 - i]
+            if data[-i - 1].close() > max([_.high() for _ in range220]):
+                return True
     except:
         return False
 
@@ -398,6 +398,20 @@ def rule28(stock, data: List[dataModel]):
         pass
 
 
+def rule29(stock, data: List[dataModel]):
+    try:
+        if not t_limit(stock, data):
+            return False
+        if model_1(stock, data):
+            return False
+        if data[-1].timeVol(data[-1].firstLimitTime()) > 120000:
+            d = data[-1]
+            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.4:
+                return True
+    except:
+        pass
+
+
 def rule30(data: List[dataModel]):
     try:
         for i in range(30):
@@ -415,6 +429,31 @@ def rule30(data: List[dataModel]):
         return True
     except:
         return False
+
+
+def rule31(stock, data: List[dataModel]):
+    for i in range(1, 51):
+        if not t_limit(stock, data, i):
+            continue
+        d = data[-i - 1]
+        range20 = data[-i - 21:-i - 1]
+        if d.close() <= max([_.close() for _ in range20]):
+            continue
+        if t_limit(stock, data, i - 1):
+            continue
+        if t_open_pct(data, i - 1) <= 0.035:
+            continue
+        if t_high_pct(data, i - 1) <= 0.07:
+            continue
+        flag = True
+        for _i in range(-i, 0):
+            j = _i + 1
+            _range20 = [data[_] for _ in range(j - 20, j)]
+            if data[_i].close() <= sum([_.close() for _ in _range20]) / len(_range20):
+                flag = False
+                break
+        if flag:
+            return True
 
 
 class level4:
@@ -457,5 +496,7 @@ class level4:
         self.shot_rule.append(26) if rule26(self.data) else self.fail_rule.append(26)
         self.shot_rule.append(27) if rule27(self.data, self.index) else self.fail_rule.append(27)
         self.shot_rule.append(28) if rule28(self.stock, self.data) else self.fail_rule.append(28)
+        self.shot_rule.append(29) if rule29(self.stock, self.data) else self.fail_rule.append(29)
         self.shot_rule.append(30) if rule30(self.data) else self.fail_rule.append(30)
+        self.shot_rule.append(31) if rule31(self.stock, self.data) else self.fail_rule.append(31)
         return self.result()

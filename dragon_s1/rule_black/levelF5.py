@@ -136,7 +136,7 @@ def rule9(data: List[dataModel]):
             d = data[-1]
             if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() < 0.4:
                 matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
-                if data[-1].lastLimitTime() > matchTime:
+                if data[-1].firstLimitTime() > matchTime:
                     return True
     except:
         pass
@@ -169,7 +169,7 @@ def rule11(data: List[dataModel]):
                     d.buy_elg_vol() + d.buy_lg_vol()) >= 0.2:
                 return False
             matchTime = dateHandler.joinTimeToStamp(d.date(), '09:45:00')
-            if d.lastLimitTime() <= matchTime:
+            if d.firstLimitTime() <= matchTime:
                 return False
         return True
     except:

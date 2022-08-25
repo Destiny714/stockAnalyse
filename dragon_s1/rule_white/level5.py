@@ -59,6 +59,11 @@ def rule2(stock, data: List[dataModel]):
         pass
 
 
+def rule3(stock, limitTimeRank: list):
+    if stock in limitTimeRank:
+        return True
+
+
 def rule4(stock, data: List[dataModel]):
     if data[-1].limitOpenTime() >= 1:
         return False
@@ -210,13 +215,14 @@ def rule14(stock, data: List[dataModel]):
 
 
 class level5:
-    def __init__(self, stock: str, data: List[dataModel], index: List[dataModel]):
+    def __init__(self, stock: str, data: List[dataModel], index: List[dataModel], limitTimeRank: list):
         self.level = 5
         self.data = data
         self.index = index
         self.stock = stock
         self.shot_rule: list = []
         self.fail_rule: list = []
+        self.limitTimeRank: list = limitTimeRank
 
     def result(self):
         return {'level': self.level, 'stock': self.stock, 'detail': self.shot_rule, 'result': self.shot_rule != []}
@@ -224,6 +230,7 @@ class level5:
     def filter(self):
         self.shot_rule.append(1) if rule1(self.stock, self.data) else self.fail_rule.append(1)
         self.shot_rule.append(2) if rule2(self.stock, self.data) else self.fail_rule.append(2)
+        self.shot_rule.append(3) if rule3(self.stock, self.limitTimeRank) else self.fail_rule.append(3)
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
         self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)

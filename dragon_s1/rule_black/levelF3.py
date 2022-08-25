@@ -36,16 +36,20 @@ def rule2(stock, data: List[dataModel]):
 
 
 def rule3(stock, data: List[dataModel]):
-    for i in range(1, 6):
-        if not model_t(stock, data, i - 1):
-            continue
-        if t_low_pct(data, i - 1) >= 0.06:
-            continue
-        range10 = data[-10 - i:-i]
-        if data[-i].turnover() > 1.8 * max([_.turnover() for _ in range10]):
-            d = data[-i]
-            if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
-                return True
+    try:
+        for i in range(1, 6):
+            if not model_t(stock, data, i - 1):
+                continue
+            if t_low_pct(data, i - 1) >= 0.06:
+                continue
+            range10 = data[-10 - i:-i]
+            if data[-i].turnover() > 1.8 * max([_.turnover() for _ in range10]):
+                d = data[-i]
+                if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+                        d.buy_elg_vol() + d.buy_lg_vol()) < 0.2:
+                    return True
+    except:
+        pass
 
 
 def rule4(stock, data: List[dataModel]):
@@ -79,17 +83,21 @@ def rule5(stock, data: List[dataModel]):
 
 
 def rule6(stock, data: List[dataModel]):
-    for i in range(1, 4):
-        d = data[-i]
-        if d.open() != d.close():
-            continue
-        if t_close_pct(data, i - 1) <= limit(stock) / 100:
-            continue
-        if t_low_pct(data, i - 1) >= 0.06:
-            continue
-        if data[-i].limitOpenTime() > 2:
-            if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
-                return True
+    try:
+        for i in range(1, 4):
+            d = data[-i]
+            if d.open() != d.close():
+                continue
+            if t_close_pct(data, i - 1) <= limit(stock) / 100:
+                continue
+            if t_low_pct(data, i - 1) >= 0.06:
+                continue
+            if data[-i].limitOpenTime() > 2:
+                if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+                        d.buy_elg_vol() + d.buy_lg_vol()) < 0.2:
+                    return True
+    except:
+        pass
 
 
 def rule7(stock, data: List[dataModel]):
@@ -224,13 +232,17 @@ def rule16(stock, data: List[dataModel]):
 
 
 def rule17(data: List[dataModel], index: List[dataModel]):
-    for i in range(1, 5):
-        if t_open_pct(data, i - 1) > 0.09 and t_low_pct(data, i - 1) < 0.03:
-            if t_low_pct(index, i - 1) > -0.01:
-                d = data[-i]
-                if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() < 0.5 and d.buy_elg_vol() < d.sell_elg_vol():
-                    if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
-                        return True
+    try:
+        for i in range(1, 5):
+            if t_open_pct(data, i - 1) > 0.09 and t_low_pct(data, i - 1) < 0.03:
+                if t_low_pct(index, i - 1) > -0.01:
+                    d = data[-i]
+                    if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() < 0.5 and d.buy_elg_vol() < d.sell_elg_vol():
+                        if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
+                                d.buy_elg_vol() + d.buy_lg_vol()) < 0.2:
+                            return True
+    except:
+        pass
 
 
 def rule18(stock, data: List[dataModel], index: List[dataModel]):

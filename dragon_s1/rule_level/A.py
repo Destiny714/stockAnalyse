@@ -102,6 +102,12 @@ def rule12(height: int, score: int, black: int, white: int):
             return True
 
 
+def rule13(height: int, black: int, white: int):
+    if height > 0:
+        if black == 0 and white > 20:
+            return True
+
+
 class ruleA:
 
     def __init__(self, height: int, score: int, T1S: int, T1F: int, black: int, white: int, S: int,
@@ -143,4 +149,6 @@ class ruleA:
                   self.aj):
             return True
         if rule12(self.height, self.score, self.black, self.white):
+            return True
+        if rule13(self.height, self.black, self.white):
             return True

@@ -57,33 +57,11 @@ class Tushare:
 
     def limitTimeDetail(self, date: str = dateHandler.lastTradeDay()):
         details = []
-        data = self._instance.limit_list(**{
-            "trade_date": "",
-            "ts_code": "",
-            "limit_type": "U",
-            "start_date": date,
-            "end_date": date,
-            "limit": "",
-            "offset": ""
-        }, fields=[
-            "trade_date",
-            "ts_code",
-            "name",
-            "first_time",
-            "last_time",
-            "open_times",
-        ])
-        for i in range(len(data)):
-            d = data.iloc[-i - 1]
-            details.append(d)
-        return details
-
-    def allLimitUpDetail(self, date=dateHandler.lastTradeDay()) -> list:
-        details = []
-        data = self._instance.limit_list(**{
+        data = self._instance.limit_list_d(**{
             "trade_date": date,
             "ts_code": "",
             "limit_type": "U",
+            "exchange": "",
             "start_date": "",
             "end_date": "",
             "limit": "",
@@ -92,10 +70,31 @@ class Tushare:
             "trade_date",
             "ts_code",
             "name",
+            "first_time",
+            "last_time",
+            "open_times"
+        ])
+        for i in range(len(data)):
+            d = data.iloc[-i - 1]
+            details.append(d)
+        return details
+
+    def dailyLimitCount(self, date=dateHandler.lastTradeDay()) -> int:
+        details = []
+        data = self._instance.daily_basic(**{
+            "ts_code": "",
+            "trade_date": 20220822,
+            "start_date": "",
+            "end_date": "",
+            "limit": "",
+            "offset": ""
+        }, fields=[
+            "limit_status",
+            "ts_code"
         ])
         for i in range(len(data)):
             details.append(data.iloc[i])
-        return details
+        return len([_ for _ in details if _['limit_status'] != 0])
 
     def moneyFlow(self, date=dateHandler.lastTradeDay()):
         details = []

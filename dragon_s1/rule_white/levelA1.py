@@ -12,9 +12,9 @@ def rule1(data: List[dataModel]):
     try:
         d = data[-1]
         if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() > 0.65:
-            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.3:
+            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.6:
                 if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                        d.buy_elg_vol() + d.buy_lg_vol()) > 0.1:
+                        d.buy_elg_vol() + d.buy_lg_vol()) > 0.3:
                     return True
     except:
         pass
@@ -24,9 +24,9 @@ def rule2(data: List[dataModel]):
     try:
         d = data[-1]
         if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() > 0.55:
-            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.3:
+            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.5:
                 if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                        d.buy_elg_vol() + d.buy_lg_vol()) > 0.1:
+                        d.buy_elg_vol() + d.buy_lg_vol()) > 0.2:
                     return True
     except:
         pass
@@ -36,7 +36,7 @@ def rule3(data: List[dataModel]):
     try:
         d = data[-1]
         if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() > 0.45:
-            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.3:
+            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.4:
                 if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
                         d.buy_elg_vol() + d.buy_lg_vol()) > 0.1:
                     return True
@@ -47,10 +47,10 @@ def rule3(data: List[dataModel]):
 def rule4(data: List[dataModel]):
     try:
         d = data[-1]
-        if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() > 0.35:
+        if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() > 0.4:
             if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.3:
                 if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                        d.buy_elg_vol() + d.buy_lg_vol()) > 0.1:
+                        d.buy_elg_vol() + d.buy_lg_vol()) > 0.05:
                     return True
     except:
         pass
@@ -59,10 +59,10 @@ def rule4(data: List[dataModel]):
 def rule5(data: List[dataModel]):
     try:
         d = data[-2]
-        if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() > 0.65:
-            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.3:
+        if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() > 0.55:
+            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.5:
                 if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                        d.buy_elg_vol() + d.buy_lg_vol()) > 0.1:
+                        d.buy_elg_vol() + d.buy_lg_vol()) > 0.3:
                     d0 = data[-1]
                     if (d0.buy_elg_vol() - d0.sell_elg_vol()) / d0.buy_elg_vol() > 0.3:
                         return True
@@ -73,10 +73,10 @@ def rule5(data: List[dataModel]):
 def rule6(data: List[dataModel]):
     try:
         d = data[-2]
-        if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() > 0.65:
-            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.3:
+        if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() > 0.5:
+            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.4:
                 if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                        d.buy_elg_vol() + d.buy_lg_vol()) > 0.1:
+                        d.buy_elg_vol() + d.buy_lg_vol()) > 0.2:
                     d0 = data[-1]
                     if (d0.buy_elg_vol() - d0.sell_elg_vol()) / d0.buy_elg_vol() > 0.3:
                         return True
@@ -88,8 +88,9 @@ def rule7(data: List[dataModel]):
     try:
         for i in range(2):
             d = data[-i - 1]
-            if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                    d.buy_elg_vol() + d.buy_lg_vol()) <= 0.15:
+            if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.5:
+                return False
+            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() <= 0.3:
                 return False
         return True
     except:
@@ -100,10 +101,47 @@ def rule8(data: List[dataModel]):
     try:
         for i in range(3):
             d = data[-i - 1]
-            if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                    d.buy_elg_vol() + d.buy_lg_vol()) <= 0.1:
+            if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.5:
+                return False
+            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() <= 0.25:
                 return False
         return True
+    except:
+        pass
+
+
+def rule9(data: List[dataModel]):
+    try:
+        d1 = data[-2]
+        d2 = data[-3]
+        if (d2.buy_elg_vol() + d1.buy_elg_vol() - d2.sell_elg_vol() - d1.sell_elg_vol()) / (
+                d2.buy_elg_vol() + d1.buy_elg_vol()) > 0.5:
+            return True
+    except:
+        pass
+
+
+def rule10(data: List[dataModel]):
+    try:
+        d0 = data[-1]
+        d1 = data[-2]
+        d2 = data[-3]
+        if (d2.buy_elg_vol() + d1.buy_elg_vol() + d0.buy_elg_vol - d0.sell_elg_vol() - d1.sell_elg_vol()) / (
+                d0.buy_elg_vol() + d1.buy_elg_vol()) > 0.3:
+            return True
+    except:
+        pass
+
+
+def rule11(data: List[dataModel]):
+    try:
+        d0 = data[-1]
+        d1 = data[-2]
+        d2 = data[-3]
+        if (
+                d2.buy_elg_vol() + d1.buy_elg_vol() + d0.buy_elg_vol() - d2.sell_elg_vol() - d1.sell_elg_vol() - d0.sell_elg_vol()) / (
+                d2.buy_elg_vol() + d1.buy_elg_vol() + d0.buy_elg_vol()) > 0.4:
+            return True
     except:
         pass
 
@@ -128,4 +166,7 @@ class levelA1:
         self.shot_rule.append(6) if rule6(self.data) else self.fail_rule.append(6)
         self.shot_rule.append(7) if rule7(self.data) else self.fail_rule.append(7)
         self.shot_rule.append(8) if rule8(self.data) else self.fail_rule.append(8)
+        self.shot_rule.append(9) if rule9(self.data) else self.fail_rule.append(9)
+        self.shot_rule.append(10) if rule10(self.data) else self.fail_rule.append(10)
+        self.shot_rule.append(11) if rule11(self.data) else self.fail_rule.append(11)
         return self.result()

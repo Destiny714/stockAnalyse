@@ -84,7 +84,7 @@ def rule7(stock, data: List[dataModel]):
         return False
     if model_1(stock, data):
         return False
-    matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
+    matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:40:00')
     if data[-1].lastLimitTime() < matchTime:
         return True
 

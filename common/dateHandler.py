@@ -36,7 +36,7 @@ def lastTradeDay(date=None):
     today = today2str() if date is None else date
     tradeDays = databaseApi.Mysql().selectTradeDate()
     if today in tradeDays:
-        matchTime = joinTimeToStamp(today, '16:00:00')
+        matchTime = joinTimeToStamp(today, '15:30:00')
         if time.time() < matchTime:
             return databaseApi.Mysql().selectLastTradeDate(today)
         else:

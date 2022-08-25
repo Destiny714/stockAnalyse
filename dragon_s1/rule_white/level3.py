@@ -120,8 +120,8 @@ def rule10(stock, data: List[dataModel]):
         return False
     if not t_limit(stock, data, 1):
         return False
-    if t_open_pct(data, 0) >= 0.05 and t_open_pct(data, 1) >= 0.05:
-        if t_low_pct(data, 0) > 0.01 and t_low_pct(data, 1) > 0.01:
+    if t_open_pct(data, 0) >= 0.045:
+        if t_low_pct(data, 0) > 0.005:
             return True
 
 
@@ -147,8 +147,10 @@ def rule12(stock, data: List[dataModel]):
         return False
     try:
         range220 = data[-221:-1]
-        if data[-1].close() * 1.1 > max([_.close() for _ in range220]):
-            return True
+        flag = max([_.close() for _ in range220])
+        for i in range(20):
+            if data[-i - 1].close() * 1.1 > flag:
+                return True
     except:
         return False
 
@@ -185,17 +187,22 @@ def rule15(data: List[dataModel]):
 
 
 def rule16(data: List[dataModel]):
-    if data[-1].concentration() < 0.14:
-        return True
+    try:
+        if data[-1].concentration() < 0.14:
+            return True
+    except:
+        pass
+
+
+def rule17(stock, data: List[dataModel]):
+    if not t_limit(stock, data, 1):
+        range5 = data[-6:-1]
+        avg = sum([_.turnover() for _ in range5]) / 5
+        if avg < 5:
+            return True
 
 
 def rule18(stock, data: List[dataModel]):
-    if t_limit(stock, data, 1):
-        return False
-    if not t_limit(stock, data):
-        return False
-    if model_1(stock, data):
-        return False
     if 4 < data[-1].close() < 12:
         if 1.5 < data[-1].turnover() < 6:
             return True
@@ -211,6 +218,16 @@ def rule19(stock, data: List[dataModel]):
     if 4 < data[-1].close() < 12:
         if 3 < data[-1].turnover() < 9:
             return True
+
+
+def rule20(stock, data: List[dataModel]):
+    if t_limit(stock, data, 1):
+        return False
+    if not t_limit(stock, data):
+        return False
+    matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:40:00')
+    if data[-1].firstLimitTime() > matchTime:
+        return True
 
 
 def rule21(data: List[dataModel]):
@@ -235,10 +252,61 @@ def rule22(stock, data: List[dataModel], index: List[dataModel]):
             return True
 
 
+def rule23(data: List[dataModel]):
+    try:
+        for i in range(10):
+            j = i + 1
+            ma = [data[-_] for _ in range(j, j + 10)]
+            avg = sum(_.close() for _ in ma) / len(ma)
+            if data[-i - 1].close() <= avg:
+                return False
+        return True
+    except:
+        return False
+
+
+def rule24(data: List[dataModel]):
+    try:
+        for i in range(20):
+            j = i + 1
+            ma = [data[-_] for _ in range(j, j + 20)]
+            avg = sum(_.close() for _ in ma) / len(ma)
+            if data[-i - 1].close() <= avg:
+                return False
+        return True
+    except:
+        return False
+
+
+def rule25(data: List[dataModel]):
+    try:
+        for i in range(30):
+            j = i + 1
+            ma = [data[-_] for _ in range(j, j + 30)]
+            avg = sum(_.close() for _ in ma) / len(ma)
+            if data[-i - 1].close() <= avg:
+                return False
+        return True
+    except:
+        return False
+
+
 def rule26(data: List[dataModel]):
-    if data[-1].concentration() < data[-2].concentration():
-        if data[-1].concentration() < 0.15:
-            return True
+    try:
+        if data[-1].concentration() < data[-2].concentration():
+            if data[-1].concentration() < 0.15:
+                return True
+    except:
+        pass
+
+
+def rule27(stock, data: List[dataModel]):
+    for i in range(2):
+        if not t_limit(stock, data, i):
+            return False
+    matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
+    if data[-1].firstLimitTime() < matchTime:
+        return True
 
 
 def rule28(data: List[dataModel]):
@@ -250,6 +318,17 @@ def rule28(data: List[dataModel]):
             count += 1
         if count >= 8:
             return True
+
+
+def rule29(data: List[dataModel]):
+    for i in range(30):
+        j = i + 1
+        day1 = data[-j - 2]
+        day2 = data[-j - 1]
+        day3 = data[-j]
+        if day1.close() > day2.close() > day3.close():
+            if day1.volume() < day2.volume() < day3.volume():
+                return True
 
 
 def rule30(stock, data: List[dataModel]):
@@ -354,6 +433,20 @@ def rule36(stock, data: List[dataModel]):
         return False
 
 
+def rule37(stock, data: List[dataModel]):
+    for i in range(30):
+        j = i + 1
+        day1 = data[-j - 2]
+        day2 = data[-j - 1]
+        day3 = data[-j]
+        for _ in range(i, i + 3):
+            if t_limit(stock, data, _):
+                return False
+        if day1.close() < day2.close() < day3.close():
+            if day1.volume() < day2.volume() < day3.volume():
+                return True
+
+
 class level3:
     def __init__(self, stock: str, data: List[dataModel], index: List[dataModel]):
         self.level = 3
@@ -383,12 +476,19 @@ class level3:
         self.shot_rule.append(14) if rule14(self.data) else self.fail_rule.append(14)
         self.shot_rule.append(15) if rule15(self.data) else self.fail_rule.append(15)
         self.shot_rule.append(16) if rule16(self.data) else self.fail_rule.append(16)
+        self.shot_rule.append(17) if rule17(self.stock, self.data) else self.fail_rule.append(17)
         self.shot_rule.append(18) if rule18(self.stock, self.data) else self.fail_rule.append(18)
         self.shot_rule.append(19) if rule19(self.stock, self.data) else self.fail_rule.append(19)
+        self.shot_rule.append(20) if rule20(self.stock, self.data) else self.fail_rule.append(20)
         self.shot_rule.append(21) if rule21(self.data) else self.fail_rule.append(21)
         self.shot_rule.append(22) if rule22(self.stock, self.data, self.index) else self.fail_rule.append(22)
+        self.shot_rule.append(23) if rule23(self.data) else self.fail_rule.append(23)
+        self.shot_rule.append(24) if rule24(self.data) else self.fail_rule.append(24)
+        self.shot_rule.append(25) if rule25(self.data) else self.fail_rule.append(25)
         self.shot_rule.append(26) if rule26(self.data) else self.fail_rule.append(26)
+        self.shot_rule.append(27) if rule27(self.stock, self.data) else self.fail_rule.append(27)
         self.shot_rule.append(28) if rule28(self.data) else self.fail_rule.append(28)
+        self.shot_rule.append(29) if rule29(self.data) else self.fail_rule.append(29)
         self.shot_rule.append(30) if rule30(self.stock, self.data) else self.fail_rule.append(30)
         self.shot_rule.append(31) if rule31(self.stock, self.data) else self.fail_rule.append(31)
         self.shot_rule.append(32) if rule32(self.stock, self.data) else self.fail_rule.append(32)
@@ -396,4 +496,5 @@ class level3:
         self.shot_rule.append(34) if rule34(self.data) else self.fail_rule.append(34)
         self.shot_rule.append(35) if rule35(self.data) else self.fail_rule.append(35)
         self.shot_rule.append(36) if rule36(self.stock, self.data) else self.fail_rule.append(36)
+        self.shot_rule.append(37) if rule37(self.stock, self.data) else self.fail_rule.append(37)
         return self.result()
