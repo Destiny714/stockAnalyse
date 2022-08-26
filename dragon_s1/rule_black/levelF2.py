@@ -5,7 +5,8 @@
 # @Software: PyCharm
 from typing import List
 from common import dateHandler
-from common.collect_data import t_low_pct, t_open_pct, t_close_pct, t_high_pct, limit, dataModel, model_1, t_limit
+from common.collect_data import t_low_pct, t_open_pct, t_close_pct, t_high_pct, limit, dataModel, model_1, t_limit, \
+    t_down_limit
 
 
 def rule1(stock, data: List[dataModel]):
@@ -126,18 +127,22 @@ def rule8(stock, data: List[dataModel]):
 
 
 def rule9(stock, data: List[dataModel]):
-    for i in range(1, 4):
-        if not t_limit(stock, data, i - 1):
-            return False
-    for i in range(2):
-        d = data[- i - 1]
-        if data[-i - 1].limitOpenTime() <= 1:
-            continue
-        if t_close_pct(data, i) <= limit(stock) / 100:
-            continue
-        if t_open_pct(data, i) < -0.025 or t_low_pct(data, i) < -0.045:
-            if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
-                return True
+    try:
+        for i in range(1, 4):
+            if not t_limit(stock, data, i - 1):
+                return False
+        for i in range(2):
+            d = data[- i - 1]
+            if data[-i - 1].limitOpenTime() <= 1:
+                continue
+            if t_close_pct(data, i) <= limit(stock) / 100:
+                continue
+            if t_open_pct(data, i) < -0.025 or t_low_pct(data, i) < -0.045:
+                if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
+                    if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() < 0.3:
+                        return True
+    except:
+        pass
 
 
 def rule10(stock, data: List[dataModel]):
@@ -205,6 +210,8 @@ def rule15(stock, data: List[dataModel]):
     minus = []
     for i in range(3, 33):
         if t_limit(stock, data, i):
+            return False
+        if t_down_limit(stock, data, i):
             return False
         if t_close_pct(data, i) > 0:
             plus.append(data[-i - 1].volume())
@@ -329,7 +336,7 @@ def rule24(stock, data: List[dataModel]):
             return False
         matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:40:00')
         if data[-1].firstLimitTime() < matchTime:
-            if data[-1].timeVol(data[-1].firstLimitTime()) < 100000:
+            if data[-1].timeVol(timeStamp=data[-1].firstLimitTime()) < 100000:
                 return True
     except:
         pass

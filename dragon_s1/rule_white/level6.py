@@ -9,22 +9,25 @@ from common.collect_data import dataModel, t_high_pct, limit, t_close_pct, model
 
 
 def rule1(stock, data: List[dataModel]):
-    for i in range(30):
-        day1 = data[-i - 3]
-        day2 = data[-i - 2]
-        day3 = data[-i - 1]
-        if model_1(stock, data, i + 2):
-            continue
-        if not (1.2 * day1.volume() < day2.volume() < 2 * day1.volume()):
-            continue
-        if not (min(day2.open(), day2.close()) > day1.close()):
-            continue
-        if abs(t_open_pct(data, i + 1) - t_close_pct(data, i + 1)) > 0.03:
-            continue
-        if not (day3.volume() < 0.7 * day2.volume()):
-            continue
-        if day3.close() > day1.close():
-            return True
+    try:
+        for i in range(60):
+            day1 = data[-i - 3]
+            day2 = data[-i - 2]
+            day3 = data[-i - 1]
+            if model_1(stock, data, i + 2):
+                continue
+            if not (1.2 * day1.volume() < day2.volume() < 2 * day1.volume()):
+                continue
+            if not (min(day2.open(), day2.close()) > day1.close()):
+                continue
+            if abs(t_open_pct(data, i + 1) - t_close_pct(data, i + 1)) > 0.03:
+                continue
+            if not (day3.volume() < 0.7 * day2.volume()):
+                continue
+            if day3.close() > day1.close():
+                return True
+    except:
+        pass
 
 
 def rule2(stock, data: List[dataModel]):

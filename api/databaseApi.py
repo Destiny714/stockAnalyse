@@ -98,7 +98,7 @@ class Mysql:
     def selectAllStock(self):
         self.word = "SELECT symbol FROM stockList"
         data = self.action(output=True)
-        return [_[0] for _ in data]
+        return [_[0] for _ in data if _[0][0] != '4']
 
     def selectAllIndex(self):
         self.word = 'SELECT symbol FROM stockIndexList'

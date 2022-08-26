@@ -240,7 +240,8 @@ def rule17(data: List[dataModel], index: List[dataModel]):
                     if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() < 0.5 and d.buy_elg_vol() < d.sell_elg_vol():
                         if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
                                 d.buy_elg_vol() + d.buy_lg_vol()) < 0.2:
-                            return True
+                            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() < 0.3:
+                                return True
     except:
         pass
 

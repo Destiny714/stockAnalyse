@@ -169,6 +169,8 @@ def rankingLimitTime(aimDate=dateHandler.lastTradeDay()) -> list:
     def addData(stock):
         try:
             data = collect_data.collectData(stock, dateRange=5, aimDate=aimDate)
+            if collect_data.t_open_pct(data) > collect_data.limit(stock):
+                return
             for i in range(3):
                 if not collect_data.t_limit(stock, data, i):
                     return
@@ -190,11 +192,15 @@ def rankingLimitTime(aimDate=dateHandler.lastTradeDay()) -> list:
         return d['time']
 
     rankList.sort(key=rank)
+    print('limit time rank done')
     return rankList[0]['stocks']
 
 
 def industryIndex(aimDate=dateHandler.lastTradeDay()):
+    limitRankDict = {}
     industries = databaseApi.Mysql().selectAllIndustry()
+    for i in industries:
+        limitRankDict[i] = {}
     errors = []
     industryLimitDict = {}
 
@@ -204,12 +210,19 @@ def industryIndex(aimDate=dateHandler.lastTradeDay()):
         industryStocks = mysql.selectStockByIndustry(industry)
         for industryStock in industryStocks:
             try:
-                stockData = collect_data.collectData(industryStock, 2, aimDate=aimDate)
-                if stockData != [] and collect_data.t_limit(industryStock, stockData):
+                stockData = collect_data.collectData(industryStock, 5, aimDate=aimDate)
+                if collect_data.t_limit(industryStock, stockData):
                     limit += 1
+                    if collect_data.t_open_pct(stockData) <= collect_data.limit(industryStock):
+                        if stockData[-1].firstLimitTime() not in limitRankDict[industry].keys():
+                            limitRankDict[industry][stockData[-1].firstLimitTime()] = [industryStock]
+                        else:
+                            limitRankDict[industry][stockData[-1].firstLimitTime()].append(industryStock)
             except Exception as e:
                 errors.append(e)
-        industryLimitDict[industry] = {'limit': limit}
+        industryLimitDict[industry] = {'limit': limit,
+                                       'rank': [] if len(limitRankDict[industry].keys()) == 0 else
+                                       limitRankDict[industry][min(limitRankDict[industry].keys())]}
 
     print('processing industry index...')
     toolBox.thread_pool_executor(processOne, industries, 10)

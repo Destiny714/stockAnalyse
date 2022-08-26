@@ -172,18 +172,37 @@ def rule14(data: List[dataModel]):
         return False
 
 
-def rule16(stock, data: List[dataModel]):
-    if t_limit(stock, data, 2):
-        return False
-    if not t_limit(stock, data, 1):
+def rule15(stock, data: List[dataModel]):
+    if t_limit(stock, data, 1):
         return False
     if not t_limit(stock, data):
         return False
-    matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '10:00:00')
-    if data[-1].firstLimitTime() > matchTime:
-        d = data[-1]
-        if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
-            return True
+    if data[-1].turnover() <= 15:
+        return False
+    for i in range(20):
+        if t_limit(stock, data, i):
+            if t_limit(stock, data, i + 1):
+                if t_limit(stock, data, i + 2):
+                    return False
+    return True
+
+
+def rule16(stock, data: List[dataModel]):
+    try:
+        if t_limit(stock, data, 2):
+            return False
+        if not t_limit(stock, data, 1):
+            return False
+        if not t_limit(stock, data):
+            return False
+        matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '10:00:00')
+        if data[-1].firstLimitTime() > matchTime:
+            d = data[-1]
+            if (d.buy_elg_vol() + d.buy_lg_vol()) < (d.sell_elg_vol() + d.sell_lg_vol()):
+                if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() < 0.3:
+                    return True
+    except:
+        pass
 
 
 def rule17(stock, data: List[dataModel]):
@@ -257,18 +276,22 @@ def rule21(stock, data: List[dataModel]):
 
 
 def rule22(stock, data: List[dataModel]):
-    for i in range(1, 3):
-        if t_open_pct(data, i) <= limit(stock) / 100:
-            continue
-        if t_low_pct(data, i) >= 0.05:
-            continue
-        if t_close_pct(data, i) <= limit(stock) / 100:
-            continue
-        matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '10:30:00')
-        if data[-i - 1].lastLimitTime() > matchTime:
-            d = data[-i]
-            if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() < 0.5 and d.buy_elg_vol() < d.sell_elg_vol():
-                return True
+    try:
+        for i in range(1, 3):
+            if t_open_pct(data, i) <= limit(stock) / 100:
+                continue
+            if t_low_pct(data, i) >= 0.05:
+                continue
+            if t_close_pct(data, i) <= limit(stock) / 100:
+                continue
+            matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '10:30:00')
+            if data[-i - 1].lastLimitTime() > matchTime:
+                d = data[-i]
+                if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() < 0.5 and d.buy_elg_vol() < d.sell_elg_vol():
+                    if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() < 0.3:
+                        return True
+    except:
+        pass
 
 
 def rule23(data: List[dataModel]):
@@ -411,6 +434,7 @@ class levelF1:
         self.shot_rule.append(12) if rule12(self.stock, self.data) else self.fail_rule.append(12)
         self.shot_rule.append(13) if rule13(self.data) else self.fail_rule.append(13)
         self.shot_rule.append(14) if rule14(self.data) else self.fail_rule.append(14)
+        self.shot_rule.append(15) if rule15(self.stock, self.data) else self.fail_rule.append(15)
         self.shot_rule.append(16) if rule16(self.stock, self.data) else self.fail_rule.append(16)
         self.shot_rule.append(17) if rule17(self.stock, self.data) else self.fail_rule.append(17)
         self.shot_rule.append(18) if rule18(self.stock, self.data) else self.fail_rule.append(18)

@@ -6,7 +6,7 @@
 from typing import List
 
 from common import dateHandler
-from common.collect_data import dataModel, model_1, t_limit, t_high_pct
+from common.collect_data import dataModel, model_1, t_limit, t_high_pct, t_low_pct
 
 
 def rule1(stock, data: List[dataModel]):
@@ -176,7 +176,7 @@ def rule11(data: List[dataModel]):
         pass
 
 
-def rule12(data: List[dataModel]):
+def rule12(data: List[dataModel], index: List[dataModel]):
     try:
         if t_high_pct(data) <= 0.05:
             return False
@@ -186,16 +186,18 @@ def rule12(data: List[dataModel]):
             if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() < 0.2:
                 matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
                 if data[-1].lastLimitTime() < matchTime:
-                    return True
+                    if t_low_pct(index) > -0.01:
+                        return True
     except:
         pass
 
 
 class levelF5:
-    def __init__(self, stock: str, data: List[dataModel]):
+    def __init__(self, stock: str, data: List[dataModel], index: List[dataModel]):
         self.level = 'F5'
         self.data = data
         self.stock = stock
+        self.index = index
         self.shot_rule: list = []
         self.fail_rule: list = []
 
@@ -214,5 +216,5 @@ class levelF5:
         self.shot_rule.append(9) if rule9(self.data) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.data) else self.fail_rule.append(10)
         self.shot_rule.append(11) if rule11(self.data) else self.fail_rule.append(11)
-        self.shot_rule.append(12) if rule12(self.data) else self.fail_rule.append(12)
+        self.shot_rule.append(12) if rule12(self.data, self.index) else self.fail_rule.append(12)
         return self.result()

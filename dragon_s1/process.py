@@ -42,6 +42,9 @@ if __name__ == '__main__':
             index = indexData
             stock = argMap['stock']
             virtual = argMap['virtual']
+            stockDetail = databaseApi.Mysql().selectStockDetail(stock)
+            industry = stockDetail[3]
+            industryLimitRank = industryIndexDict[industry]['rank']
             if virtual is not None:
                 index = virtualIndexData(indexData, nextTradeDay)
             try:
@@ -55,7 +58,7 @@ if __name__ == '__main__':
                 l2 = level2.level2(stock, data).filter()
                 l3 = level3.level3(stock, data, index).filter()
                 l4 = level4.level4(stock, data, index).filter()
-                l5 = level5.level5(stock, data, index, limitTimeRank).filter()
+                l5 = level5.level5(stock, data, index, limitTimeRank, industryLimitRank).filter()
                 l6 = level6.level6(stock, data, index).filter()
                 lA1 = levelA1.levelA1(stock, data).filter()
                 lA2 = levelA2.levelA2(stock, data).filter()
@@ -64,7 +67,7 @@ if __name__ == '__main__':
                 lF2 = levelF2.levelF2(stock, data, index).filter()
                 lF3 = levelF3.levelF3(stock, data, index).filter()
                 lF4 = levelF4.levelF4(stock, data, index).filter()
-                lF5 = levelF5.levelF5(stock, data).filter()
+                lF5 = levelF5.levelF5(stock, data, index).filter()
                 for white in [l1, l2, l3, l4, l5, l6, lA1, lA2, lA3]:
                     if virtual is None:
                         white_sum += len(white['detail'])
@@ -90,18 +93,17 @@ if __name__ == '__main__':
                 score -= len(lF4['detail']) * 5
                 score -= len(lF5['detail']) * 7
                 if virtual is None:
-                    stockDetail = databaseApi.Mysql().selectStockDetail(stock)
-                    industry = stockDetail[3]
                     height = limit_height(stock, data)
                     T1S = virtualDict[stock]['s']
                     T1F = virtualDict[stock]['f']
                     _S = int(score - excelDict[stock]['score'] if excelDict != {} else -8888)
-                    AJ = round(data[-1].concentration() * 100, 2)
+                    AJ = round(data[-1].concentration() * 100, 1)
                     CF = -8888 if (t0Day.buy_elg_vol() + t0Day.buy_lg_vol()) == 0 else round(
                         ((t0Day.buy_elg_vol() + t0Day.buy_lg_vol() - t0Day.sell_elg_vol() - t0Day.sell_lg_vol()) / (
-                                t0Day.buy_elg_vol() + t0Day.buy_lg_vol())) * 100, 2)
+                                t0Day.buy_elg_vol() + t0Day.buy_lg_vol())) * 100, 1)
                     TF = -8888 if t0Day.buy_elg_vol() == 0 else round(
-                        ((t0Day.buy_elg_vol() - t0Day.sell_elg_vol()) / t0Day.buy_elg_vol()) * 100, 2)
+                        ((t0Day.buy_elg_vol() - t0Day.sell_elg_vol()) / t0Day.buy_elg_vol()) * 100, 1)
+                    TP = -8888 if t0Day.volume() == 0 else round((t0Day.buy_elg_vol() / t0Day.volume()) * 100, 1)
                     hitPlus = (len(lA1['detail']) + len(lA2['detail']) + len(lA3['detail'])) > 0
                     level = 'B'
                     if A.ruleA(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum, S=_S,
@@ -121,6 +123,7 @@ if __name__ == '__main__':
                         'AJ': AJ,
                         'CF': CF,
                         'TF': TF,
+                        'TP': TP,
                         'level': level,
                         'height': height,
                         'white': white_sum,
@@ -145,6 +148,7 @@ if __name__ == '__main__':
                     virtualDict[stock][f'{virtual}_detail'] = details
                     print(f'virtual {str(virtual).upper()} {stock}')
             except (IndexError, ValueError, KeyError, TypeError, pymysql.Error) as e:
+                toolBox.errorHandler(e, stock)
                 errors.append([stock, e])
 
         toolBox.thread_pool_executor(processOneStock, [{'stock': stock, 'virtual': 's'} for stock in stocks], 10)
@@ -152,9 +156,9 @@ if __name__ == '__main__':
         toolBox.thread_pool_executor(processOneStock, [{'stock': stock, 'virtual': None} for stock in stocks], 10)
 
         def rankExcelData(d):
-            _white = d[9]
-            _height = d[8]
-            _score = d[11]
+            _white = d[excel_process.cols.index('white')]
+            _height = d[excel_process.cols.index('height')]
+            _score = d[excel_process.cols.index('score')]
             return _height * 1000000 + _score * 1000 + _white * 1
 
         excelDatas.sort(key=rankExcelData, reverse=True)
@@ -166,7 +170,7 @@ if __name__ == '__main__':
             excelDatas.append([
                 errStock, errStockDetail[2], errStockDetail[3],
                 f'{industryIndexDict[errStockDetail[3]]["limit"]}/{limitUpCount}',
-                'N/A', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '0%', aimDate, '', '', ''
+                'N/A', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '0%', aimDate, '', '', ''
             ])
 
         excel_process.write(aimDate, excelDatas)

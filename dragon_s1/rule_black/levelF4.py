@@ -636,17 +636,20 @@ def rule40(data: List[dataModel]):
 
 
 def rule41(stock, data: List[dataModel]):
-    for i in range(3, 153):
-        if not t_limit(stock, data, i):
-            continue
-        if t_limit(stock, data, i - 1):
-            continue
-        nxt = data[-i]
-        if nxt.turnover() > data[-1].turnover() * 0.8:
-            if nxt.high() > max([_.close() for _ in data[-6:-1]]):
-                matchTime = dateHandler.joinTimeToStamp(nxt.date(), '09:45:00')
-                if nxt.firstLimitTime() > matchTime:
-                    return True
+    try:
+        for i in range(3, 153):
+            if not t_limit(stock, data, i):
+                continue
+            if t_limit(stock, data, i - 1):
+                continue
+            nxt = data[-i]
+            if nxt.turnover() > data[-1].turnover() * 0.8:
+                if nxt.high() > max([_.close() for _ in data[-6:-1]]):
+                    matchTime = dateHandler.joinTimeToStamp(nxt.date(), '09:45:00')
+                    if nxt.firstLimitTime() > matchTime:
+                        return True
+    except:
+        pass
 
 
 def rule42(data: List[dataModel], index: List[dataModel]):

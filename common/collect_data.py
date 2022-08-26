@@ -146,15 +146,19 @@ class dataModel:
         return json.loads(self.data[42])
 
     def concentration(self):
-        cost5pct = self.data[35]
-        cost95pct = self.data[39]
+        cost5pct = self.cost_5pct()
+        cost95pct = self.cost_95pct()
         if cost95pct + cost5pct == 0:
             return 100
         return (cost95pct - cost5pct) / (cost95pct + cost5pct)
 
-    def timeVol(self, timeStamp: int):
-        time = json.loads(self.data[42])
-        limitMinute = dateHandler.getMinute(timeStamp)
+    def timeVol(self, timeStamp: int = None, minute: str = None):
+        assert (timeStamp is None or minute is None)
+        time = self.time()
+        if minute is None:
+            limitMinute = dateHandler.getMinute(timeStamp)
+        else:
+            limitMinute = minute
         return time[limitMinute]
 
 
@@ -229,7 +233,7 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
                        modifyData.cost_95pct(),
                        modifyData.weight_avg(),
                        modifyData.winner_rate(),
-                       modifyData.time()]
+                       modifyData.data[42]]
         res.append(dataModel(virtualData))
     elif virtual == 'f':
         modifyData = res[-1]
@@ -280,7 +284,7 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
                        modifyData.cost_95pct(),
                        modifyData.weight_avg(),
                        modifyData.winner_rate(),
-                       modifyData.time()]
+                       modifyData.data[42]]
         res.append(dataModel(virtualData))
     return res
 
@@ -325,6 +329,10 @@ def model_t(stock: str, data: List[dataModel], plus: int = 0):
 
 def t_limit(stock: str, data: List[dataModel], plus: int = 0):
     return data[-plus - 1].pctChange() > limit(stock)
+
+
+def t_down_limit(stock: str, data: List[dataModel], plus: int = 0):
+    return data[-plus - 1].pctChange() < - limit(stock)
 
 
 def limit_height(stock: str, data: List[dataModel]):

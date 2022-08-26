@@ -157,16 +157,25 @@ def rule10(stock, data: List[dataModel]):
 
 
 def rule11(stock, data: List[dataModel]):
-    for i in range(1, 4):
-        if not t_limit(stock, data, i - 1):
-            return False
-        if model_1(stock, data, i - 1):
-            return False
-        if data[-i].open() == data[-i].close():
-            if t_close_pct(data, i - 1) <= limit(stock) / 100:
-                continue
-            if t_low_pct(data, i - 1) > 0.075:
+    count1 = 0
+    count2 = 0
+    try:
+        for i in range(1, 4):
+            if not t_limit(stock, data, i - 1):
+                return False
+            if model_1(stock, data, i - 1):
+                return False
+            if data[-i].open() == data[-i].close():
+                if t_close_pct(data, i - 1) > limit(stock) / 100:
+                    if t_low_pct(data, i - 1) > 0.075:
+                        count1 += 1
+            d = data[-i]
+            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.5:
+                count2 += 1
+            if count1 == 1 and count2 >= 1:
                 return True
+    except:
+        pass
 
 
 def rule12(stock, data: List[dataModel]):
@@ -225,7 +234,9 @@ def rule15(stock, data: List[dataModel]):
         limitMinute = getMinute(limitTime)
         limitMinuteLast = lastMinute(limitMinute)
         time = data[-1].time()
-        if time[limitMinute] > time[limitMinuteLast] * 10:
+        if time[limitMinute] <= time[limitMinuteLast] * 10:
+            return False
+        if data[-1].timeVol(timeStamp=data[-1].firstLimitTime()) > 100000:
             return True
     except:
         return False
@@ -249,17 +260,21 @@ def rule16(stock, data: List[dataModel]):
 
 
 def rule17(stock, data: List[dataModel]):
-    count = 0
-    for i in range(1, 4):
-        if t_open_pct(data, i - 1) <= 0.035:
-            continue
-        if t_low_pct(data, i - 1) <= 0.01:
-            continue
-        if t_close_pct(data, i - 1) > limit(stock) / 100:
-            count += 1
-            if count >= 2:
+    try:
+        count = 0
+        count1 = 0
+        for i in range(1, 4):
+            if t_open_pct(data, i - 1) > 0.035:
+                if t_low_pct(data, i - 1) > 0.01:
+                    if t_close_pct(data, i - 1) > limit(stock) / 100:
+                        count += 1
+            d = data[-i]
+            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.4:
+                count1 += 1
+            if count >= 2 and count1 >= 2:
                 return True
-    return count >= 2
+    except:
+        pass
 
 
 def rule18(stock, data: List[dataModel]):
@@ -271,16 +286,24 @@ def rule18(stock, data: List[dataModel]):
 
 
 def rule19(stock, data: List[dataModel]):
-    count1 = 0
-    count2 = 0
-    for i in range(1, 5):
-        if t_open_pct(data, i - 1) > 0.035:
-            count2 += 1
-        if t_limit(stock, data, i - 1):
-            if t_close_pct(data, i - 1) > limit(stock) / 100:
-                if t_low_pct(data, i - 1) > -0.01:
-                    count1 += 1
-    return count1 >= 3 and count2 >= 2
+    try:
+        count1 = 0
+        count2 = 0
+        count3 = 0
+        for i in range(1, 5):
+            if t_open_pct(data, i - 1) > 0.035:
+                count2 += 1
+            if t_limit(stock, data, i - 1):
+                if t_close_pct(data, i - 1) > limit(stock) / 100:
+                    if t_low_pct(data, i - 1) > -0.01:
+                        count1 += 1
+            d = data[-i]
+            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.4:
+                count3 += 1
+            if count1 >= 3 and count2 >= 2 and count3 >= 2:
+                return True
+    except:
+        pass
 
 
 def rule20(stock, data: List[dataModel]):
@@ -312,14 +335,24 @@ def rule21(data: List[dataModel]):
 
 
 def rule22(stock, data: List[dataModel]):
-    if not t_limit(stock, data):
-        return False
-    if not t_limit(stock, data, 1):
-        return False
-    if data[-3].turnover() > data[-2].turnover() > data[-1].turnover():
-        if data[-1].lastLimitTime() < data[-2].lastLimitTime() + timeDelta(data[-2].date(), data[-1].date()):
-            if data[-2].lastLimitTime() < data[-3].lastLimitTime() + timeDelta(data[-3].date(), data[-2].date()):
-                return True
+    try:
+        count = 0
+        for i in range(3):
+            d = data[-i - 1]
+            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.4:
+                count += 1
+        if count < 2:
+            return False
+        if not t_limit(stock, data):
+            return False
+        if not t_limit(stock, data, 1):
+            return False
+        if data[-3].turnover() > data[-2].turnover() > data[-1].turnover():
+            if data[-1].lastLimitTime() < data[-2].lastLimitTime() + timeDelta(data[-2].date(), data[-1].date()):
+                if data[-2].lastLimitTime() < data[-3].lastLimitTime() + timeDelta(data[-3].date(), data[-2].date()):
+                    return True
+    except:
+        pass
 
 
 def rule23(stock, data: List[dataModel]):
@@ -331,16 +364,23 @@ def rule23(stock, data: List[dataModel]):
 
 
 def rule24(stock, data: List[dataModel]):
-    count = 0
-    for i in range(1, 5):
-        if data[-i].pctChange() <= limit(stock):
-            return False
-        if t_low_pct(data, i - 1) <= -0.01:
-            return False
-        if t_open_pct(data, i - 1) > 0.045:
-            count += 1
-    if count >= 2:
-        return True
+    try:
+        count = 0
+        count1 = 0
+        for i in range(1, 5):
+            if data[-i].pctChange() <= limit(stock):
+                return False
+            if t_low_pct(data, i - 1) <= -0.01:
+                return False
+            if t_open_pct(data, i - 1) > 0.045:
+                count += 1
+            d = data[-i]
+            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.4:
+                count1 += 1
+            if count >= 2 and count1 >= 2:
+                return True
+    except:
+        pass
 
 
 def rule25(stock, data: List[dataModel]):
@@ -404,7 +444,7 @@ def rule29(stock, data: List[dataModel]):
             return False
         if model_1(stock, data):
             return False
-        if data[-1].timeVol(data[-1].firstLimitTime()) > 120000:
+        if data[-1].timeVol(timeStamp=data[-1].firstLimitTime()) > 120000:
             d = data[-1]
             if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.4:
                 return True
@@ -432,28 +472,31 @@ def rule30(data: List[dataModel]):
 
 
 def rule31(stock, data: List[dataModel]):
-    for i in range(1, 51):
-        if not t_limit(stock, data, i):
-            continue
-        d = data[-i - 1]
-        range20 = data[-i - 21:-i - 1]
-        if d.close() <= max([_.close() for _ in range20]):
-            continue
-        if t_limit(stock, data, i - 1):
-            continue
-        if t_open_pct(data, i - 1) <= 0.035:
-            continue
-        if t_high_pct(data, i - 1) <= 0.07:
-            continue
-        flag = True
-        for _i in range(-i, 0):
-            j = _i + 1
-            _range20 = [data[_] for _ in range(j - 20, j)]
-            if data[_i].close() <= sum([_.close() for _ in _range20]) / len(_range20):
-                flag = False
-                break
-        if flag:
-            return True
+    try:
+        for i in range(1, 51):
+            if not t_limit(stock, data, i):
+                continue
+            d = data[-i - 1]
+            range20 = data[-i - 21:-i - 1]
+            if d.close() <= max([_.close() for _ in range20]):
+                continue
+            if t_limit(stock, data, i - 1):
+                continue
+            if t_open_pct(data, i - 1) <= 0.035:
+                continue
+            if t_high_pct(data, i - 1) <= 0.07:
+                continue
+            flag = True
+            for _i in range(-i, 0):
+                j = _i + 1
+                _range20 = [data[_] for _ in range(j - 20, j)]
+                if data[_i].close() <= sum([_.close() for _ in _range20]) / len(_range20):
+                    flag = False
+                    break
+            if flag:
+                return True
+    except:
+        pass
 
 
 class level4:
