@@ -146,11 +146,6 @@ class Mysql:
                     f"{data['high']},{data['low']},{data['pct_chg']},{data['vol']},{data['amount']})"
         self.action(output=False)
 
-    def selectStockAmount(self, stock) -> float:
-        self.word = f"SELECT amount FROM stockList WHERE symbol='{stock}'"
-        volume = self.action(output=True)
-        return volume[0][0]
-
     def selectIndustryByStock(self, stock: str):
         self.word = f"SELECT industry FROM stockList WHERE symbol='{stock}'"
         industry = self.action(output=True)
@@ -221,11 +216,11 @@ class Mysql:
     def updateLimitDetailData(self, data):
         firstTime = data['first_time']
         lastTime = data['last_time']
-        new_firstTime = f'{0 if len(firstTime[:-4]) == 1 else ""}{firstTime[:-4]}:{firstTime[-4:-2]}:{firstTime[-2:]}' if firstTime != '' else '09:30:00'
-        new_lastTime = f'{0 if len(lastTime[:-4]) == 1 else ""}{lastTime[:-4]}:{lastTime[-4:-2]}:{lastTime[-2:]}' if lastTime != '' else '09:30:00'
+        new_firstTime = f'{0 if len(firstTime[:-4]) == 1 else ""}{firstTime[:-4]}:{firstTime[-4:-2]}:{firstTime[-2:]}' if firstTime != '' else '09:25:00'
+        new_lastTime = f'{0 if len(lastTime[:-4]) == 1 else ""}{lastTime[:-4]}:{lastTime[-4:-2]}:{lastTime[-2:]}' if lastTime != '' else None
         self.word = f"UPDATE No{str(data['ts_code']).split('.')[0]} SET " \
                     f"firstLimitTime = {dateHandler.joinTimeToStamp(data['trade_date'], new_firstTime)}," \
-                    f"lastLimitTime = {dateHandler.joinTimeToStamp(data['trade_date'], new_lastTime)}," \
+                    f"lastLimitTime = {6666666666 if new_lastTime is None else dateHandler.joinTimeToStamp(data['trade_date'], new_lastTime)}," \
                     f"openTime = {data['open_times']} " \
                     f"WHERE date = '{data['trade_date']}'"
         self.action(output=False)
@@ -280,16 +275,4 @@ class Mysql:
 
     def updateTimeData(self, json: dict):
         self.word = f"UPDATE No{json['symbol']} SET time='{json['data']}' WHERE date='{json['date']}'"
-        self.action(output=False)
-
-    def changeColumn(self, table):
-        print(table)
-        self.word = f"ALTER TABLE {table} change COLUMN firstLimitTime firstLimitTime BIGINT default 6666666666,change COLUMN lastLimitTime lastLimitTime BIGINT default 6666666666"
-        self.action(output=False)
-
-    def updateTMP(self, table):
-        print(table)
-        self.word = f"UPDATE {table} SET firstLimitTime=6666666666 WHERE firstLimitTime=4090665600"
-        self.action(output=False)
-        self.word = f"UPDATE {table} SET lastLimitTime=6666666666 WHERE lastLimitTime=4090665600"
         self.action(output=False)

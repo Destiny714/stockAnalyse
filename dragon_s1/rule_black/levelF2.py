@@ -369,6 +369,53 @@ def rule27(stock, data: List[dataModel]):
                 return True
 
 
+def rule28(stock, data: List[dataModel]):
+    flag = False
+    for i in range(4, 13):
+        if t_limit(stock, data, i):
+            if t_limit(stock, data, i + 1):
+                if t_limit(stock, data, i + 2):
+                    flag = True
+                    break
+    if not flag:
+        return False
+    if t_limit(stock, data, 3):
+        return False
+    for i in range(2):
+        if not t_limit(stock, data, i):
+            return False
+    if data[-2].turnover() >= sum(_.turnover() for _ in data[-6:-3]) / 3:
+        return False
+    if data[-1].turnover() > data[-2].turnover():
+        matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '10:00:00')
+        if data[-1].firstLimitTime() > matchTime:
+            return True
+
+
+def rule29(stock, data: List[dataModel]):
+    flag = False
+    for i in range(4, 13):
+        if t_limit(stock, data, i):
+            if t_limit(stock, data, i + 1):
+                if t_limit(stock, data, i + 2):
+                    flag = True
+                    break
+    if not flag:
+        return False
+    if t_limit(stock, data, 3):
+        return False
+    for i in range(2):
+        if not t_limit(stock, data, i):
+            return False
+        matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '09:40:00')
+        if data[-i - 1].firstLimitTime() >= matchTime:
+            return False
+    if data[-2].turnover() >= 0.6 * sum(_.turnover() for _ in data[-6:-3]) / 3:
+        return False
+    if data[-1].turnover() < 0.6 * sum(_.turnover() for _ in data[-6:-3]) / 3:
+        return True
+
+
 class levelF2:
     def __init__(self, stock: str, data: List[dataModel], index: List[dataModel]):
         self.level = 'F2'
@@ -409,4 +456,6 @@ class levelF2:
         self.shot_rule.append(25) if rule25(self.stock, self.data) else self.fail_rule.append(25)
         self.shot_rule.append(26) if rule26(self.stock, self.data) else self.fail_rule.append(26)
         self.shot_rule.append(27) if rule27(self.stock, self.data) else self.fail_rule.append(27)
+        self.shot_rule.append(28) if rule28(self.stock, self.data) else self.fail_rule.append(28)
+        self.shot_rule.append(29) if rule29(self.stock, self.data) else self.fail_rule.append(29)
         return self.result()

@@ -148,7 +148,6 @@ if __name__ == '__main__':
                     virtualDict[stock][f'{virtual}_detail'] = details
                     print(f'virtual {str(virtual).upper()} {stock}')
             except (IndexError, ValueError, KeyError, TypeError, pymysql.Error) as e:
-                toolBox.errorHandler(e, stock)
                 errors.append([stock, e])
 
         toolBox.thread_pool_executor(processOneStock, [{'stock': stock, 'virtual': 's'} for stock in stocks], 10)

@@ -19,7 +19,7 @@ warnings.filterwarnings('ignore')
 
 if __name__ == '__main__':
     aimDate = dateHandler.lastTradeDay()
-    stocks = concurrentActions.initStock(needReload=True, extra=False)
+    stocks = concurrentActions.initStock(needReload=False, extra=False)
     errors = []
     chosenStocks = [stock for stock in stocks if stock[:2] in ['00', '60']]
 
