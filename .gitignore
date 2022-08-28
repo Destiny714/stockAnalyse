@@ -10,7 +10,7 @@ test.py
 *.xls
 .idea/
 .DS_Store
-.yaml
+*.yaml
 test/
 dragon_s1/result/
 # Distribution / packaging
