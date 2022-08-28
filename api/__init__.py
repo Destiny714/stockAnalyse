@@ -3,3 +3,6 @@
 # @Author  : Destiny_
 # @File    : __init__.py.py
 # @Software: PyCharm
+from common import toolBox
+
+args = toolBox.arg_yaml()

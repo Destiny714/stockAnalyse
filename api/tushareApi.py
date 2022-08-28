@@ -5,12 +5,13 @@
 # @Software: PyCharm
 
 import tushare
+from api import args
 from common import dateHandler
 
 
 class Tushare:
     def __init__(self):
-        self._token = '389034377016716d6513ce5c1f5fc4adfef93112af12b786b29d639c'
+        self._token = args['tushareKey']
         tushare.set_token(self._token)
         self._tushare = tushare
         self._instance = tushare.pro_api()

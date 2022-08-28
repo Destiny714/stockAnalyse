@@ -5,15 +5,16 @@
 # @Software: PyCharm
 
 import pymysql
+from api import args
 from common import dateHandler
 
 
 class Mysql:
     def __init__(self):
-        self.__account = 'root'
-        self.__pswd = 'destinyroot'
-        self.__DB = 'stock'
-        self.host = 'localhost'
+        self.__account = args['mysqlAccount']
+        self.__pswd = args['mysqlPassword']
+        self.__DB = args['mysqlDatabase']
+        self.host = args['mysqlHost']
         self.word = ''
         self.db = pymysql.connect(host=self.host, port=3306, user=self.__account, password=self.__pswd,
                                   database=self.__DB, connect_timeout=5)

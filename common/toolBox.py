@@ -4,8 +4,8 @@
 # @File    : toolBox.py
 # @Software: PyCharm
 
-# import os
-# import xlrd
+import os
+import yaml
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
@@ -21,3 +21,13 @@ def errorHandler(e: Exception, arg=None):
     while tb:
         print(f'{arg} : <{tb.tb_frame.f_code.co_filename} line:{tb.tb_lineno} detail:{e.args[0]}>')
         tb = tb.tb_next
+
+
+def arg_yaml():
+    yaml_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "api/args.yaml")
+    try:
+        with open(yaml_path, "r", encoding="utf-8") as f:
+            data = yaml.load(f, Loader=yaml.FullLoader)
+            return data
+    except:
+        return None

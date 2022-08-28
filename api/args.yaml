@@ -1,0 +1,5 @@
+tushareKey: *
+mysqlAccount: *
+mysqlPassword: *
+mysqlDatabase: *
+mysqlHost: *
