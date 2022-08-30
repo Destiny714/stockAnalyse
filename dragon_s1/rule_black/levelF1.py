@@ -173,18 +173,15 @@ def rule14(data: List[dataModel]):
 
 
 def rule15(stock, data: List[dataModel]):
-    if t_limit(stock, data, 1):
-        return False
-    if not t_limit(stock, data):
-        return False
-    if data[-1].turnover() <= 15:
-        return False
-    for i in range(20):
+    for i in range(2, 5):
         if t_limit(stock, data, i):
-            if t_limit(stock, data, i + 1):
-                if t_limit(stock, data, i + 2):
-                    return False
-    return True
+            return False
+    for i in range(2):
+        if not t_limit(stock, data, i):
+            return False
+    if data[-2].turnover() > 2 * sum([_.turnover() for _ in data[-5:-2]]) / 3:
+        if data[-1].turnover() > 2 * sum([_.turnover() for _ in data[-5:-2]]) / 3:
+            return True
 
 
 def rule16(stock, data: List[dataModel]):
@@ -268,6 +265,12 @@ def rule21(stock, data: List[dataModel]):
         return False
     if not t_limit(stock, data, 1):
         return False
+    count = 0
+    for i in range(2):
+        if model_1(stock, data, i):
+            count += 1
+    if count > 1:
+        return False
     matchTime = dateHandler.joinTimeToStamp(data[-2].date(), '09:45:00')
     if data[-2].lastLimitTime() < matchTime:
         range2_20 = data[-21:-2]
@@ -341,28 +344,19 @@ def rule26(data: List[dataModel]):
             return True
 
 
-def rule27(data: List[dataModel]):
-    range30 = data[-33:-3]
-    count = 0
-    for i in range30:
-        if i.close() > data[-1].close() * 1.1:
-            count += 1
-        if count >= 3:
-            return True
-
-
-def rule28(stock, data: List[dataModel]):
-    if t_limit(stock, data, 1):
-        return False
+def rule27(stock, data: List[dataModel]):
+    for i in range(3):
+        if t_limit(stock, data, i + 1):
+            return False
     if not t_limit(stock, data):
         return False
-    range20 = data[-23:-3]
-    count = 0
-    for i in range20:
-        if i.close() > data[-1].close():
-            count += 1
-        if count >= 3:
-            return True
+    if (data[-2].close() - data[-5].close()) / data[-5].close() > 0.1:
+        return True
+
+
+def rule28(stock, limitTimeRank: list):
+    if stock not in limitTimeRank:
+        return True
 
 
 def rule29(stock, data: List[dataModel]):
@@ -408,13 +402,14 @@ def rule31(data: List[dataModel]):
 
 
 class levelF1:
-    def __init__(self, stock: str, data: List[dataModel], index: List[dataModel]):
+    def __init__(self, stock: str, data: List[dataModel], index: List[dataModel], limitTimeRank: list):
         self.level = 'F1'
         self.data = data
         self.index = index
         self.stock = stock
         self.shot_rule: list = []
         self.fail_rule: list = []
+        self.limitTimeRank = limitTimeRank
 
     def result(self):
         return {'level': self.level, 'stock': self.stock, 'detail': self.shot_rule, 'result': self.shot_rule == []}
@@ -446,8 +441,8 @@ class levelF1:
         self.shot_rule.append(24) if rule24(self.data) else self.fail_rule.append(24)
         self.shot_rule.append(25) if rule25(self.stock, self.data) else self.fail_rule.append(25)
         self.shot_rule.append(26) if rule26(self.data) else self.fail_rule.append(26)
-        self.shot_rule.append(27) if rule27(self.data) else self.fail_rule.append(27)
-        self.shot_rule.append(28) if rule28(self.stock, self.data) else self.fail_rule.append(28)
+        self.shot_rule.append(27) if rule27(self.stock, self.data) else self.fail_rule.append(27)
+        self.shot_rule.append(28) if rule28(self.stock, self.limitTimeRank) else self.fail_rule.append(28)
         self.shot_rule.append(29) if rule29(self.stock, self.data) else self.fail_rule.append(29)
         self.shot_rule.append(30) if rule30(self.stock, self.data) else self.fail_rule.append(30)
         self.shot_rule.append(31) if rule31(self.data) else self.fail_rule.append(31)

@@ -12,8 +12,8 @@ from common.toolBox import errorHandler
 cols = [
     'code', 'name', 'industry',
     'ptg_industry', 'level',
-    'AJ', 'CF', 'TF', 'TP', 'height', 'white', 'black', 'score',
-    'T1S', 'T1F', 'S', 'W', 'B',
+    'AJ', 'CF', 'TF', 'TP', 'height', 'white', 'black',
+    'b1', 'b2', 'score', 'T1S', 'T1F', 'S',
     'open_price', 'date', 'details', 'T1S_detail', 'T1F_detail'
 ]
 
@@ -39,7 +39,7 @@ def readScoreFromExcel(date):
         filePath = f'{absPath}/dragon_s1/result/{date}.xls'
         data = xlrd.open_workbook(filePath)
         sheet = data.sheet_by_index(0)
-        header:list = sheet.row_values(0)
+        header: list = sheet.row_values(0)
         for i in range(1, sheet.nrows):
             detail = sheet.row_values(i)
             excelDict[detail[0]] = {'white': detail[header.index("white")],

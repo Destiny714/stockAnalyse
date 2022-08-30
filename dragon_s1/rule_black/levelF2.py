@@ -231,14 +231,16 @@ def rule16(data: List[dataModel]):
 
 
 def rule17(stock, data: List[dataModel]):
+    flag = False
     for i in range(2):
-        if t_low_pct(data, i) >= -0.05:
-            continue
         if not t_limit(stock, data, i):
+            return False
+        if t_low_pct(data, i) >= -0.05:
             continue
         matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '13:00:00')
         if data[-i - 1].lastLimitTime() > matchTime:
-            return True
+            flag = True
+    return flag
 
 
 def rule18(stock, data: List[dataModel]):
@@ -251,7 +253,7 @@ def rule18(stock, data: List[dataModel]):
         count = 0
         for i in range(5):
             d = data[-i - 1]
-            if t_open_pct(data, i) - t_low_pct(data, i) > 0.07:
+            if t_open_pct(data, i) - t_low_pct(data, i) > 0.07 and t_high_pct(data, i) > 0.06:
                 if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
                         d.buy_elg_vol() + d.buy_lg_vol()) < 0.2:
                     count += 1
@@ -334,6 +336,9 @@ def rule24(stock, data: List[dataModel]):
             return False
         if model_1(stock, data):
             return False
+        d = data[-1]
+        if d.buy_elg_vol() / d.volume() >= 0.4:
+            return False
         matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:40:00')
         if data[-1].firstLimitTime() < matchTime:
             if data[-1].timeVol(timeStamp=data[-1].firstLimitTime()) < 100000:
@@ -354,17 +359,21 @@ def rule25(stock, data: List[dataModel]):
 
 
 def rule26(stock, data: List[dataModel]):
+    if model_1(stock, data):
+        return False
     if not t_limit(stock, data, 1):
         if t_limit(stock, data):
-            matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:37:00')
+            matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:40:00')
             if data[-1].firstLimitTime() < matchTime:
                 return True
 
 
 def rule27(stock, data: List[dataModel]):
+    if model_1(stock, data, 1):
+        return False
     if not t_limit(stock, data, 2):
         if t_limit(stock, data, 1):
-            matchTime = dateHandler.joinTimeToStamp(data[-2].date(), '09:37:00')
+            matchTime = dateHandler.joinTimeToStamp(data[-2].date(), '09:40:00')
             if data[-2].firstLimitTime() < matchTime:
                 return True
 
@@ -416,6 +425,15 @@ def rule29(stock, data: List[dataModel]):
         return True
 
 
+def rule30(stock, data: List[dataModel]):
+    if t_limit(stock, data, 1):
+        return False
+    if not t_limit(stock, data):
+        return False
+    if t_low_pct(data) < -0.04:
+        return True
+
+
 class levelF2:
     def __init__(self, stock: str, data: List[dataModel], index: List[dataModel]):
         self.level = 'F2'
@@ -458,4 +476,5 @@ class levelF2:
         self.shot_rule.append(27) if rule27(self.stock, self.data) else self.fail_rule.append(27)
         self.shot_rule.append(28) if rule28(self.stock, self.data) else self.fail_rule.append(28)
         self.shot_rule.append(29) if rule29(self.stock, self.data) else self.fail_rule.append(29)
+        self.shot_rule.append(30) if rule30(self.stock, self.data) else self.fail_rule.append(30)
         return self.result()

@@ -134,6 +134,8 @@ def rule9(data: List[dataModel]):
     try:
         if t_high_pct(data) > 0.06:
             d = data[-1]
+            if d.buy_elg_vol() / d.volume() >= 0.25:
+                return False
             if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() < 0.4:
                 matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
                 if data[-1].firstLimitTime() > matchTime:
@@ -161,10 +163,10 @@ def rule10(data: List[dataModel]):
 
 def rule11(data: List[dataModel]):
     try:
-        if t_high_pct(data) <= 0.05:
-            return False
         for i in range(2):
             d = data[-i - 1]
+            if t_high_pct(data, i) <= 0.05:
+                return False
             if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
                     d.buy_elg_vol() + d.buy_lg_vol()) >= 0.2:
                 return False

@@ -5,7 +5,7 @@
 # @Software: PyCharm
 from typing import List
 
-from common.collect_data import dataModel, limit, t_low_pct
+from common.collect_data import dataModel, limit, t_low_pct, t_limit
 
 
 def rule2(data: List[dataModel]):
@@ -47,7 +47,9 @@ def rule6(data: List[dataModel]):
             return True
 
 
-def rule7(data: List[dataModel]):
+def rule7(stock, data: List[dataModel]):
+    if t_limit(stock, data, 3):
+        return False
     for i in range(1, 4):
         high30 = max([_.high() for _ in data[-30 - i:-i]])
         if data[-i].close() > high30:
@@ -96,7 +98,7 @@ class level1:
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         self.shot_rule.append(5) if rule5(self.data) else self.fail_rule.append(5)
         self.shot_rule.append(6) if rule6(self.data) else self.fail_rule.append(6)
-        self.shot_rule.append(7) if rule7(self.data) else self.fail_rule.append(7)
+        self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)
         self.shot_rule.append(8) if rule8(self.data) else self.fail_rule.append(8)
         self.shot_rule.append(9) if rule9(self.data) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.data) else self.fail_rule.append(10)

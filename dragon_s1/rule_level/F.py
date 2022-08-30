@@ -11,13 +11,13 @@ def rule1(height: int, score: int):
 
 def rule2(height: int, score: int, T1S: int, black: int):
     if height > 1 and T1S < score:
-        if black > 3:
+        if black > 4:
             return True
 
 
 def rule3(height: int, S: int, black: int):
     if height > 0 and S < -30:
-        if black > 3:
+        if black > 4:
             return True
 
 
@@ -59,12 +59,6 @@ def rule10(score: int, height: int, T1S: int, hitPlus: bool):
             return True
 
 
-def rule11(score: int, height: int, T1S: int, black: int):
-    if height > 1 and black > 2:
-        if score < T1S:
-            return True
-
-
 class ruleF:
 
     def __init__(self, height: int, score: int, T1S: int, T1F: int, white: int, black: int, S: int, F5: int,
@@ -99,6 +93,4 @@ class ruleF:
         if rule9(self.F5):
             return True
         if rule10(self.score, self.height, self.T1S, self.hitPlus):
-            return True
-        if rule11(self.score, self.height, self.T1S, self.black):
             return True

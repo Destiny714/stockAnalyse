@@ -8,7 +8,7 @@ from typing import List
 
 from common import dateHandler
 from common.collect_data import t_low_pct, t_close_pct, t_open_pct, t_high_pct, limit, dataModel, model_1, model_t, \
-    t_limit
+    t_limit, limit_height, t_down_limit
 
 
 def rule1(stock, data: List[dataModel]):
@@ -302,6 +302,9 @@ def rule20(stock, data: List[dataModel], index: List[dataModel]):
 def rule21(stock, data: List[dataModel]):
     if t_limit(stock, data, 2):
         return False
+    d = data[-1]
+    if d.buy_elg_vol() / d.volume() >= 0.25:
+        return False
     range1 = data[-3:]
     range2 = data[-6:-3]
     if sum([_.turnover() for _ in range1]) < sum([_.turnover() for _ in range2]):
@@ -379,6 +382,9 @@ def rule27(stock, data: List[dataModel]):
     try:
         if not t_limit(stock, data):
             return False
+        for i in range(20, 51):
+            if limit_height(stock, data, i) >= 3:
+                return False
         count = 0
         range90 = data[-90:]
         highPrice = max([_.high() for _ in range90])
@@ -412,6 +418,71 @@ def rule28(data: List[dataModel], index: List[dataModel]):
             count += 1
         if count >= 2:
             return True
+
+
+def rule29(stock, data: List[dataModel]):
+    try:
+        if t_limit(stock, data, 1):
+            return False
+        if not t_limit(stock, data):
+            return False
+        d = data[-1]
+        if d.buy_elg_vol() / d.volume() < 0.3:
+            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() < 0.6:
+                return True
+    except:
+        pass
+
+
+def rule30(stock, data: List[dataModel]):
+    if t_limit(stock, data, 1):
+        return False
+    if not t_limit(stock, data):
+        return False
+    if data[-1].concentration() - data[-2].concentration() > 2:
+        return True
+
+
+def rule31(stock, data: List[dataModel]):
+    if t_limit(stock, data, 2):
+        return False
+    for i in range(2):
+        if not t_limit(stock, data, i):
+            return False
+    if data[-1].concentration() - data[-2].concentration() > 3.5:
+        return True
+
+
+def rule32(stock, data: List[dataModel]):
+    try:
+        for i in range(2):
+            if not t_limit(stock, data, i + 1):
+                return False
+            matchTime = dateHandler.joinTimeToStamp(data[-i - 2].date(), '09:45:00')
+            if data[-i - 2].firstLimitTime() >= matchTime:
+                return False
+        return True
+    except:
+        pass
+
+
+def rule33(stock, data: List[dataModel]):
+    if not t_limit(stock, data):
+        return False
+    if data[-1].limitOpenTime() <= 1:
+        return False
+    if t_down_limit(stock, data):
+        if data[-1].buy_elg_vol() / data[-1].volume() < 0.3:
+            return True
+
+
+def rule34(stock, data: List[dataModel]):
+    for i in range(3):
+        if not t_limit(stock, data, i):
+            return False
+        if t_open_pct(data, i) >= 0.05:
+            return False
+    return True
 
 
 class levelF3:
@@ -455,4 +526,10 @@ class levelF3:
         self.shot_rule.append(26) if rule26(self.stock, self.data, self.index) else self.fail_rule.append(26)
         self.shot_rule.append(27) if rule27(self.stock, self.data) else self.fail_rule.append(27)
         self.shot_rule.append(28) if rule28(self.data, self.index) else self.fail_rule.append(28)
+        self.shot_rule.append(29) if rule29(self.stock, self.data) else self.fail_rule.append(29)
+        self.shot_rule.append(30) if rule30(self.stock, self.data) else self.fail_rule.append(30)
+        self.shot_rule.append(31) if rule31(self.stock, self.data) else self.fail_rule.append(31)
+        self.shot_rule.append(32) if rule32(self.stock, self.data) else self.fail_rule.append(32)
+        self.shot_rule.append(33) if rule33(self.stock, self.data) else self.fail_rule.append(33)
+        self.shot_rule.append(34) if rule34(self.stock, self.data) else self.fail_rule.append(34)
         return self.result()

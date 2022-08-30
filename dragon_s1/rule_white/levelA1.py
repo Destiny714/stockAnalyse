@@ -110,42 +110,6 @@ def rule8(data: List[dataModel]):
         pass
 
 
-def rule9(data: List[dataModel]):
-    try:
-        d1 = data[-2]
-        d2 = data[-3]
-        if (d2.buy_elg_vol() + d1.buy_elg_vol() - d2.sell_elg_vol() - d1.sell_elg_vol()) / (
-                d2.buy_elg_vol() + d1.buy_elg_vol()) > 0.5:
-            return True
-    except:
-        pass
-
-
-def rule10(data: List[dataModel]):
-    try:
-        d0 = data[-1]
-        d1 = data[-2]
-        d2 = data[-3]
-        if (d2.buy_elg_vol() + d1.buy_elg_vol() + d0.buy_elg_vol - d0.sell_elg_vol() - d1.sell_elg_vol()) / (
-                d0.buy_elg_vol() + d1.buy_elg_vol()) > 0.3:
-            return True
-    except:
-        pass
-
-
-def rule11(data: List[dataModel]):
-    try:
-        d0 = data[-1]
-        d1 = data[-2]
-        d2 = data[-3]
-        if (
-                d2.buy_elg_vol() + d1.buy_elg_vol() + d0.buy_elg_vol() - d2.sell_elg_vol() - d1.sell_elg_vol() - d0.sell_elg_vol()) / (
-                d2.buy_elg_vol() + d1.buy_elg_vol() + d0.buy_elg_vol()) > 0.4:
-            return True
-    except:
-        pass
-
-
 class levelA1:
     def __init__(self, stock: str, data: List[dataModel]):
         self.level = 'A1'
@@ -166,7 +130,4 @@ class levelA1:
         self.shot_rule.append(6) if rule6(self.data) else self.fail_rule.append(6)
         self.shot_rule.append(7) if rule7(self.data) else self.fail_rule.append(7)
         self.shot_rule.append(8) if rule8(self.data) else self.fail_rule.append(8)
-        self.shot_rule.append(9) if rule9(self.data) else self.fail_rule.append(9)
-        self.shot_rule.append(10) if rule10(self.data) else self.fail_rule.append(10)
-        self.shot_rule.append(11) if rule11(self.data) else self.fail_rule.append(11)
         return self.result()

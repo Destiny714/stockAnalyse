@@ -152,7 +152,8 @@ def updateTimeDataToday():
 
     checkDate = extApi.getTimeDataToday('399001')['date']
     if checkDate != dateHandler.lastTradeDay():
-        return
+        print('分时数据缺失,退出')
+        exit()
     print(f'updating {checkDate} time data')
     toolBox.thread_pool_executor(updateOne, stocks, 15)
     if len(errs) != 0:

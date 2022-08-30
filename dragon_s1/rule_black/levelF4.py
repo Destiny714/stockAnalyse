@@ -7,7 +7,8 @@
 from typing import List
 
 from common import dateHandler
-from common.collect_data import t_low_pct, t_close_pct, t_open_pct, limit, dataModel, model_1, model_t, t_limit
+from common.collect_data import t_low_pct, t_close_pct, t_open_pct, limit, dataModel, model_1, model_t, t_limit, \
+    limit_height
 
 
 def rule1(stock, data: List[dataModel]):
@@ -481,6 +482,12 @@ def rule31(stock, data: List[dataModel]):
 
 def rule32(stock, data: List[dataModel]):
     try:
+        d = data[-1]
+        if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() >= 0.3:
+            return False
+        for i in range(20, 51):
+            if limit_height(stock, data, i) >= 2:
+                return False
         for i in range(3, 93):
             if not t_limit(stock, data, i):
                 continue
@@ -551,6 +558,9 @@ def rule35(stock, data: List[dataModel]):
 
 def rule36(stock, data: List[dataModel]):
     try:
+        for i in range(20, 51):
+            if limit_height(stock, data, i) >= 2:
+                return False
         for i in range(3, 153):
             if not t_limit(stock, data, i):
                 continue
@@ -572,7 +582,7 @@ def rule36(stock, data: List[dataModel]):
 def rule37(data: List[dataModel]):
     try:
         badCount = 0
-        for i in range(30):
+        for i in range(50):
             j = i + 1
             ma30 = [data[-_] for _ in range(j, j + 30)]
             ma60 = [data[-_] for _ in range(j, j + 60)]
@@ -652,8 +662,11 @@ def rule41(stock, data: List[dataModel]):
         pass
 
 
-def rule42(data: List[dataModel], index: List[dataModel]):
+def rule42(stock, data: List[dataModel], index: List[dataModel]):
     try:
+        for i in range(20, 51):
+            if limit_height(stock, data, i) >= 2:
+                return False
         badCount = 0
         for i in range(10):
             j = i + 1
@@ -668,8 +681,11 @@ def rule42(data: List[dataModel], index: List[dataModel]):
         return False
 
 
-def rule43(data: List[dataModel], index: List[dataModel]):
+def rule43(stock, data: List[dataModel], index: List[dataModel]):
     try:
+        for i in range(20, 51):
+            if limit_height(stock, data, i) >= 2:
+                return False
         badCount = 0
         for i in range(15):
             j = i + 1
@@ -679,6 +695,21 @@ def rule43(data: List[dataModel], index: List[dataModel]):
                 if t_low_pct(index, i) > -0.01:
                     badCount += 1
             if badCount >= 2:
+                return True
+    except:
+        return False
+
+
+def rule44(data: List[dataModel]):
+    try:
+        badCount = 0
+        for i in range(10):
+            j = i + 1
+            ma = [data[-_] for _ in range(j, j + 20)]
+            avg = sum(_.close() for _ in ma) / len(ma)
+            if data[-i - 1].low() < avg:
+                badCount += 1
+            if badCount >= 3:
                 return True
     except:
         return False
@@ -738,6 +769,7 @@ class levelF4:
         self.shot_rule.append(39) if rule39(self.data, self.index) else self.fail_rule.append(39)
         self.shot_rule.append(40) if rule40(self.data) else self.fail_rule.append(40)
         self.shot_rule.append(41) if rule41(self.stock, self.data) else self.fail_rule.append(41)
-        self.shot_rule.append(42) if rule42(self.data, self.index) else self.fail_rule.append(42)
-        self.shot_rule.append(43) if rule43(self.data, self.index) else self.fail_rule.append(43)
+        self.shot_rule.append(42) if rule42(self.stock, self.data, self.index) else self.fail_rule.append(42)
+        self.shot_rule.append(43) if rule43(self.stock, self.data, self.index) else self.fail_rule.append(43)
+        self.shot_rule.append(44) if rule44(self.data) else self.fail_rule.append(44)
         return self.result()

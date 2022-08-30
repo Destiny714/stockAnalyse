@@ -4,9 +4,7 @@
 # @File    : level2.py
 # @Software: PyCharm
 from typing import List
-
-from common import dateHandler
-from common.collect_data import dataModel, t_limit, t_open_pct, t_low_pct
+from common.collect_data import dataModel, t_limit
 
 
 def rule1(data: List[dataModel]):
@@ -26,21 +24,27 @@ def rule2(data: List[dataModel]):
         return False
 
 
-def rule4(data: List[dataModel]):
+def rule4(stock, data: List[dataModel]):
+    if t_limit(stock, data, 2):
+        return False
     range10 = data[-11:-1]
     range30 = data[-31:-1]
     if sum(_.close() for _ in range10) / 10 > sum(_.close() for _ in range30) / 30:
         return True
 
 
-def rule5(data: List[dataModel]):
+def rule5(stock, data: List[dataModel]):
+    if t_limit(stock, data, 2):
+        return False
     range10 = data[-11:-1]
     range20 = data[-21:-1]
     if sum(_.close() for _ in range10) / 10 > sum(_.close() for _ in range20) / 20:
         return True
 
 
-def rule6(data: List[dataModel]):
+def rule6(stock, data: List[dataModel]):
+    if t_limit(stock, data, 2):
+        return False
     try:
         range20 = data[-21:-1]
         range30 = data[-31:-1]
@@ -50,7 +54,9 @@ def rule6(data: List[dataModel]):
         return False
 
 
-def rule7(data: List[dataModel]):
+def rule7(stock, data: List[dataModel]):
+    if t_limit(stock, data, 2):
+        return False
     try:
         range30 = data[-31:-1]
         range60 = data[-61:-1]
@@ -60,7 +66,9 @@ def rule7(data: List[dataModel]):
         return False
 
 
-def rule8(data: List[dataModel]):
+def rule8(stock, data: List[dataModel]):
+    if t_limit(stock, data, 2):
+        return False
     try:
         range60 = data[-61:-1]
         range120 = data[-121:-1]
@@ -70,7 +78,9 @@ def rule8(data: List[dataModel]):
         return False
 
 
-def rule9(data: List[dataModel]):
+def rule9(stock, data: List[dataModel]):
+    if t_limit(stock, data, 3):
+        return False
     high3 = max(data[-1].high(), data[-2].high(), data[-3].high())
     high220 = max([_.high() for _ in data[-223:-3]])
     if high3 > high220:
@@ -135,12 +145,12 @@ class level2:
     def filter(self):
         self.shot_rule.append(1) if rule1(self.data) else self.fail_rule.append(1)
         self.shot_rule.append(2) if rule2(self.data) else self.fail_rule.append(2)
-        self.shot_rule.append(4) if rule4(self.data) else self.fail_rule.append(4)
-        self.shot_rule.append(5) if rule5(self.data) else self.fail_rule.append(5)
-        self.shot_rule.append(6) if rule6(self.data) else self.fail_rule.append(6)
-        self.shot_rule.append(7) if rule7(self.data) else self.fail_rule.append(7)
-        self.shot_rule.append(8) if rule8(self.data) else self.fail_rule.append(8)
-        self.shot_rule.append(9) if rule9(self.data) else self.fail_rule.append(9)
+        self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
+        self.shot_rule.append(5) if rule5(self.stock, self.data) else self.fail_rule.append(5)
+        self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
+        self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)
+        self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
+        self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
         self.shot_rule.append(10) if rule10(self.data) else self.fail_rule.append(10)
         self.shot_rule.append(11) if rule11(self.data) else self.fail_rule.append(11)
         self.shot_rule.append(12) if rule12(self.data) else self.fail_rule.append(12)

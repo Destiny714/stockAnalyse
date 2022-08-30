@@ -187,8 +187,8 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
     elif virtual == 's':
         modifyData = res[-1]
         nextDate = mysql.selectNextTradeDay(modifyData.date())
-        largePct = 1.05
-        smallPct = 0.95
+        largePct = 1.3
+        smallPct = 0.7
         virtualData = [8888,
                        nextDate,
                        modifyData.close() * 1.07,
@@ -238,8 +238,8 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
     elif virtual == 'f':
         modifyData = res[-1]
         nextDate = mysql.selectNextTradeDay(modifyData.date())
-        largePct = 0.95
-        smallPct = 1.05
+        largePct = 0.7
+        smallPct = 1.3
         virtualData = [8888,
                        nextDate,
                        modifyData.close() * 1.03,
@@ -335,10 +335,10 @@ def t_down_limit(stock: str, data: List[dataModel], plus: int = 0):
     return data[-plus - 1].pctChange() < - limit(stock)
 
 
-def limit_height(stock: str, data: List[dataModel]):
+def limit_height(stock: str, data: List[dataModel], plus: int = 0):
     height = 0
     for i in range(20):
-        if t_limit(stock, data, i):
+        if t_limit(stock, data, i + plus):
             height += 1
         else:
             return height

@@ -86,6 +86,8 @@ def rule5(stock, industryLimitRank: list):
 
 
 def rule6(stock, data: List[dataModel]):
+    if t_limit(stock, data, 3):
+        return False
     try:
         if not t_limit(stock, data):
             return False
@@ -109,13 +111,15 @@ def rule7(stock, data: List[dataModel]):
         if data[-2].turnover() < data[-3].turnover() / 3:
             if model_t(stock, data) and t_low_pct(data) > 0.07:
                 d = data[-1]
-                if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.3:
+                if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.4:
                     return True
     except:
         pass
 
 
 def rule10(stock, data: List[dataModel]):
+    if t_limit(stock, data, 3):
+        return False
     try:
         if not t_limit(stock, data):
             return False

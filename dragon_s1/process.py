@@ -4,20 +4,15 @@
 # @File    : process.py
 # @Software: PyCharm
 
-# import os
-# import sys
-#
-# sys.path.append(os.getcwd().replace('/dragon_s1', ''))
-import warnings
 
 import pymysql
-
+import warnings
 import excel_process
 from rule_level import A, S, F
 from api import databaseApi, tushareApi
 from common import toolBox, concurrentActions, dateHandler, push
 from rule_black import levelF1, levelF2, levelF3, levelF4, levelF5
-from rule_white import level1, level2, level3, level4, level5, level6, levelA1, levelA2, levelA3
+from rule_white import level1, level2, level3, level4, level5, level6, levelA1, levelA2, levelA3, levelA4
 from common.collect_data import collectData, t_open_pct, limit_height, collectIndexData, virtualIndexData
 
 if __name__ == '__main__':
@@ -63,12 +58,13 @@ if __name__ == '__main__':
                 lA1 = levelA1.levelA1(stock, data).filter()
                 lA2 = levelA2.levelA2(stock, data).filter()
                 lA3 = levelA3.levelA3(stock, data).filter()
-                lF1 = levelF1.levelF1(stock, data, index).filter()
+                lA4 = levelA4.levelA4(stock, data).filter()
+                lF1 = levelF1.levelF1(stock, data, index, industryLimitRank).filter()
                 lF2 = levelF2.levelF2(stock, data, index).filter()
                 lF3 = levelF3.levelF3(stock, data, index).filter()
                 lF4 = levelF4.levelF4(stock, data, index).filter()
                 lF5 = levelF5.levelF5(stock, data, index).filter()
-                for white in [l1, l2, l3, l4, l5, l6, lA1, lA2, lA3]:
+                for white in [l1, l2, l3, l4, l5, l6, lA1, lA2, lA3, lA4]:
                     if virtual is None:
                         white_sum += len(white['detail'])
                     if white['result']:
@@ -82,16 +78,17 @@ if __name__ == '__main__':
                 score += len(l2['detail']) * 1
                 score += len(l3['detail']) * 2
                 score += len(l4['detail']) * 4
-                score += len(l5['detail']) * 5
+                score += len(l5['detail']) * 7
                 score += len(l6['detail']) * 7
                 score += len(lA1['detail']) * 4
-                score += len(lA2['detail']) * 4
-                score += len(lA3['detail']) * 4
-                score -= len(lF1['detail']) * 4
-                score -= len(lF2['detail']) * 4
-                score -= len(lF3['detail']) * 5
-                score -= len(lF4['detail']) * 5
-                score -= len(lF5['detail']) * 7
+                score += len(lA2['detail']) * 3
+                score += len(lA3['detail']) * 3
+                score += len(lA4['detail']) * 3
+                score -= len(lF1['detail']) * 5
+                score -= len(lF2['detail']) * 5
+                score -= len(lF3['detail']) * 7
+                score -= len(lF4['detail']) * 7
+                score -= len(lF5['detail']) * 8
                 if virtual is None:
                     height = limit_height(stock, data)
                     T1S = virtualDict[stock]['s']
@@ -128,12 +125,12 @@ if __name__ == '__main__':
                         'height': height,
                         'white': white_sum,
                         'black': black_sum,
+                        'b1': virtualDict[stock]['b1'],
+                        'b2': virtualDict[stock]['b2'],
                         'score': score,
                         'T1S': T1S,
                         'T1F': T1F,
                         'S': _S,
-                        'W': int(white_sum - excelDict[stock]['white'] if excelDict != {} else -8888),
-                        'B': int(black_sum - excelDict[stock]['black'] if excelDict != {} else -8888),
                         'open_price': f'{round(t_open_pct(data) * 100, 2)}%',
                         'date': aimDate,
                         'details': str(details),
@@ -144,7 +141,9 @@ if __name__ == '__main__':
                     print(result)
                     excelDatas.append(excelData)
                 else:
+                    matchDict = {'s': 'b1', 'f': 'b2'}
                     virtualDict[stock][virtual] = score
+                    virtualDict[stock][matchDict[virtual]] = black_sum
                     virtualDict[stock][f'{virtual}_detail'] = details
                     print(f'virtual {str(virtual).upper()} {stock}')
             except (IndexError, ValueError, KeyError, TypeError, pymysql.Error) as e:
