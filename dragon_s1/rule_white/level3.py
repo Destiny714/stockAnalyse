@@ -46,19 +46,6 @@ def rule3(stock, data: List[dataModel]):
         return True
 
 
-def rule4(stock, data: List[dataModel]):
-    if data[-1].pctChange() <= limit(stock):
-        return False
-    if data[-2].pctChange() <= limit(stock):
-        return False
-    if data[-3].pctChange() > limit(stock):
-        return False
-    if data[-4].pctChange() > limit(stock):
-        return False
-    if 0.035 < t_open_pct(data) < 0.09:
-        return True
-
-
 def rule5(stock, data: List[dataModel]):
     if data[-1].pctChange() <= limit(stock):
         return False
@@ -69,6 +56,20 @@ def rule5(stock, data: List[dataModel]):
     matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
     if data[-1].firstLimitTime() < matchTime:
         return True
+
+
+def rule6(data: List[dataModel]):
+    try:
+        for i in range(40):
+            j = i + 1
+            ma30 = [data[-_] for _ in range(j, j + 30)]
+            ma60 = [data[-_] for _ in range(j, j + 60)]
+            avg30 = sum(_.close() for _ in ma30) / len(ma30)
+            avg60 = sum(_.close() for _ in ma60) / len(ma60)
+            if avg30 <= avg60:
+                return False
+    except:
+        return False
 
 
 def rule7(stock, data: List[dataModel]):
@@ -253,7 +254,7 @@ def rule22(stock, data: List[dataModel], index: List[dataModel]):
     if t_low_pct(data) <= -0.05:
         return False
     if t_open_pct(data) > 0.01:
-        if t_close_pct(index) < -0.02:
+        if t_close_pct(index) < -0.01:
             return True
 
 
@@ -466,8 +467,11 @@ def rule37(stock, data: List[dataModel]):
                 return True
 
 
-def rule38(data: List[dataModel]):
+def rule38(stock, data: List[dataModel]):
     try:
+        for i in range(2):
+            if not t_limit(stock, data, i):
+                return False
         v1 = data[-1].timeVol(minute='0930')
         v2 = data[-2].timeVol(minute='0930')
         if v1 > v2:
@@ -489,7 +493,7 @@ def rule39(data: List[dataModel]):
 
 def rule40(stock, data: List[dataModel]):
     try:
-        if t_open_pct(data) > limit(stock):
+        if t_open_pct(data) > limit(stock) / 100:
             return False
         for i in range(2):
             if not t_limit(stock, data, i):
@@ -533,8 +537,8 @@ class level3:
         self.shot_rule.append(1) if rule1(self.stock, self.data) else self.fail_rule.append(1)
         self.shot_rule.append(2) if rule2(self.stock, self.data) else self.fail_rule.append(2)
         self.shot_rule.append(3) if rule3(self.stock, self.data) else self.fail_rule.append(3)
-        self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         self.shot_rule.append(5) if rule5(self.stock, self.data) else self.fail_rule.append(5)
+        self.shot_rule.append(6) if rule6(self.data) else self.fail_rule.append(6)
         self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)
         self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
         self.shot_rule.append(9) if rule9(self.stock, self.data) else self.fail_rule.append(9)
@@ -566,7 +570,7 @@ class level3:
         self.shot_rule.append(35) if rule35(self.data) else self.fail_rule.append(35)
         self.shot_rule.append(36) if rule36(self.stock, self.data) else self.fail_rule.append(36)
         self.shot_rule.append(37) if rule37(self.stock, self.data) else self.fail_rule.append(37)
-        self.shot_rule.append(38) if rule38(self.data) else self.fail_rule.append(38)
+        self.shot_rule.append(38) if rule38(self.stock, self.data) else self.fail_rule.append(38)
         self.shot_rule.append(39) if rule39(self.data) else self.fail_rule.append(39)
         self.shot_rule.append(40) if rule40(self.stock, self.data) else self.fail_rule.append(40)
         self.shot_rule.append(41) if rule41(self.stock, self.data) else self.fail_rule.append(41)

@@ -27,10 +27,13 @@ class Tushare:
 
     def allStocks(self):
         stockList = []
-        data = self._instance.query('stock_basic', exchange='', list_status='L',
-                                    fields='exchange,symbol,name,industry,market')
-        for i in range(len(data)):
-            stock = data.iloc[i]
+        SSEdata = self._instance.query('stock_basic', exchange='SSE', list_status='L', fields='exchange,symbol,name,industry,market')
+        SZSEdata = self._instance.query('stock_basic', exchange='SZSE', list_status='L', fields='exchange,symbol,name,industry,market')
+        for i in range(len(SSEdata)):
+            stock = SSEdata.iloc[i]
+            stockList.append(stock)
+        for i in range(len(SZSEdata)):
+            stock = SZSEdata.iloc[i]
             stockList.append(stock)
         return stockList
 
@@ -84,7 +87,7 @@ class Tushare:
         details = []
         data = self._instance.daily_basic(**{
             "ts_code": "",
-            "trade_date": 20220822,
+            "trade_date": date,
             "start_date": "",
             "end_date": "",
             "limit": "",
@@ -158,3 +161,36 @@ class Tushare:
         for i in range(len(data)):
             details.append(data.iloc[i])
         return details
+
+    def fullLimitDetail(self, start, end=dateHandler.lastTradeDay()):
+        df = self._instance.limit_list_d(**{
+            "trade_date": "",
+            "ts_code": "",
+            "limit_type": "U",
+            "exchange": "",
+            "start_date": start,
+            "end_date": end,
+            "limit": "",
+            "offset": ""
+        }, fields=[
+            "trade_date",
+            "ts_code",
+            "industry",
+            "name",
+            "close",
+            "pct_chg",
+            "amount",
+            "limit_amount",
+            "float_mv",
+            "total_mv",
+            "turnover_ratio",
+            "fd_amount",
+            "first_time",
+            "last_time",
+            "open_times",
+            "limit_times",
+            "limit",
+            "up_stat",
+            "swing"
+        ])
+        return df

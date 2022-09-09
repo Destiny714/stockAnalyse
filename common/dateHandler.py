@@ -48,6 +48,14 @@ def lastTradeDay(date=None):
     return today
 
 
+def lastXTradeDay(date=None, x: int = 1):
+    if date is None:
+        date = lastTradeDay()
+    else:
+        date = lastTradeDay(date)
+    return databaseApi.Mysql().selectTradeDateByDuration(date, x)
+
+
 def week_day(day: datetime.datetime):
     weekday = day.weekday() + 1
     return weekday

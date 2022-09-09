@@ -16,10 +16,11 @@ from rule_white import level1, level2, level3, level4, level5, level6, levelA1, 
 from common.collect_data import collectData, t_open_pct, limit_height, collectIndexData, virtualIndexData
 
 if __name__ == '__main__':
+    log = toolBox.log()
     warnings.filterwarnings('ignore')
     stocks = concurrentActions.initStock(needReload=False, extra=False)
     tradeDays = databaseApi.Mysql().selectTradeDate()
-    aimDates = [dateHandler.lastTradeDay()]
+    aimDates = ['20220907', '20220908']
 
 
     def process(aimDate):
@@ -29,12 +30,11 @@ if __name__ == '__main__':
         errors = []
         excelDatas = []
         virtualDict = {f'{stock}': {} for stock in stocks}
-        indexData = collectIndexData('ShIndex')
+        indexData = collectIndexData('GemIndex', aimDate=aimDate)
         nextTradeDay = databaseApi.Mysql().selectNextTradeDay(aimDate)
         excelDict: dict = excel_process.readScoreFromExcel(databaseApi.Mysql().selectLastDate(aimDate))
 
         def processOneStock(argMap: dict):
-            index = indexData
             stock = argMap['stock']
             virtual = argMap['virtual']
             stockDetail = databaseApi.Mysql().selectStockDetail(stock)
@@ -42,6 +42,8 @@ if __name__ == '__main__':
             industryLimitRank = industryIndexDict[industry]['rank']
             if virtual is not None:
                 index = virtualIndexData(indexData, nextTradeDay)
+            else:
+                index = indexData.copy()
             try:
                 data = collectData(stock, aimDate=aimDate, virtual=virtual)
                 t0Day = data[-1]
@@ -49,12 +51,6 @@ if __name__ == '__main__':
                 score = 0
                 white_sum = 0
                 black_sum = 0
-                l1 = level1.level1(stock, data).filter()
-                l2 = level2.level2(stock, data).filter()
-                l3 = level3.level3(stock, data, index).filter()
-                l4 = level4.level4(stock, data, index).filter()
-                l5 = level5.level5(stock, data, index, limitTimeRank, industryLimitRank).filter()
-                l6 = level6.level6(stock, data, index).filter()
                 lA1 = levelA1.levelA1(stock, data).filter()
                 lA2 = levelA2.levelA2(stock, data).filter()
                 lA3 = levelA3.levelA3(stock, data).filter()
@@ -64,21 +60,29 @@ if __name__ == '__main__':
                 lF3 = levelF3.levelF3(stock, data, index).filter()
                 lF4 = levelF4.levelF4(stock, data, index).filter()
                 lF5 = levelF5.levelF5(stock, data, index).filter()
-                for white in [l1, l2, l3, l4, l5, l6, lA1, lA2, lA3, lA4]:
-                    if virtual is None:
-                        white_sum += len(white['detail'])
+                l1 = level1.level1(stock, data).filter()
+                l2 = level2.level2(stock, data).filter()
+                l3 = level3.level3(stock, data, index).filter()
+                l4 = level4.level4(stock, data, index, limitTimeRank, industryLimitRank).filter()
+                l5 = level5.level5(stock, data, index, limitTimeRank, industryLimitRank).filter()
+                l6 = level6.level6(stock, data, index).filter()
+                for white in [lA1, lA2, lA3, lA4]:
+                    white_sum += len(white['detail'])
                     if white['result']:
                         details[white['level']] = white['detail']
                 for black in [lF1, lF2, lF3, lF4, lF5]:
-                    if virtual is None:
-                        black_sum += len(black['detail'])
+                    black_sum += len(black['detail'])
                     if black['result'] is False:
                         details[black['level']] = black['detail']
+                for white in [l1, l2, l3, l4, l5, l6]:
+                    white_sum += len(white['detail'])
+                    if white['result']:
+                        details[white['level']] = white['detail']
                 score += len(l1['detail']) * 1
                 score += len(l2['detail']) * 1
                 score += len(l3['detail']) * 2
                 score += len(l4['detail']) * 4
-                score += len(l5['detail']) * 7
+                score += len(l5['detail']) * 5
                 score += len(l6['detail']) * 7
                 score += len(lA1['detail']) * 4
                 score += len(lA2['detail']) * 3
@@ -138,16 +142,18 @@ if __name__ == '__main__':
                         'T1F_detail': str(virtualDict[stock]['f_detail']),
                     }
                     excelData = [result[_] for _ in excel_process.cols]
-                    print(result)
+                    log.info(f'{aimDate}-{stock} - {"NOW" if not virtual else virtual}')
                     excelDatas.append(excelData)
                 else:
                     matchDict = {'s': 'b1', 'f': 'b2'}
                     virtualDict[stock][virtual] = score
                     virtualDict[stock][matchDict[virtual]] = black_sum
                     virtualDict[stock][f'{virtual}_detail'] = details
-                    print(f'virtual {str(virtual).upper()} {stock}')
+                    log.info(f'{aimDate} - {stock} - T1{str(virtual).upper()}')
             except (IndexError, ValueError, KeyError, TypeError, pymysql.Error) as e:
                 errors.append([stock, e])
+                log.warning(
+                    f'{aimDate} - {stock} - {"NOW" if not virtual else "".join(["T1", str(virtual).upper()])} - {e} - {toolBox.errorHandler(e)}')
 
         toolBox.thread_pool_executor(processOneStock, [{'stock': stock, 'virtual': 's'} for stock in stocks], 10)
         toolBox.thread_pool_executor(processOneStock, [{'stock': stock, 'virtual': 'f'} for stock in stocks], 10)
@@ -161,8 +167,6 @@ if __name__ == '__main__':
 
         excelDatas.sort(key=rankExcelData, reverse=True)
         errStocks = list(set([_[0] for _ in errors]))
-        for error in errors:
-            toolBox.errorHandler(error[1], arg=error[0])
         for errStock in errStocks:
             errStockDetail = databaseApi.Mysql().selectStockDetail(errStock)
             excelDatas.append([

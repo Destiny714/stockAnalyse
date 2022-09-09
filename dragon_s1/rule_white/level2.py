@@ -117,6 +117,40 @@ def rule14(data: List[dataModel]):
             return True
 
 
+def rule15(data: List[dataModel]):
+    try:
+        count = 0
+        for i in range(40):
+            j = i + 1
+            ma10 = [data[-_] for _ in range(j, j + 10)]
+            ma20 = [data[-_] for _ in range(j, j + 20)]
+            avg10 = sum(_.close() for _ in ma10) / len(ma10)
+            avg20 = sum(_.close() for _ in ma20) / len(ma20)
+            if avg10 > avg20:
+                count += 1
+            if count >= 30:
+                return True
+    except:
+        return False
+
+
+def rule16(data: List[dataModel]):
+    try:
+        count = 0
+        for i in range(40):
+            j = i + 1
+            ma20 = [data[-_] for _ in range(j, j + 20)]
+            ma30 = [data[-_] for _ in range(j, j + 30)]
+            avg20 = sum(_.close() for _ in ma20) / len(ma20)
+            avg30 = sum(_.close() for _ in ma30) / len(ma30)
+            if avg20 > avg30:
+                count += 1
+            if count >= 30:
+                return True
+    except:
+        return False
+
+
 def rule18(stock, data: List[dataModel]):
     if t_limit(stock, data, 1):
         return False
@@ -156,5 +190,7 @@ class level2:
         self.shot_rule.append(12) if rule12(self.data) else self.fail_rule.append(12)
         self.shot_rule.append(13) if rule13(self.data) else self.fail_rule.append(13)
         self.shot_rule.append(14) if rule14(self.data) else self.fail_rule.append(14)
+        self.shot_rule.append(15) if rule15(self.data) else self.fail_rule.append(15)
+        self.shot_rule.append(16) if rule16(self.data) else self.fail_rule.append(16)
         self.shot_rule.append(18) if rule18(self.stock, self.data) else self.fail_rule.append(18)
         return self.result()

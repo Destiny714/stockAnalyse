@@ -111,6 +111,13 @@ class Mysql:
         data = self.action(output=True)
         return [_[0] for _ in data]
 
+    def selectTradeDateByDuration(self, date, duration: int):
+        self.word = f"(SELECT id,date FROM tradeCalender WHERE id <= (SELECT id FROM tradeCalender WHERE date={date}) " \
+                    f"ORDER BY id DESC LIMIT {duration}) " \
+                    f"ORDER BY id"
+        result = self.action(output=True)
+        return [_[1] for _ in result]
+
     def selectLastTradeDate(self, date):
         self.word = f"SELECT lastDate FROM tradeCalender where date='{date}'"
         data = self.action(output=True)
@@ -140,8 +147,8 @@ class Mysql:
                     f"{data['high']},{data['low']},{data['pct_chg']},{data['vol']},{data['amount']})"
         self.action(output=False)
 
-    def insertShIndex(self, data):
-        self.word = f"INSERT ignore INTO NoShIndex " \
+    def insertIndex(self, data, indexTable='NoShIndex'):
+        self.word = f"INSERT ignore INTO {indexTable} " \
                     f"(date,open,close,preClose,high,low,pctChange,volume,amount) VALUES " \
                     f"('{data['trade_date']}',{data['open']},{data['close']},{data['pre_close']}," \
                     f"{data['high']},{data['low']},{data['pct_chg']},{data['vol']},{data['amount']})"
@@ -163,17 +170,22 @@ class Mysql:
         return [_[0] for _ in stocks]
 
     def selectStockDetail(self, stock: str):
-        self.word = f"SELECT * FROM stockList WHERE symbol='{stock}'"
+        self.word = f"SELECT * FROM stockList WHERE symbol={stock}"
         detail = self.action(output=True)
         return detail[0]
 
-    def selectOneAllData(self, stock, dateRange, aimDate=''):
+    def selectOneAllData(self, stock, dateRange=None, aimDate=''):
         if aimDate == '':
             self.word = f"SELECT * FROM No{stock}"
         else:
-            self.word = f"(SELECT * FROM No{stock} WHERE id <= (SELECT id FROM No{stock} WHERE date={aimDate}) " \
-                        f"ORDER BY id DESC LIMIT {dateRange}) " \
-                        f"ORDER BY id"
+            if dateRange is None:
+                self.word = f"(SELECT * FROM No{stock} WHERE id <= (SELECT id FROM No{stock} WHERE date={aimDate}) " \
+                            f"ORDER BY id DESC) " \
+                            f"ORDER BY id"
+            else:
+                self.word = f"(SELECT * FROM No{stock} WHERE id <= (SELECT id FROM No{stock} WHERE date={aimDate}) " \
+                            f"ORDER BY id DESC LIMIT {dateRange}) " \
+                            f"ORDER BY id"
         data = self.action(output=True)
         return data
 

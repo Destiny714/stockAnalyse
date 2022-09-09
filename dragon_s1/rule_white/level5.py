@@ -59,11 +59,6 @@ def rule2(stock, data: List[dataModel]):
         pass
 
 
-def rule3(stock, limitTimeRank: list):
-    if stock in limitTimeRank:
-        return True
-
-
 def rule4(stock, data: List[dataModel]):
     if data[-1].limitOpenTime() >= 1:
         return False
@@ -77,11 +72,6 @@ def rule4(stock, data: List[dataModel]):
         return False
     matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:50:00')
     if data[-1].firstLimitTime() < matchTime:
-        return True
-
-
-def rule5(stock, industryLimitRank: list):
-    if stock in industryLimitRank:
         return True
 
 
@@ -131,48 +121,6 @@ def rule10(stock, data: List[dataModel]):
             return False
         range7 = data[-9:-2]
         if data[-2].turnover() > max([_.turnover() for _ in range7]):
-            d = data[-1]
-            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.3:
-                return True
-    except:
-        pass
-
-
-def rule11(stock, data: List[dataModel]):
-    try:
-        if t_limit(stock, data, 2):
-            return False
-        if not t_limit(stock, data, 1):
-            return False
-        if not t_limit(stock, data):
-            return False
-        matchTime0 = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
-        matchTime1 = dateHandler.joinTimeToStamp(data[-2].date(), '09:45:00')
-        if data[-1].firstLimitTime() < matchTime0 and data[-2].firstLimitTime() > matchTime1:
-            d = data[-1]
-            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.3:
-                return True
-    except:
-        pass
-
-
-def rule12(stock, data: List[dataModel]):
-    try:
-        if data[-1].limitOpenTime() >= 1:
-            return False
-        if not t_limit(stock, data, 1):
-            return False
-        if not t_limit(stock, data):
-            return False
-        if data[-2].turnover() <= data[-3].turnover():
-            return False
-        if data[-2].turnover() <= data[-1].turnover():
-            return False
-        matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:55:00')
-        if data[-1].lastLimitTime() >= data[-2].lastLimitTime() + dateHandler.timeDelta(data[-2].date(),
-                                                                                        data[-1].date()):
-            return False
-        if data[-1].lastLimitTime() < matchTime:
             d = data[-1]
             if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.3:
                 return True
@@ -241,14 +189,10 @@ class level5:
     def filter(self):
         self.shot_rule.append(1) if rule1(self.stock, self.data) else self.fail_rule.append(1)
         self.shot_rule.append(2) if rule2(self.stock, self.data) else self.fail_rule.append(2)
-        self.shot_rule.append(3) if rule3(self.stock, self.limitTimeRank) else self.fail_rule.append(3)
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
-        self.shot_rule.append(5) if rule5(self.stock, self.industryLimitRank) else self.fail_rule.append(5)
         self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
         self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)
         self.shot_rule.append(10) if rule10(self.stock, self.data) else self.fail_rule.append(10)
-        self.shot_rule.append(11) if rule11(self.stock, self.data) else self.fail_rule.append(11)
-        self.shot_rule.append(12) if rule12(self.stock, self.data) else self.fail_rule.append(12)
         self.shot_rule.append(13) if rule13(self.stock, self.data) else self.fail_rule.append(13)
         self.shot_rule.append(14) if rule14(self.stock, self.data) else self.fail_rule.append(14)
         return self.result()

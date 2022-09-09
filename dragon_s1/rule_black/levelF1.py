@@ -3,8 +3,8 @@
 # @Author  : Destiny_
 # @File    : levelF1.py
 # @Software: PyCharm
-from common import dateHandler
 from typing import List
+from common import dateHandler
 from common.collect_data import t_low_pct, t_close_pct, t_open_pct, t_high_pct, dataModel, model_1, t_limit, limit
 
 
@@ -29,12 +29,12 @@ def rule2(stock, data: List[dataModel]):
 def rule3(stock, data: List[dataModel]):
     count = 0
     for i in range(1, 4):
+        if not t_limit(stock, data, i - 1):
+            return False
         if t_open_pct(data, i - 1) >= -0.01:
             continue
         if t_close_pct(data, i - 1) > limit(stock) / 100:
             count += 1
-            if count >= 2:
-                return True
     return count >= 2
 
 
@@ -49,8 +49,7 @@ def rule4(stock, data: List[dataModel]):
         return False
     if t_low_pct(data, 1) > 0.07:
         if data[-2].turnover() > data[-3].turnover():
-            if data[-2].firstLimitTime() > data[-3].firstLimitTime() + dateHandler.timeDelta(data[-3].date(),
-                                                                                             data[-2].date()):
+            if data[-2].firstLimitTime() > data[-3].firstLimitTime() + dateHandler.timeDelta(data[-3].date(), data[-2].date()):
                 return True
 
 
@@ -67,9 +66,14 @@ def rule5(stock, data: List[dataModel]):
         return True
 
 
-def rule6(data: List[dataModel]):
-    range91 = data[-121:-30]
-    if range91[-1].close() / range91[0].close() > 2.2:
+def rule6(stock, data: List[dataModel]):
+    count = 0
+    for i in range(30, 121):
+        if t_limit(stock, data, i):
+            count += 1
+        if count >= 5:
+            return False
+    if data[-31].close() / data[-121].close() > 2.2:
         return True
 
 
@@ -179,8 +183,8 @@ def rule15(stock, data: List[dataModel]):
     for i in range(2):
         if not t_limit(stock, data, i):
             return False
-    if data[-2].turnover() > 2 * sum([_.turnover() for _ in data[-5:-2]]) / 3:
-        if data[-1].turnover() > 2 * sum([_.turnover() for _ in data[-5:-2]]) / 3:
+    if data[-2].turnover() > 3 * sum([_.turnover() for _ in data[-5:-2]]) / 3:
+        if data[-1].turnover() > 3 * sum([_.turnover() for _ in data[-5:-2]]) / 3:
             return True
 
 
@@ -307,18 +311,11 @@ def rule23(data: List[dataModel]):
         return False
 
 
-def rule24(data: List[dataModel]):
-    try:
-        range55 = data[-56:-1]
-        avg55 = sum([_.close() for _ in range55]) / 55
-        count = 0
-        for i in range(1, 6):
-            if data[-i - 1].close() < avg55:
-                count += 1
-            if count >= 2:
-                return True
-    except:
+def rule24(stock, data: List[dataModel]):
+    if not t_limit(stock, data):
         return False
+    if data[-1].buy_elg_vol() / data[-1].volume() < 0.3:
+        return True
 
 
 def rule25(stock, data: List[dataModel]):
@@ -334,28 +331,28 @@ def rule25(stock, data: List[dataModel]):
             return True
 
 
-def rule26(data: List[dataModel]):
-    range120 = data[-121:-1]
-    count = 0
-    for i in range120:
-        if i.close() > data[-1].close():
-            count += 1
-        if count >= 20:
-            return True
-
-
 def rule27(stock, data: List[dataModel]):
     for i in range(3):
-        if t_limit(stock, data, i + 1):
+        if t_limit(stock, data, i + 2):
             return False
-    if not t_limit(stock, data):
-        return False
-    if (data[-2].close() - data[-5].close()) / data[-5].close() > 0.1:
+    for i in range(2):
+        if not t_limit(stock, data, i):
+            return False
+    if (data[-3].close() - data[-6].close()) / data[-6].close() > 0.1:
         return True
 
 
-def rule28(stock, limitTimeRank: list):
-    if stock not in limitTimeRank:
+def rule28(stock, data: List[dataModel], industryLimitRank: list):
+    if not industryLimitRank:
+        return False
+    if not t_limit(stock, data):
+        return False
+    for i in range(20):
+        if t_limit(stock, data, i):
+            break
+    else:
+        return False
+    if stock not in industryLimitRank[0].__iadd__([] if len(industryLimitRank) == 1 else industryLimitRank[1]):
         return True
 
 
@@ -401,15 +398,49 @@ def rule31(data: List[dataModel]):
         return False
 
 
+def rule32(stock, data: List[dataModel]):
+    if t_limit(stock, data, 2):
+        return False
+    for i in range(2):
+        if not t_limit(stock, data, i):
+            return False
+        if model_1(stock, data, i):
+            return False
+        d = data[-i - 1]
+        matchTime = dateHandler.joinTimeToStamp(d.date(), '09:50:00')
+        if d.firstLimitTime() >= matchTime:
+            return False
+    for i in range(3, 11):
+        if not t_limit(stock, data, i):
+            continue
+        if not t_limit(stock, data, i - 1):
+            return True
+
+
+def rule33(stock, data: List[dataModel]):
+    if not t_limit(stock, data, 2):
+        return False
+    matchTime = dateHandler.joinTimeToStamp(data[-3].date(), '10:00:00')
+    if data[-3].firstLimitTime() <= matchTime:
+        return False
+    for i in range(2):
+        if not t_limit(stock, data, i):
+            return False
+        matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '09:50:00')
+        if data[-i - 1].firstLimitTime() >= matchTime:
+            return False
+    return True
+
+
 class levelF1:
-    def __init__(self, stock: str, data: List[dataModel], index: List[dataModel], limitTimeRank: list):
+    def __init__(self, stock: str, data: List[dataModel], index: List[dataModel], industryLimitRank: list):
         self.level = 'F1'
         self.data = data
         self.index = index
         self.stock = stock
         self.shot_rule: list = []
         self.fail_rule: list = []
-        self.limitTimeRank = limitTimeRank
+        self.industryLimitRank = industryLimitRank
 
     def result(self):
         return {'level': self.level, 'stock': self.stock, 'detail': self.shot_rule, 'result': self.shot_rule == []}
@@ -420,7 +451,7 @@ class levelF1:
         self.shot_rule.append(3) if rule3(self.stock, self.data) else self.fail_rule.append(3)
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         self.shot_rule.append(5) if rule5(self.stock, self.data) else self.fail_rule.append(5)
-        self.shot_rule.append(6) if rule6(self.data) else self.fail_rule.append(6)
+        self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)
         self.shot_rule.append(7) if rule7(self.stock, self.data) else self.fail_rule.append(7)
         self.shot_rule.append(8) if rule8(self.stock, self.data) else self.fail_rule.append(8)
         self.shot_rule.append(9) if rule9(self.stock, self.data, self.index) else self.fail_rule.append(9)
@@ -438,12 +469,13 @@ class levelF1:
         self.shot_rule.append(21) if rule21(self.stock, self.data) else self.fail_rule.append(21)
         self.shot_rule.append(22) if rule22(self.stock, self.data) else self.fail_rule.append(22)
         self.shot_rule.append(23) if rule23(self.data) else self.fail_rule.append(23)
-        self.shot_rule.append(24) if rule24(self.data) else self.fail_rule.append(24)
+        self.shot_rule.append(24) if rule24(self.stock, self.data) else self.fail_rule.append(24)
         self.shot_rule.append(25) if rule25(self.stock, self.data) else self.fail_rule.append(25)
-        self.shot_rule.append(26) if rule26(self.data) else self.fail_rule.append(26)
         self.shot_rule.append(27) if rule27(self.stock, self.data) else self.fail_rule.append(27)
-        self.shot_rule.append(28) if rule28(self.stock, self.limitTimeRank) else self.fail_rule.append(28)
+        self.shot_rule.append(28) if rule28(self.stock, self.data, self.industryLimitRank) else self.fail_rule.append(28)
         self.shot_rule.append(29) if rule29(self.stock, self.data) else self.fail_rule.append(29)
         self.shot_rule.append(30) if rule30(self.stock, self.data) else self.fail_rule.append(30)
         self.shot_rule.append(31) if rule31(self.data) else self.fail_rule.append(31)
+        self.shot_rule.append(32) if rule32(self.stock, self.data) else self.fail_rule.append(32)
+        self.shot_rule.append(33) if rule33(self.stock, self.data) else self.fail_rule.append(33)
         return self.result()

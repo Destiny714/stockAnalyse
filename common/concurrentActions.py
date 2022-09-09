@@ -9,6 +9,8 @@ from api.databaseApi import Mysql
 from api.tushareApi import Tushare
 from common import toolBox, dateHandler, collect_data
 
+log = toolBox.log()
+
 
 def updateTradeCalender():
     data = Tushare().tradeCalender()
@@ -97,9 +99,18 @@ def createTableIfNotExist(stockList):
 
 
 def updateShIndex(start=dateHandler.lastTradeDay(), end=dateHandler.lastTradeDay()):
-    data = Tushare().indexData(start=start, end=end)
+    code = '000001.SH'
+    data = Tushare().indexData(start=start, end=end, code=code)
     for d in data:
-        databaseApi.Mysql().insertShIndex(d)
+        databaseApi.Mysql().insertIndex(d, indexTable='NoShIndex')
+
+
+def updateGemIndex(start=dateHandler.lastTradeDay(), end=dateHandler.lastTradeDay()):
+    code = '399006.SZ'
+    data = Tushare().indexData(start=start, end=end, code=code)
+    for d in data:
+        print(d['trade_date'])
+        databaseApi.Mysql().insertIndex(d, indexTable='NoGemIndex')
 
 
 def updateMoneyFlow(aimDate=dateHandler.lastTradeDay()):
@@ -111,7 +122,7 @@ def updateMoneyFlow(aimDate=dateHandler.lastTradeDay()):
             client = Mysql()
             client.updateMoneyFlow(d)
         except Exception as e:
-            print(e)
+            log.warning(f'update money flow error - {e}')
 
     toolBox.thread_pool_executor(updateOne, data)
     print(f'{aimDate} money flow update done')
@@ -127,7 +138,7 @@ def updateChipDetail(aimDate=dateHandler.lastTradeDay()):
                 client = Mysql()
                 client.updateChipDetail(d)
             except Exception as e:
-                print(e)
+                log.warning(f'update chip detail error - {e}')
 
     toolBox.thread_pool_executor(updateOne, data)
     print(f'{aimDate} chip detail update done')
@@ -141,18 +152,18 @@ def updateTimeDataToday():
         try:
             data = extApi.getTimeDataToday(stock)
             if data is None:
-                print(f'{stock} update time data error')
+                log.warning(f'{stock} update time data error')
                 errs.append(stock)
                 return
             client = Mysql()
             client.updateTimeData(json=data)
         except:
             errs.append(stock)
-            print(f'{stock} update time data error')
+            log.warning(f'{stock} update time data error')
 
     checkDate = extApi.getTimeDataToday('399001')['date']
     if checkDate != dateHandler.lastTradeDay():
-        print('分时数据缺失,退出')
+        log.error('分时数据缺失,退出')
         exit()
     print(f'updating {checkDate} time data')
     toolBox.thread_pool_executor(updateOne, stocks, 15)
@@ -194,7 +205,7 @@ def rankingLimitTime(aimDate=dateHandler.lastTradeDay()) -> list:
 
     rankList.sort(key=rank)
     print('limit time rank done')
-    return rankList[0]['stocks']
+    return [_['stocks'] for _ in rankList]
 
 
 def industryIndex(aimDate=dateHandler.lastTradeDay()):
@@ -221,9 +232,16 @@ def industryIndex(aimDate=dateHandler.lastTradeDay()):
                             limitRankDict[industry][stockData[-1].firstLimitTime()].append(industryStock)
             except Exception as e:
                 errors.append(e)
-        industryLimitDict[industry] = {'limit': limit,
-                                       'rank': [] if len(limitRankDict[industry].keys()) == 0 else
-                                       limitRankDict[industry][min(limitRankDict[industry].keys())]}
+        if len(limitRankDict[industry].keys()) == 0:
+            limitRankList = []
+        else:
+            limitRankList = [{'time': _, 'stocks': limitRankDict[industry][_]} for _ in limitRankDict[industry].keys()]
+
+            def rank(d):
+                return d['time']
+
+            limitRankList.sort(key=rank)
+        industryLimitDict[industry] = {'limit': limit, 'rank': [] if not limitRankList else [_['stocks'] for _ in limitRankList]}
 
     print('processing industry index...')
     toolBox.thread_pool_executor(processOne, industries, 10)
@@ -236,6 +254,7 @@ def initStock(needReload: bool = True, extra: bool = False):
     stocks = mysql.selectAllStock()
     if needReload:
         updateShIndex()
+        updateGemIndex()
         updateStockList()
         stocks = mysql.selectAllStock()
         stockDetailVersion = mysql.selectDetailUpdateDate()

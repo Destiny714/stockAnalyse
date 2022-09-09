@@ -5,8 +5,7 @@
 # @Software: PyCharm
 from typing import List
 from common import dateHandler
-from common.collect_data import t_low_pct, t_open_pct, t_close_pct, t_high_pct, limit, dataModel, model_1, t_limit, \
-    t_down_limit
+from common.collect_data import t_low_pct, t_open_pct, t_close_pct, t_high_pct, limit, dataModel, model_1, t_limit
 
 
 def rule1(stock, data: List[dataModel]):
@@ -159,26 +158,32 @@ def rule10(stock, data: List[dataModel]):
 
 
 def rule11(stock, data: List[dataModel]):
-    for i in range(1, 5):
-        if not t_limit(stock, data, i - 1):
-            continue
+    flag = False
+    for i in range(4):
         if not t_limit(stock, data, i):
+            return False
+        if flag:
             continue
-        if t_open_pct(data, i - 1) < -0.03:
-            matchTime = dateHandler.joinTimeToStamp(data[-i].date(), '10:30:00')
-            if data[-i].lastLimitTime() > matchTime:
-                return True
+        if not t_limit(stock, data, i + 1):
+            return False
+        if t_open_pct(data, i) < -0.04:
+            matchTime = dateHandler.joinTimeToStamp(data[-i - 1].date(), '10:20:00')
+            if data[-i - 1].lastLimitTime() > matchTime:
+                flag = True
+    return flag
 
 
 def rule12(stock, data: List[dataModel]):
-    if not t_limit(stock, data, 2):
+    if not t_limit(stock, data, 3):
         return False
-    if not t_limit(stock, data, ):
+    if not t_limit(stock, data, 1):
         return False
-    if t_limit(stock, data, 1):
+    if not t_limit(stock, data):
         return False
-    if data[-2].turnover() * 0.7 > data[-1].turnover():
-        if data[-2].high() > data[-1].high():
+    if t_limit(stock, data, 2):
+        return False
+    if data[-3].turnover() * 0.7 > data[-2].turnover():
+        if data[-3].turnover() * 0.7 > data[-1].turnover():
             return True
 
 
@@ -205,14 +210,10 @@ def rule14(stock, data: List[dataModel]):
         return True
 
 
-def rule15(stock, data: List[dataModel]):
+def rule15(data: List[dataModel]):
     plus = []
     minus = []
-    for i in range(3, 33):
-        if t_limit(stock, data, i):
-            return False
-        if t_down_limit(stock, data, i):
-            return False
+    for i in range(3, 43):
         if t_close_pct(data, i) > 0:
             plus.append(data[-i - 1].volume())
         else:
@@ -359,23 +360,40 @@ def rule25(stock, data: List[dataModel]):
 
 
 def rule26(stock, data: List[dataModel]):
-    if model_1(stock, data):
-        return False
-    if not t_limit(stock, data, 1):
-        if t_limit(stock, data):
-            matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:40:00')
-            if data[-1].firstLimitTime() < matchTime:
-                return True
+    try:
+        d = data[-1]
+        if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() >= 0.6:
+            return False
+        if t_open_pct(data) >= 0.07:
+            return False
+        if model_1(stock, data):
+            return False
+        if not t_limit(stock, data, 1):
+            if t_limit(stock, data):
+                matchTime = dateHandler.joinTimeToStamp(data[-1].date(), '09:45:00')
+                if data[-1].firstLimitTime() < matchTime:
+                    return True
+    except:
+        pass
 
 
 def rule27(stock, data: List[dataModel]):
-    if model_1(stock, data, 1):
-        return False
-    if not t_limit(stock, data, 2):
-        if t_limit(stock, data, 1):
-            matchTime = dateHandler.joinTimeToStamp(data[-2].date(), '09:40:00')
-            if data[-2].firstLimitTime() < matchTime:
-                return True
+    try:
+        for i in range(2):
+            d = data[-i - 1]
+            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() >= 0.6:
+                return False
+        if t_open_pct(data, 1) >= 0.07:
+            return False
+        if model_1(stock, data, 1):
+            return False
+        if not t_limit(stock, data, 2):
+            if t_limit(stock, data, 1):
+                matchTime = dateHandler.joinTimeToStamp(data[-2].date(), '09:45:00')
+                if data[-2].firstLimitTime() < matchTime:
+                    return True
+    except:
+        pass
 
 
 def rule28(stock, data: List[dataModel]):
@@ -434,6 +452,18 @@ def rule30(stock, data: List[dataModel]):
         return True
 
 
+def rule31(stock, data: List[dataModel]):
+    if not t_limit(stock, data, 2):
+        return False
+    if model_1(stock, data, 2):
+        return False
+    for i in range(2):
+        if not model_1(stock, data, i):
+            return False
+    if data[-1].turnover() > 1.1 * data[-2].turnover():
+        return True
+
+
 class levelF2:
     def __init__(self, stock: str, data: List[dataModel], index: List[dataModel]):
         self.level = 'F2'
@@ -461,7 +491,7 @@ class levelF2:
         self.shot_rule.append(12) if rule12(self.stock, self.data) else self.fail_rule.append(12)
         self.shot_rule.append(13) if rule13(self.stock, self.data) else self.fail_rule.append(13)
         self.shot_rule.append(14) if rule14(self.stock, self.data) else self.fail_rule.append(14)
-        self.shot_rule.append(15) if rule15(self.stock, self.data) else self.fail_rule.append(15)
+        self.shot_rule.append(15) if rule15(self.data) else self.fail_rule.append(15)
         self.shot_rule.append(16) if rule16(self.data) else self.fail_rule.append(16)
         self.shot_rule.append(17) if rule17(self.stock, self.data) else self.fail_rule.append(17)
         self.shot_rule.append(18) if rule18(self.stock, self.data) else self.fail_rule.append(18)
@@ -477,4 +507,5 @@ class levelF2:
         self.shot_rule.append(28) if rule28(self.stock, self.data) else self.fail_rule.append(28)
         self.shot_rule.append(29) if rule29(self.stock, self.data) else self.fail_rule.append(29)
         self.shot_rule.append(30) if rule30(self.stock, self.data) else self.fail_rule.append(30)
+        self.shot_rule.append(31) if rule31(self.stock, self.data) else self.fail_rule.append(31)
         return self.result()

@@ -71,13 +71,17 @@ def rule4(stock, data: List[dataModel]):
 
 
 def rule5(data: List[dataModel]):
-    if t_high_pct(data) <= 0.05:
-        return False
-    d = data[-1]
-    if d.buy_elg_vol() + d.buy_lg_vol() < d.sell_elg_vol():
-        return True
-    if d.buy_elg_vol() + d.buy_lg_vol() < d.sell_lg_vol():
-        return True
+    try:
+        if t_high_pct(data) <= 0.06:
+            return False
+        if t_low_pct(data) >= 0.05:
+            return False
+        d = data[-1]
+        if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() < 0:
+            if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (d.buy_elg_vol() + d.buy_lg_vol()) < 0:
+                return True
+    except:
+        pass
 
 
 def rule6(stock, data: List[dataModel]):
@@ -180,7 +184,9 @@ def rule11(data: List[dataModel]):
 
 def rule12(data: List[dataModel], index: List[dataModel]):
     try:
-        if t_high_pct(data) <= 0.05:
+        if t_high_pct(data) <= 0.06:
+            return False
+        if t_low_pct(data) >= 0.05:
             return False
         d = data[-1]
         if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (

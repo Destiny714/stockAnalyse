@@ -170,7 +170,7 @@ def collectIndexData(index, dateRange: int = 500, aimDate=dateHandler.lastTradeD
 
 
 def virtualIndexData(data: List[dataModel], nextTradeDay) -> List[dataModel]:
-    res = data
+    res = data.copy()
     modifyData = list(res[-1])
     modifyData[0] = 8888
     modifyData[1] = nextTradeDay
@@ -180,15 +180,18 @@ def virtualIndexData(data: List[dataModel], nextTradeDay) -> List[dataModel]:
 
 def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(), virtual=None) -> List[dataModel]:
     mysql = databaseApi.Mysql()
-    allData = mysql.selectOneAllData(stock=stock, dateRange=dateRange, aimDate=aimDate)
+    try:
+        allData = mysql.selectOneAllData(stock=stock, dateRange=dateRange, aimDate=aimDate)
+    except:
+        allData = mysql.selectOneAllData(stock=stock, dateRange=None, aimDate=aimDate)
     res = [dataModel(_) for _ in allData]
     if virtual is None:
         pass
     elif virtual == 's':
         modifyData = res[-1]
         nextDate = mysql.selectNextTradeDay(modifyData.date())
-        largePct = 1.3
-        smallPct = 0.7
+        largePct = 1.25
+        smallPct = 0.5
         virtualData = [8888,
                        nextDate,
                        modifyData.close() * 1.07,
@@ -238,8 +241,8 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
     elif virtual == 'f':
         modifyData = res[-1]
         nextDate = mysql.selectNextTradeDay(modifyData.date())
-        largePct = 0.7
-        smallPct = 1.3
+        largePct = 0.75
+        smallPct = 1.25
         virtualData = [8888,
                        nextDate,
                        modifyData.close() * 1.03,
