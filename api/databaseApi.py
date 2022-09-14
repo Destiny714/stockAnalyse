@@ -21,6 +21,7 @@ class Mysql:
         self.cursor = self.db.cursor()
 
     def action(self, output: bool):
+        """mysql语句执行基础单元"""
         self.cursor.execute(self.word)
         if output:
             callback = self.cursor.fetchall()
@@ -29,21 +30,30 @@ class Mysql:
             self.db.commit()
 
     def suffix(self, stock: str) -> str:
+        """获取带后缀的stock"""
         self.word = f"SELECT exchange FROM stockList WHERE symbol={stock}"
         market = self.action(output=True)[0][0]
         return f"{stock}.{'SZ' if market == 'SZSE' else 'SH'}"
 
     def insertTradeCalender(self, data):
+        """交易日历插入新数据"""
         self.word = f"INSERT ignore INTO tradeCalender (date, lastDate) VALUES ('{data['date']}','{data['lastDate']}')"
         self.action(output=False)
 
     def insertStockDetail(self, data):
+        """股票资料列表插入新数据"""
         self.word = f"INSERT ignore INTO stockList " \
                     f"(symbol, name, industry, market, exchange) " \
                     f"VALUES ('{data['symbol']}','{data['name']}','{data['industry']}','{data['market']}','{data['exchange']}')"
         self.action(output=False)
 
+    def updateStockDetail(self, data):
+        """股票资料列更新数据"""
+        self.word = f"UPDATE stockList SET name='{data['name']}',industry='{data['industry']}' WHERE symbol={data['symbol']}"
+        self.action(output=False)
+
     def createTableForStock(self, stock):
+        """创建新stock table"""
         self.word = f"CREATE TABLE IF NOT EXISTS No{stock} " \
                     f"(id INT NOT NULL primary key AUTO_INCREMENT," \
                     f"date varchar(50)not null unique ," \
@@ -91,27 +101,32 @@ class Mysql:
         self.action(output=False)
 
     def selectExistTable(self):
+        """查找现存的stock table"""
         self.word = 'show tables'
         data = self.action(output=True)
         dontDelete = ['stockList', 'tradeCalender', 'version', 'stockIndexList', 'NoShIndex']
-        return [_[0] for _ in data if _[0] not in dontDelete]
+        return [_[0] for _ in data if _[0] not in dontDelete and _[0][:2] == 'No' and 'Index' not in _[0]]
 
     def selectAllStock(self):
+        """从股票资料列表中查找所有股票"""
         self.word = "SELECT symbol FROM stockList"
         data = self.action(output=True)
-        return [_[0] for _ in data if _[0][0] != '4']
+        return [_[0] for _ in data]
 
     def selectAllIndex(self):
+        """查找所有股票指数列表"""
         self.word = 'SELECT symbol FROM stockIndexList'
         data = self.action(output=True)
         return [_[0] for _ in data]
 
     def selectTradeDate(self):
+        """查找所有交易日"""
         self.word = 'SELECT date FROM tradeCalender'
         data = self.action(output=True)
         return [_[0] for _ in data]
 
     def selectTradeDateByDuration(self, date, duration: int):
+        """选取指定date往前推『duration』日的日期范围"""
         self.word = f"(SELECT id,date FROM tradeCalender WHERE id <= (SELECT id FROM tradeCalender WHERE date={date}) " \
                     f"ORDER BY id DESC LIMIT {duration}) " \
                     f"ORDER BY id"
@@ -119,16 +134,19 @@ class Mysql:
         return [_[1] for _ in result]
 
     def selectLastTradeDate(self, date):
+        """选取上一个交易日"""
         self.word = f"SELECT lastDate FROM tradeCalender where date='{date}'"
         data = self.action(output=True)
         return data[0][0]
 
     def selectNextTradeDay(self, date):
+        """选取下一个交易日"""
         self.word = f"SELECT date FROM tradeCalender WHERE id > (SELECT id FROM tradeCalender WHERE date='{date}') LIMIT 1"
         data = self.action(output=True)
         return data[0][0]
 
     def deleteTable(self, tableList: list):
+        """删除给定的table列表"""
         tables = ''
         for table in tableList:
             if table[0:2] == 'No':
@@ -140,7 +158,12 @@ class Mysql:
         print(self.word)
         self.action(output=False)
 
+    def deleteStockFromList(self, stock):
+        self.word = f"DELETE FROM stockList WHERE symbol='{stock}'"
+        self.action(output=False)
+
     def insertOneRecord(self, data):
+        """新增股票每日基础数据"""
         self.word = f"INSERT ignore INTO No{str(data['ts_code']).split('.')[0]} " \
                     f"(date,open,close,preClose,high,low,pctChange,volume,amount) VALUES " \
                     f"('{data['trade_date']}',{data['open']},{data['close']},{data['pre_close']}," \
@@ -148,6 +171,7 @@ class Mysql:
         self.action(output=False)
 
     def insertIndex(self, data, indexTable='NoShIndex'):
+        """新增指数每日基础数据"""
         self.word = f"INSERT ignore INTO {indexTable} " \
                     f"(date,open,close,preClose,high,low,pctChange,volume,amount) VALUES " \
                     f"('{data['trade_date']}',{data['open']},{data['close']},{data['pre_close']}," \
@@ -155,26 +179,31 @@ class Mysql:
         self.action(output=False)
 
     def selectIndustryByStock(self, stock: str):
+        """获取某股票对应的行业"""
         self.word = f"SELECT industry FROM stockList WHERE symbol='{stock}'"
         industry = self.action(output=True)
         return industry[0][0]
 
     def selectAllIndustry(self):
+        """选取所有行业分类"""
         self.word = f"SELECT industry FROM stockList"
         industries = self.action(output=True)
         return list(set([_[0] for _ in industries]))
 
     def selectStockByIndustry(self, industry: str):
+        """选取同一行业的所有股票"""
         self.word = f"SELECT symbol FROM stockList WHERE industry='{industry}'"
         stocks = self.action(output=True)
         return [_[0] for _ in stocks]
 
     def selectStockDetail(self, stock: str):
+        """获取股票资料"""
         self.word = f"SELECT * FROM stockList WHERE symbol={stock}"
         detail = self.action(output=True)
         return detail[0]
 
     def selectOneAllData(self, stock, dateRange=None, aimDate=''):
+        """获取给定时间范围内的股票每日所有数据"""
         if aimDate == '':
             self.word = f"SELECT * FROM No{stock}"
         else:
@@ -189,44 +218,36 @@ class Mysql:
         data = self.action(output=True)
         return data
 
-    def selectLastDate(self, date):
-        self.word = f"SELECT lastDate FROM tradeCalender WHERE date='{date}'"
-        data = self.action(output=True)
-        return data[0][0]
-
-    def selectVerifyData(self, stock, startDate, dateRange=2):
-        self.word = f"SELECT * FROM No{stock} " \
-                    f"WHERE (id > " \
-                    f"(SELECT id FROM No{stock} WHERE date = '{startDate}') AND " \
-                    f"id <= " \
-                    f"((SELECT id FROM No{stock} WHERE date = '{startDate}') + {dateRange}))"
-        data = self.action(output=True)
-        return data
-
     def selectShIndexUpdateDate(self):
+        """获取指数更新日期"""
         self.word = f"SELECT date FROM NoshIndex ORDER BY id DESC LIMIT 1"
         data = self.action(output=True)
         return data[0][0]
 
     def selectDetailUpdateDate(self):
+        """获取股票详情更新日期"""
         self.word = 'SELECT stockDetailUpdateDate FROM version'
         date = self.action(output=True)
         return date[0][0]
 
     def selectListUpdateDate(self):
+        """获取股票列表更新日期"""
         self.word = 'SELECT stockListUpdateDate FROM version'
         date = self.action(output=True)
         return date[0][0]
 
     def stockDetailUpdateDate(self, date):
+        """更新股票详情更新日期"""
         self.word = f"UPDATE version SET stockDetailUpdateDate='{date}'"
         self.action(output=False)
 
     def stockListUpdateDate(self, date):
+        """更新股票列表更新日期"""
         self.word = f"UPDATE version SET stockListUpdateDate='{date}'"
         self.action(output=False)
 
     def updateLimitDetailData(self, data):
+        """单独更新股票涨停详情"""
         firstTime = data['first_time']
         lastTime = data['last_time']
         new_firstTime = f'{0 if len(firstTime[:-4]) == 1 else ""}{firstTime[:-4]}:{firstTime[-4:-2]}:{firstTime[-2:]}' if firstTime != '' else '09:25:00'
@@ -239,6 +260,7 @@ class Mysql:
         self.action(output=False)
 
     def updateStockListDailyIndex(self, data):
+        """单独更新换手率"""
         if data['circ_mv'] is None or '':
             return
         if data['turnover_rate'] is None or '':
@@ -249,6 +271,7 @@ class Mysql:
         self.action(output=False)
 
     def updateMoneyFlow(self, data):
+        """单独更新资金流向"""
         self.word = f"UPDATE No{str(data['ts_code']).split('.')[0]} SET " \
                     f"buy_sm_vol={data['buy_sm_vol']}," \
                     f"buy_sm_amount={data['buy_sm_amount']}," \
@@ -273,6 +296,7 @@ class Mysql:
         self.action(output=False)
 
     def updateChipDetail(self, data):
+        """单独更新筹码图"""
         self.word = f"UPDATE No{str(data['ts_code']).split('.')[0]} SET " \
                     f"his_low={data['his_low']}," \
                     f"his_high={data['his_high']}," \
@@ -287,5 +311,6 @@ class Mysql:
         self.action(output=False)
 
     def updateTimeData(self, json: dict):
+        """更新分时交易数据"""
         self.word = f"UPDATE No{json['symbol']} SET time='{json['data']}' WHERE date='{json['date']}'"
         self.action(output=False)

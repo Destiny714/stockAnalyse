@@ -102,16 +102,31 @@ def rule12(height: int, score: int, black: int, white: int):
             return True
 
 
-def rule13(height: int, black: int, white: int):
+def rule13(height: int, black: int, white: int, details: dict[str, list[int]]):
     if height > 0:
-        if black == 0 and white > 20:
-            return True
+        if black == 0 and white > 25:
+            if 3 in details['A1']:
+                return True
+
+
+def rule14(height: int, black: int, white: int, details: dict[str, list[int]]):
+    if height > 0:
+        if black < 2 and white > 20:
+            if 2 in details['A1']:
+                return True
+
+
+def rule15(height: int, black: int, white: int, details: dict[str, list[int]]):
+    if height > 0:
+        if black < 3 and white > 25:
+            if 1 in details['A1']:
+                return True
 
 
 class ruleA:
 
     def __init__(self, height: int, score: int, T1S: int, T1F: int, black: int, white: int, S: int,
-                 data: List[dataModel], stock: str, aj: float):
+                 data: List[dataModel], stock: str, aj: float, details: dict[str, list[int]]):
         self.S = S
         self.aj = aj
         self.T1S = T1S
@@ -122,8 +137,11 @@ class ruleA:
         self.white = white
         self.score = score
         self.height = height
+        self.details = details
 
     def filter(self):
+        if 'A1' not in self.details.keys():
+            return False
         if rule1(self.height, self.T1S, self.white, self.black):
             return True
         if rule2(self.height, self.white, self.black):
@@ -150,5 +168,9 @@ class ruleA:
             return True
         if rule12(self.height, self.score, self.black, self.white):
             return True
-        if rule13(self.height, self.black, self.white):
+        if rule13(self.height, self.black, self.white, self.details):
+            return True
+        if rule14(self.height, self.black, self.white, self.details):
+            return True
+        if rule15(self.height, self.black, self.white, self.details):
             return True

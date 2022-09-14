@@ -20,7 +20,7 @@ if __name__ == '__main__':
     warnings.filterwarnings('ignore')
     stocks = concurrentActions.initStock(needReload=False, extra=False)
     tradeDays = databaseApi.Mysql().selectTradeDate()
-    aimDates = ['20220907', '20220908']
+    aimDates = ['20220831', '20220901', '20220902', '20220905', '20220906', '20220907', '20220908']
 
 
     def process(aimDate):
@@ -32,7 +32,7 @@ if __name__ == '__main__':
         virtualDict = {f'{stock}': {} for stock in stocks}
         indexData = collectIndexData('GemIndex', aimDate=aimDate)
         nextTradeDay = databaseApi.Mysql().selectNextTradeDay(aimDate)
-        excelDict: dict = excel_process.readScoreFromExcel(databaseApi.Mysql().selectLastDate(aimDate))
+        excelDict: dict = excel_process.readScoreFromExcel(databaseApi.Mysql().selectLastTradeDate(aimDate))
 
         def processOneStock(argMap: dict):
             stock = argMap['stock']
@@ -108,10 +108,10 @@ if __name__ == '__main__':
                     hitPlus = (len(lA1['detail']) + len(lA2['detail']) + len(lA3['detail'])) > 0
                     level = 'B'
                     if A.ruleA(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum, S=_S,
-                               data=data, aj=AJ, stock=stock).filter():
+                               data=data, aj=AJ, stock=stock, details=details).filter():
                         level = 'A'
                     if S.ruleS(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum, S=_S,
-                               data=data, aj=AJ, stock=stock).filter():
+                               data=data, aj=AJ, stock=stock, details=details).filter():
                         level = 'S'
                     if F.ruleF(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum,
                                S=_S, F5=len(lF5['detail']), hitPlus=hitPlus).filter():

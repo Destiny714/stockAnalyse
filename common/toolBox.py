@@ -18,13 +18,12 @@ def thread_pool_executor(func, iterable, thread_num=20):
         task.result()
 
 
-def errorHandler(e: Exception, arg=None) -> str:
+def errorHandler(e: Exception) -> str:
     errFile = None
     errLine = None
     tb = e.__traceback__
     while tb:
         errLine = tb.tb_lineno
-        errCode = tb.tb_frame.f_code.co_code
         errFile = tb.tb_frame.f_code.co_filename
         tb = tb.tb_next
     return f'< line {errLine} , in {errFile} >'

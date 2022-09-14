@@ -24,6 +24,12 @@ def rule2(data: List[dataModel]):
         return False
 
 
+def rule3(stock, data: List[dataModel]):
+    for i in range(5, 31):
+        if t_limit(stock, data, i):
+            return True
+
+
 def rule4(stock, data: List[dataModel]):
     if t_limit(stock, data, 2):
         return False
@@ -179,6 +185,7 @@ class level2:
     def filter(self):
         self.shot_rule.append(1) if rule1(self.data) else self.fail_rule.append(1)
         self.shot_rule.append(2) if rule2(self.data) else self.fail_rule.append(2)
+        self.shot_rule.append(3) if rule3(self.stock, self.data) else self.fail_rule.append(3)
         self.shot_rule.append(4) if rule4(self.stock, self.data) else self.fail_rule.append(4)
         self.shot_rule.append(5) if rule5(self.stock, self.data) else self.fail_rule.append(5)
         self.shot_rule.append(6) if rule6(self.stock, self.data) else self.fail_rule.append(6)

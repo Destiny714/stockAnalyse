@@ -214,7 +214,8 @@ def rule15(data: List[dataModel]):
     plus = []
     minus = []
     for i in range(3, 43):
-        if t_close_pct(data, i) > 0:
+        d = data[-i - 1]
+        if d.close() > d.open():
             plus.append(data[-i - 1].volume())
         else:
             minus.append(data[-i - 1].volume())
@@ -363,6 +364,8 @@ def rule26(stock, data: List[dataModel]):
     try:
         d = data[-1]
         if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() >= 0.6:
+            return False
+        if d.buy_elg_vol() / d.volume() >= 0.4:
             return False
         if t_open_pct(data) >= 0.07:
             return False

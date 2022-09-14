@@ -190,8 +190,8 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
     elif virtual == 's':
         modifyData = res[-1]
         nextDate = mysql.selectNextTradeDay(modifyData.date())
-        largePct = 1.25
-        smallPct = 0.5
+        largePct = 1.3
+        smallPct = 0.7
         virtualData = [8888,
                        nextDate,
                        modifyData.close() * 1.07,
@@ -241,8 +241,8 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
     elif virtual == 'f':
         modifyData = res[-1]
         nextDate = mysql.selectNextTradeDay(modifyData.date())
-        largePct = 0.75
-        smallPct = 1.25
+        largePct = 0.7
+        smallPct = 1.3
         virtualData = [8888,
                        nextDate,
                        modifyData.close() * 1.03,

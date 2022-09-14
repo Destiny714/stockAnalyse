@@ -17,6 +17,7 @@ class Tushare:
         self._instance = tushare.pro_api()
 
     def tradeCalender(self):
+        """获取交易日历"""
         data = self._instance.query('trade_cal', start_date='20190101')
         dayList = []
         for i in range(len(data)):
@@ -26,6 +27,7 @@ class Tushare:
         return dayList
 
     def allStocks(self):
+        """获取所有上市状态的股票列表"""
         stockList = []
         SSEdata = self._instance.query('stock_basic', exchange='SSE', list_status='L', fields='exchange,symbol,name,industry,market')
         SZSEdata = self._instance.query('stock_basic', exchange='SZSE', list_status='L', fields='exchange,symbol,name,industry,market')
@@ -37,7 +39,21 @@ class Tushare:
             stockList.append(stock)
         return stockList
 
+    def allEndStocks(self):
+        """获取所有退市状态的股票列表"""
+        stockList = []
+        SSEdata = self._instance.query('stock_basic', exchange='SSE', list_status='D', fields='exchange,symbol,name,industry,market')
+        SZSEdata = self._instance.query('stock_basic', exchange='SZSE', list_status='D', fields='exchange,symbol,name,industry,market')
+        for i in range(len(SSEdata)):
+            stock = SSEdata.iloc[i]
+            stockList.append(stock)
+        for i in range(len(SZSEdata)):
+            stock = SZSEdata.iloc[i]
+            stockList.append(stock)
+        return [_['symbol'] for _ in stockList]
+
     def oneDayDetail(self, date):
+        """获取单日所有股票基础数据"""
         details = []
         data = self._instance.query('daily', trade_date=date)
         for i in range(len(data)):
@@ -45,6 +61,7 @@ class Tushare:
         return details
 
     def indexData(self, start: str, end: str, code: str = '000001.SH'):
+        """获取指数数据"""
         details = []
         data = self._instance.index_daily(ts_code=code, start_date=start, end_date=end)
         for i in range(len(data)):
@@ -60,6 +77,7 @@ class Tushare:
         return details
 
     def limitTimeDetail(self, date: str = dateHandler.lastTradeDay()):
+        """获取部分涨停详情(时间、开板次数等)"""
         details = []
         data = self._instance.limit_list_d(**{
             "trade_date": date,
@@ -84,6 +102,7 @@ class Tushare:
         return details
 
     def dailyLimitCount(self, date=dateHandler.lastTradeDay()) -> int:
+        """每日涨停个数"""
         details = []
         data = self._instance.daily_basic(**{
             "ts_code": "",
@@ -101,6 +120,7 @@ class Tushare:
         return len([_ for _ in details if _['limit_status'] != 0])
 
     def moneyFlow(self, date=dateHandler.lastTradeDay()):
+        """获取股票资金流向"""
         details = []
         data = self._instance.moneyflow(**{
             "ts_code": "",
@@ -137,6 +157,7 @@ class Tushare:
         return details
 
     def chipDetail(self, date=dateHandler.lastTradeDay()):
+        """获取股票筹码详情"""
         details = []
         data = self._instance.cyq_perf(**{
             "ts_code": "",
@@ -163,6 +184,7 @@ class Tushare:
         return details
 
     def fullLimitDetail(self, start, end=dateHandler.lastTradeDay()):
+        """获取股票涨停详情(全) 返回 dataFrame"""
         df = self._instance.limit_list_d(**{
             "trade_date": "",
             "ts_code": "",

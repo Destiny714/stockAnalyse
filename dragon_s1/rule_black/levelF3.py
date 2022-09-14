@@ -523,7 +523,8 @@ def rule35(stock, data: List[dataModel]):
     plus = 0
     minus = 0
     for i in range(40):
-        if t_close_pct(data, i) > 0:
+        d = data[-i - 1]
+        if d.close() > d.open():
             plus += 1
         else:
             minus += 1
@@ -542,15 +543,22 @@ def rule36(stock, data: List[dataModel]):
     plus = 0
     minus = 0
     for i in range(40):
-        if t_close_pct(data, i) > 0:
+        d = data[-i - 1]
+        if d.close() > d.open():
             plus += 1
         else:
             minus += 1
     return plus < minus
 
 
-def rule37(data: List[dataModel], index: List[dataModel]):
+def rule37(stock, data: List[dataModel], index: List[dataModel]):
     try:
+        limitCount = 0
+        for i in range(8):
+            if t_limit(stock, data, i):
+                limitCount += 1
+        if limitCount >= 3:
+            return False
         plus = 1
         minus = 1
         plusVol = 0
@@ -558,7 +566,8 @@ def rule37(data: List[dataModel], index: List[dataModel]):
         for i in range(8):
             if t_low_pct(index, i) <= -0.01:
                 continue
-            if t_close_pct(data, i) > 0:
+            d = data[-i - 1]
+            if d.close() > d.open():
                 plusVol += data[-i - 1].volume()
                 plus += 1
             else:
@@ -569,13 +578,20 @@ def rule37(data: List[dataModel], index: List[dataModel]):
         pass
 
 
-def rule38(data: List[dataModel], index: List[dataModel]):
+def rule38(stock, data: List[dataModel], index: List[dataModel]):
+    limitCount = 0
+    for i in range(8):
+        if t_limit(stock, data, i):
+            limitCount += 1
+    if limitCount >= 3:
+        return False
     plus = 0
     minus = 0
     for i in range(8):
         if t_low_pct(index, i) <= -0.01:
             continue
-        if t_close_pct(data, i) > 0:
+        d = data[-i - 1]
+        if d.close() > d.open():
             plus += 1
         else:
             minus += 1
@@ -631,6 +647,6 @@ class levelF3:
         self.shot_rule.append(34) if rule34(self.stock, self.data) else self.fail_rule.append(34)
         self.shot_rule.append(35) if rule35(self.stock, self.data) else self.fail_rule.append(35)
         self.shot_rule.append(36) if rule36(self.stock, self.data) else self.fail_rule.append(36)
-        self.shot_rule.append(37) if rule37(self.data, self.index) else self.fail_rule.append(37)
-        self.shot_rule.append(38) if rule38(self.data, self.index) else self.fail_rule.append(38)
+        self.shot_rule.append(37) if rule37(self.stock, self.data, self.index) else self.fail_rule.append(37)
+        self.shot_rule.append(38) if rule38(self.stock, self.data, self.index) else self.fail_rule.append(38)
         return self.result()

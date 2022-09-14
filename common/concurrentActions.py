@@ -7,12 +7,14 @@ from api import extApi
 from api import databaseApi
 from api.databaseApi import Mysql
 from api.tushareApi import Tushare
+from common.middleWare.stockFilter import stockFilter
 from common import toolBox, dateHandler, collect_data
 
 log = toolBox.log()
 
 
 def updateTradeCalender():
+    """更新交易日历"""
     data = Tushare().tradeCalender()
     mysql = Mysql()
     for d in data:
@@ -20,16 +22,27 @@ def updateTradeCalender():
 
 
 def updateStockList():
+    """更新股票资料列表"""
     print('start update stock list...')
     data = Tushare().allStocks()
     mysql = Mysql()
+    existStocks = mysql.selectAllStock()
     for d in data:
-        if d['symbol'][0] not in ['4', '8']:
+        if d['symbol'] not in existStocks:
             mysql.insertStockDetail(d)
+        else:
+            mysql.updateStockDetail(d)
     print('stock list update done')
 
 
+def deleteEndStocks():
+    """删除退市的股票"""
+    endStocks = Tushare().allEndStocks()
+    Mysql().deleteTable([f'No{_}' for _ in endStocks])
+
+
 def updateLimitDetailData(date=dateHandler.lastTradeDay()):
+    """更新股票涨停详情"""
     print(f'start update {date} stock limit detail...')
     errors = []
     data = Tushare().limitTimeDetail(date)
@@ -47,6 +60,7 @@ def updateLimitDetailData(date=dateHandler.lastTradeDay()):
 
 
 def updateStockListDailyIndex(date=dateHandler.lastTradeDay()):
+    """更新换手率数据"""
     print(f'start update {date} stock index...')
     errors = []
     data = Tushare().stockDailyIndex(date)
@@ -65,6 +79,7 @@ def updateStockListDailyIndex(date=dateHandler.lastTradeDay()):
 
 
 def updateDaily(dateList):
+    """更新每日股票基础数据"""
     print(f'start update stock data for {dateList[0]} to {dateList[-1]}')
 
     def tmp(d):
@@ -88,17 +103,19 @@ def updateDaily(dateList):
 
 
 def createTableIfNotExist(stockList):
+    """检查并创建新stock table"""
     print('start update stock table...')
+    mysql = Mysql()
+    tables = mysql.selectExistTable()
+    for stock in stockList:
+        if f'No{stock}' not in tables:
+            mysql.createTableForStock(stock)
 
-    def checkOne(stock):
-        mysql = Mysql()
-        mysql.createTableForStock(stock)
-
-    toolBox.thread_pool_executor(checkOne, stockList)
     print('stock table update done')
 
 
 def updateShIndex(start=dateHandler.lastTradeDay(), end=dateHandler.lastTradeDay()):
+    """更新上证指数"""
     code = '000001.SH'
     data = Tushare().indexData(start=start, end=end, code=code)
     for d in data:
@@ -106,6 +123,7 @@ def updateShIndex(start=dateHandler.lastTradeDay(), end=dateHandler.lastTradeDay
 
 
 def updateGemIndex(start=dateHandler.lastTradeDay(), end=dateHandler.lastTradeDay()):
+    """更新创业板指数"""
     code = '399006.SZ'
     data = Tushare().indexData(start=start, end=end, code=code)
     for d in data:
@@ -114,6 +132,7 @@ def updateGemIndex(start=dateHandler.lastTradeDay(), end=dateHandler.lastTradeDa
 
 
 def updateMoneyFlow(aimDate=dateHandler.lastTradeDay()):
+    """更新资金流向"""
     print(f'updating {aimDate} money flow')
     data = Tushare().moneyFlow(aimDate)
 
@@ -129,6 +148,7 @@ def updateMoneyFlow(aimDate=dateHandler.lastTradeDay()):
 
 
 def updateChipDetail(aimDate=dateHandler.lastTradeDay()):
+    """更新筹码图"""
     print(f'updating {aimDate} chip detail')
     data = Tushare().chipDetail(aimDate)
 
@@ -145,6 +165,7 @@ def updateChipDetail(aimDate=dateHandler.lastTradeDay()):
 
 
 def updateTimeDataToday():
+    """更新分时数据"""
     errs = []
     stocks = Mysql().selectAllStock()
 
@@ -173,6 +194,7 @@ def updateTimeDataToday():
 
 
 def rankingLimitTime(aimDate=dateHandler.lastTradeDay()) -> list:
+    """涨停时间排序"""
     print('ranking limit time')
     client = Mysql()
     stocks = client.selectAllStock()
@@ -209,6 +231,7 @@ def rankingLimitTime(aimDate=dateHandler.lastTradeDay()) -> list:
 
 
 def industryIndex(aimDate=dateHandler.lastTradeDay()):
+    """返回同行业涨停数以及同行业涨停排序"""
     limitRankDict = {}
     industries = databaseApi.Mysql().selectAllIndustry()
     for i in industries:
@@ -250,13 +273,14 @@ def industryIndex(aimDate=dateHandler.lastTradeDay()):
 
 
 def initStock(needReload: bool = True, extra: bool = False):
+    """每日数据更新汇总脚本"""
     mysql = databaseApi.Mysql()
-    stocks = mysql.selectAllStock()
     if needReload:
         updateShIndex()
         updateGemIndex()
         updateStockList()
         stocks = mysql.selectAllStock()
+        stocks = stockFilter(stocks).result()
         stockDetailVersion = mysql.selectDetailUpdateDate()
         createTableIfNotExist(stocks)
         mysql.stockListUpdateDate(dateHandler.lastTradeDay())
@@ -266,6 +290,9 @@ def initStock(needReload: bool = True, extra: bool = False):
                      int(stockDetailVersion) < int(_) <= int(dateHandler.lastTradeDay())]
             updateDaily(dates)
             mysql.stockDetailUpdateDate(dateHandler.lastTradeDay())
+    else:
+        stocks = mysql.selectAllStock()
+        stocks = stockFilter(stocks).result()
     if extra:
         updateLimitDetailData()
         updateStockListDailyIndex()
