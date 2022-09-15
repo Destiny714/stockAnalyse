@@ -8,7 +8,7 @@ from api import databaseApi
 from api.databaseApi import Mysql
 from api.tushareApi import Tushare
 from common.middleWare.stockFilter import stockFilter
-from common import toolBox, dateHandler, collect_data
+from common import toolBox, dateHandler, dataOperation
 
 log = toolBox.log()
 
@@ -127,7 +127,6 @@ def updateGemIndex(start=dateHandler.lastTradeDay(), end=dateHandler.lastTradeDa
     code = '399006.SZ'
     data = Tushare().indexData(start=start, end=end, code=code)
     for d in data:
-        print(d['trade_date'])
         databaseApi.Mysql().insertIndex(d, indexTable='NoGemIndex')
 
 
@@ -202,13 +201,13 @@ def rankingLimitTime(aimDate=dateHandler.lastTradeDay()) -> list:
 
     def addData(stock):
         try:
-            data = collect_data.collectData(stock, dateRange=5, aimDate=aimDate)
-            if collect_data.t_open_pct(data) > collect_data.limit(stock):
+            data = dataOperation.collectData(stock, dateRange=5, aimDate=aimDate)
+            if dataOperation.t_open_pct(data) > dataOperation.limit(stock):
                 return
             for i in range(3):
-                if not collect_data.t_limit(stock, data, i):
+                if not dataOperation.t_limit(stock, data, i):
                     return
-                if collect_data.model_1(stock, data):
+                if dataOperation.model_1(stock, data):
                     return
                 limitTime = data[-1].firstLimitTime()
                 if limitTime in datas.keys():
@@ -245,10 +244,10 @@ def industryIndex(aimDate=dateHandler.lastTradeDay()):
         industryStocks = mysql.selectStockByIndustry(industry)
         for industryStock in industryStocks:
             try:
-                stockData = collect_data.collectData(industryStock, 5, aimDate=aimDate)
-                if collect_data.t_limit(industryStock, stockData):
+                stockData = dataOperation.collectData(industryStock, 5, aimDate=aimDate)
+                if dataOperation.t_limit(industryStock, stockData):
                     limit += 1
-                    if collect_data.t_open_pct(stockData) <= collect_data.limit(industryStock):
+                    if collect_data.t_open_pct(stockData) <= dataOperation.limit(industryStock):
                         if stockData[-1].firstLimitTime() not in limitRankDict[industry].keys():
                             limitRankDict[industry][stockData[-1].firstLimitTime()] = [industryStock]
                         else:

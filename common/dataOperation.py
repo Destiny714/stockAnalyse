@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/6/20 19:55
 # @Author  : Destiny_
-# @File    : collect_data.py
+# @File    : dataOperation.py
 # @Software: PyCharm
 import json
-from typing import List
 from api import databaseApi
 from common import dateHandler
 
@@ -162,14 +161,14 @@ class dataModel:
         return time[limitMinute]
 
 
-def collectIndexData(index, dateRange: int = 500, aimDate=dateHandler.lastTradeDay()) -> List[dataModel]:
+def collectIndexData(index, dateRange: int = 500, aimDate=dateHandler.lastTradeDay()) -> list[dataModel]:
     mysql = databaseApi.Mysql()
     allData = mysql.selectOneAllData(stock=index, dateRange=dateRange, aimDate=aimDate)
     res = [dataModel(_) for _ in allData]
     return res
 
 
-def virtualIndexData(data: List[dataModel], nextTradeDay) -> List[dataModel]:
+def virtualIndexData(data: list[dataModel], nextTradeDay) -> list[dataModel]:
     res = data.copy()
     modifyData = list(res[-1])
     modifyData[0] = 8888
@@ -178,7 +177,7 @@ def virtualIndexData(data: List[dataModel], nextTradeDay) -> List[dataModel]:
     return res
 
 
-def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(), virtual=None) -> List[dataModel]:
+def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(), virtual=None) -> list[dataModel]:
     mysql = databaseApi.Mysql()
     try:
         allData = mysql.selectOneAllData(stock=stock, dateRange=dateRange, aimDate=aimDate)
@@ -292,19 +291,19 @@ def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(),
     return res
 
 
-def t_low_pct(data: List[dataModel], plus: int = 0):
+def t_low_pct(data: list[dataModel], plus: int = 0):
     return (data[-plus - 1].low() / data[-plus - 2].close()) - 1
 
 
-def t_high_pct(data: List[dataModel], plus: int = 0):
+def t_high_pct(data: list[dataModel], plus: int = 0):
     return (data[-plus - 1].high() / data[-plus - 2].close()) - 1
 
 
-def t_close_pct(data: List[dataModel], plus: int = 0):
+def t_close_pct(data: list[dataModel], plus: int = 0):
     return (data[-plus - 1].close() / data[-plus - 2].close()) - 1
 
 
-def t_open_pct(data: List[dataModel], plus: int = 0):
+def t_open_pct(data: list[dataModel], plus: int = 0):
     return (data[-plus - 1].open() / data[-plus - 2].close()) - 1
 
 
@@ -312,14 +311,14 @@ def limit(stock: str) -> float:
     return 19.6 if stock[0:2] in ['30', '68'] else 9.8
 
 
-def model_1(stock: str, data: List[dataModel], plus: int = 0):
+def model_1(stock: str, data: list[dataModel], plus: int = 0):
     if (data[-plus - 1].close() == data[-plus - 1].low()) and (data[-plus - 1].open() == data[-plus - 1].high()) and (
             data[-plus - 1].open() == data[-plus - 1].close()):
         if data[-plus - 1].pctChange() > limit(stock):
             return True
 
 
-def model_t(stock: str, data: List[dataModel], plus: int = 0):
+def model_t(stock: str, data: list[dataModel], plus: int = 0):
     open_p = t_open_pct(data, plus)
     close_p = t_close_pct(data, plus)
     if open_p != close_p:
@@ -330,15 +329,15 @@ def model_t(stock: str, data: List[dataModel], plus: int = 0):
         return True
 
 
-def t_limit(stock: str, data: List[dataModel], plus: int = 0):
+def t_limit(stock: str, data: list[dataModel], plus: int = 0):
     return data[-plus - 1].pctChange() > limit(stock)
 
 
-def t_down_limit(stock: str, data: List[dataModel], plus: int = 0):
+def t_down_limit(stock: str, data: list[dataModel], plus: int = 0):
     return data[-plus - 1].pctChange() < - limit(stock)
 
 
-def limit_height(stock: str, data: List[dataModel], plus: int = 0):
+def limit_height(stock: str, data: list[dataModel], plus: int = 0):
     height = 0
     for i in range(20):
         if t_limit(stock, data, i + plus):
@@ -346,3 +345,9 @@ def limit_height(stock: str, data: List[dataModel], plus: int = 0):
         else:
             return height
     return height
+
+
+def move_avg(data: list[dataModel], dateRange: int, plus: int):
+    j = plus + 1
+    moveAVG = sum([data[-_].close() for _ in range(j, j + dateRange)]) / dateRange
+    return moveAVG

@@ -90,3 +90,6 @@ class log:
 
     def error(self, error: str):
         self.logger.error(error)
+
+    def critical(self, error: str):
+        self.logger.critical(error)

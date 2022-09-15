@@ -3,121 +3,13 @@
 # @Author  : Destiny_
 # @File    : S.py
 # @Software: PyCharm
-from typing import List
-from common.collect_data import dataModel, t_limit
-
-
-def rule1(height: int, T1S: int, black: int, S: int):
-    if height > 1 and T1S > 90 and black == 0:
-        if S > 0:
-            return True
-
-
-def rule2(height: int, white: int, black: int, S: int):
-    if height > 1 and white > 40 and black == 0:
-        if S > 0:
-            return True
-
-
-def rule3(height: int, score: int, T1S: int, black: int, S: int):
-    if height > 1 and S > 50:
-        if T1S > score and black == 0:
-            return True
-
-
-def rule4(height: int, score: int, T1S: int, black: int, S: int):
-    if height > 1 and score > 75:
-        if T1S > score and black == 0:
-            if S > 0:
-                return True
-
-
-def rule5(height: int, score: int, T1S: int, T1F: int, black: int, white: int, S: int, aj: float):
-    if height == 1 and T1S - score > 10:
-        if T1S > score and T1F > score:
-            if black == 0 and white > 40:
-                if S > 0 and aj < 15:
-                    return True
-
-
-def rule6(height: int, score: int, T1S: int, T1F: int, black: int, white: int, S: int, aj: float):
-    if height == 1 and score > 70:
-        if T1S > score and T1F > score:
-            if black == 0 and white > 25:
-                if S > 0 and aj < 15:
-                    return True
-
-
-def rule7(height: int, score: int, T1S: int, T1F: int, black: int, white: int, S: int, aj: float):
-    if height == 1 and score > 50:
-        if (T1S - score) > 20 and T1F > score:
-            if white > 25 and black == 0:
-                if S > 0 and aj < 15:
-                    return True
-
-
-def rule8(height: int, score: int, T1S: int, T1F: int, black: int, white: int, S: int, aj: float):
-    if height == 0 and score > 60:
-        if (T1S - score) > 10 and T1F > score and T1F > 55:
-            if black == 0 and white > 25:
-                if S > 0 and aj < 15:
-                    return True
-
-
-def rule9(height: int, score: int, T1S: int, T1F: int, black: int, white: int, data: List[dataModel], S: int,
-          stock: str,
-          aj: float):
-    if height == 0 and score > 60:
-        if (T1S - score) > 20 and T1F > score:
-            if black == 0 and white > 25:
-                if not t_limit(stock, data, 1):
-                    if not t_limit(stock, data, 2):
-                        if aj < 15 and S > 0:
-                            return True
-
-
-def rule10(height: int, score: int, T1S: int, T1F: int, black: int, white: int, data: List[dataModel], S: int,
-           stock: str,
-           aj: float):
-    if height < 2 and S > 30:
-        if white > 25 and score > 60:
-            if T1S > score and T1F > score:
-                if not t_limit(stock, data, 1):
-                    if not t_limit(stock, data, 2):
-                        if aj < 15 and black == 0:
-                            return True
-
-
-def rule11(height: int, score: int, T1S: int, T1F: int, black: int, white: int, data: List[dataModel], S: int,
-           stock: str,
-           aj: float):
-    if height < 2 and S > 20:
-        if white > 25 and black == 0:
-            if T1S - score > 20 and T1F > score:
-                if not t_limit(stock, data, 1):
-                    if not t_limit(stock, data, 2):
-                        if aj < 15:
-                            return True
-
-
-def rule12(height: int, score: int, black: int, white: int):
-    if height > 2 and score > 90:
-        if white > 35 and black == 0:
-            return True
-
-
-def rule13(height: int, black: int, white: int, details: dict[str, list[int]]):
-    if height > 0 and black == 0:
-        if white > 30:
-            if 'A1' in details.keys():
-                if 2 in details['A1']:
-                    return True
+from common.dataOperation import dataModel, t_limit
 
 
 class ruleS:
 
     def __init__(self, height: int, score: int, T1S: int, T1F: int, black: int, white: int, S: int,
-                 data: List[dataModel], stock: str, aj: float, details: dict[str, list[int]]):
+                 data: list[dataModel], stock: str, aj: float, details: dict[str, list[int]]):
         self.S = S
         self.aj = aj
         self.T1S = T1S
@@ -130,35 +22,99 @@ class ruleS:
         self.height = height
         self.details = details
 
+    def rule1(self):
+        if self.height > 1 and self.T1S > 90 and self.black == 0:
+            if self.S > 0:
+                return True
+
+    def rule2(self):
+        if self.height > 1 and self.white > 40 and self.black == 0:
+            if self.S > 0:
+                return True
+
+    def rule3(self):
+        if self.height > 1 and self.S > 50:
+            if self.T1S > self.score and self.black == 0:
+                return True
+
+    def rule4(self):
+        if self.height > 1 and self.score > 75:
+            if self.T1S > self.score and self.black == 0:
+                if self.S > 0:
+                    return True
+
+    def rule5(self):
+        if self.height == 1 and self.T1S - self.score > 10:
+            if self.T1S > self.score and self.T1F > self.score:
+                if self.black == 0 and self.white > 40:
+                    if self.S > 0 and self.aj < 15:
+                        return True
+
+    def rule6(self):
+        if self.height == 1 and self.score > 70:
+            if self.T1S > self.score and self.T1F > self.score:
+                if self.black == 0 and self.white > 25:
+                    if self.S > 0 and self.aj < 15:
+                        return True
+
+    def rule7(self):
+        if self.height == 1 and self.score > 50:
+            if (self.T1S - self.score) > 20 and self.T1F > self.score:
+                if self.white > 25 and self.black == 0:
+                    if self.S > 0 and self.aj < 15:
+                        return True
+
+    def rule8(self):
+        if self.height == 0 and self.score > 60:
+            if (self.T1S - self.score) > 10 and self.T1F > self.score and self.T1F > 55:
+                if self.black == 0 and self.white > 25:
+                    if self.S > 0 and self.aj < 15:
+                        return True
+
+    def rule9(self):
+        if self.height == 0 and self.score > 60:
+            if (self.T1S - self.score) > 20 and self.T1F > self.score:
+                if self.black == 0 and self.white > 25:
+                    if not t_limit(self.stock, self.data, 1):
+                        if not t_limit(self.stock, self.data, 2):
+                            if self.aj < 15 and self.S > 0:
+                                return True
+
+    def rule10(self):
+        if self.height < 2 and self.S > 30:
+            if self.white > 25 and self.score > 60:
+                if self.T1S > self.score and self.T1F > self.score:
+                    if not t_limit(self.stock, self.data, 1):
+                        if not t_limit(self.stock, self.data, 2):
+                            if self.aj < 15 and self.black == 0:
+                                return True
+
+    def rule11(self):
+        if self.height < 2 and self.S > 20:
+            if self.white > 25 and self.black == 0:
+                if self.T1S - self.score > 20 and self.T1F > self.score:
+                    if not t_limit(self.stock, self.data, 1):
+                        if not t_limit(self.stock, self.data, 2):
+                            if self.aj < 15:
+                                return True
+
+    def rule12(self):
+        if self.height > 2 and self.score > 90:
+            if self.white > 35 and self.black == 0:
+                return True
+
+    def rule13(self):
+        if self.height > 0 and self.black == 0:
+            if self.white > 30:
+                if 'A1' in self.details.keys():
+                    if 2 in self.details['A1']:
+                        return True
+
     def filter(self):
         if 'A1' not in self.details.keys():
             return False
-        if rule1(self.height, self.T1S, self.black, self.S):
-            return True
-        if rule2(self.height, self.white, self.black, self.S):
-            return True
-        if rule3(self.height, self.score, self.T1S, self.black, self.S):
-            return True
-        if rule4(self.height, self.score, self.T1S, self.black, self.S):
-            return True
-        if rule5(self.height, self.score, self.T1S, self.T1F, self.black, self.white, self.S, self.aj):
-            return True
-        if rule6(self.height, self.score, self.T1S, self.T1F, self.black, self.white, self.S, self.aj):
-            return True
-        if rule7(self.height, self.score, self.T1S, self.T1F, self.black, self.white, self.S, self.aj):
-            return True
-        if rule8(self.height, self.score, self.T1S, self.T1F, self.black, self.white, self.S, self.aj):
-            return True
-        if rule9(self.height, self.score, self.T1S, self.T1F, self.black, self.white, self.data, self.S, self.stock,
-                 self.aj):
-            return True
-        if rule10(self.height, self.score, self.T1S, self.T1F, self.black, self.white, self.data, self.S, self.stock,
-                  self.aj):
-            return True
-        if rule11(self.height, self.score, self.T1S, self.T1F, self.black, self.white, self.data, self.S, self.stock,
-                  self.aj):
-            return True
-        if rule12(self.height, self.score, self.black, self.white):
-            return True
-        if rule13(self.height, self.black, self.white, self.details):
-            return True
+        rules = [_ for _ in self.__class__.__dict__.keys() if 'rule' in _]
+        for rule in rules:
+            func = getattr(self, rule)
+            if func():
+                return True

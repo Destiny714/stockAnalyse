@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/6/26 15:34
 # @Author  : Destiny_
-# @File    : excel_process.py
+# @File    : excelProcess.py
 # @Software: PyCharm
 import os
 import xlwt

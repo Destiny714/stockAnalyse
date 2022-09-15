@@ -7,20 +7,20 @@
 
 import pymysql
 import warnings
-import excel_process
+import excelProcess
 from rule_level import A, S, F
 from api import databaseApi, tushareApi
 from common import toolBox, concurrentActions, dateHandler, push
 from rule_black import levelF1, levelF2, levelF3, levelF4, levelF5
 from rule_white import level1, level2, level3, level4, level5, level6, levelA1, levelA2, levelA3, levelA4
-from common.collect_data import collectData, t_open_pct, limit_height, collectIndexData, virtualIndexData
+from common.dataOperation import collectData, t_open_pct, limit_height, collectIndexData, virtualIndexData
 
 if __name__ == '__main__':
     log = toolBox.log()
     warnings.filterwarnings('ignore')
     stocks = concurrentActions.initStock(needReload=False, extra=False)
     tradeDays = databaseApi.Mysql().selectTradeDate()
-    aimDates = ['20220831', '20220901', '20220902', '20220905', '20220906', '20220907', '20220908']
+    aimDates = [dateHandler.lastTradeDay()]
 
 
     def process(aimDate):
@@ -32,7 +32,7 @@ if __name__ == '__main__':
         virtualDict = {f'{stock}': {} for stock in stocks}
         indexData = collectIndexData('GemIndex', aimDate=aimDate)
         nextTradeDay = databaseApi.Mysql().selectNextTradeDay(aimDate)
-        excelDict: dict = excel_process.readScoreFromExcel(databaseApi.Mysql().selectLastTradeDate(aimDate))
+        excelDict: dict = excelProcess.readScoreFromExcel(databaseApi.Mysql().selectLastTradeDate(aimDate))
 
         def processOneStock(argMap: dict):
             stock = argMap['stock']
@@ -105,7 +105,6 @@ if __name__ == '__main__':
                     TF = -8888 if t0Day.buy_elg_vol() == 0 else round(
                         ((t0Day.buy_elg_vol() - t0Day.sell_elg_vol()) / t0Day.buy_elg_vol()) * 100, 1)
                     TP = -8888 if t0Day.volume() == 0 else round((t0Day.buy_elg_vol() / t0Day.volume()) * 100, 1)
-                    hitPlus = (len(lA1['detail']) + len(lA2['detail']) + len(lA3['detail'])) > 0
                     level = 'B'
                     if A.ruleA(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum, S=_S,
                                data=data, aj=AJ, stock=stock, details=details).filter():
@@ -114,7 +113,7 @@ if __name__ == '__main__':
                                data=data, aj=AJ, stock=stock, details=details).filter():
                         level = 'S'
                     if F.ruleF(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum,
-                               S=_S, F5=len(lF5['detail']), hitPlus=hitPlus).filter():
+                               S=_S, details=details).filter():
                         level = 'F'
                     result = {
                         'code': stock,
@@ -141,7 +140,7 @@ if __name__ == '__main__':
                         'T1S_detail': str(virtualDict[stock]['s_detail']),
                         'T1F_detail': str(virtualDict[stock]['f_detail']),
                     }
-                    excelData = [result[_] for _ in excel_process.cols]
+                    excelData = [result[_] for _ in excelProcess.cols]
                     log.info(f'{aimDate}-{stock} - {"NOW" if not virtual else virtual}')
                     excelDatas.append(excelData)
                 else:
@@ -160,9 +159,9 @@ if __name__ == '__main__':
         toolBox.thread_pool_executor(processOneStock, [{'stock': stock, 'virtual': None} for stock in stocks], 10)
 
         def rankExcelData(d):
-            _white = d[excel_process.cols.index('white')]
-            _height = d[excel_process.cols.index('height')]
-            _score = d[excel_process.cols.index('score')]
+            _white = d[excelProcess.cols.index('white')]
+            _height = d[excelProcess.cols.index('height')]
+            _score = d[excelProcess.cols.index('score')]
             return _height * 1000000 + _score * 1000 + _white * 1
 
         excelDatas.sort(key=rankExcelData, reverse=True)
@@ -175,7 +174,7 @@ if __name__ == '__main__':
                 'N/A', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '0%', aimDate, '', '', ''
             ])
 
-        excel_process.write(aimDate, excelDatas)
+        excelProcess.write(aimDate, excelDatas)
 
 
     for date in aimDates:
