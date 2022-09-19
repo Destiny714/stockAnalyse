@@ -443,8 +443,6 @@ class levelF4:
                 continue
             if t_limit(stock, data, i - 1):
                 continue
-            if t_open_pct(data, i) >= 0.035:
-                continue
             nxt = data[-i]
             if nxt.turnover() <= 1.5 * data[-1].turnover():
                 continue
@@ -542,7 +540,7 @@ class levelF4:
             if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() >= 0.3:
                 return False
             for i in range(10, 51):
-                if limit_height(stock, data, i) >= 2:
+                if limit_height(stock, data, i) >= 3:
                     return False
             for i in range(3, 153):
                 if not t_limit(stock, data, i):
@@ -709,7 +707,7 @@ class levelF4:
                     ma20 = [data[-_] for _ in range(j, j + 20)]
                     avg20 = sum(_.close() for _ in ma20) / len(ma20)
                     if data[-i - 1].close() < avg20:
-                        if t_low_pct(self.index, i) > -0.01:
+                        if t_low_pct(self.index, i) >= -0.01:
                             badCount10 += 1
                 ma60 = [data[-_] for _ in range(j, j + 60)]
                 avg60 = sum(_.close() for _ in ma60) / len(ma60)
@@ -815,6 +813,20 @@ class levelF4:
                 continue
             if t_high_pct(data, i - 1) > max([_.high() for _ in data[-5:]]):
                 return True
+
+    def rule46(self):
+        data = self.data
+        stock = self.stock
+        for i in range(3, 153):
+            if not t_limit(stock, data, i):
+                continue
+            if t_limit(stock, data, i - 1):
+                continue
+            nxt = data[-i]
+            if nxt.turnover() > 1.5 * data[-1].turnover():
+                if nxt.high() * 1.03 > data[-1].close():
+                    if nxt.high() > max([_.close() for _ in data[-6:-1]]):
+                        return True
 
     def filter(self):
         rules = [_ for _ in self.__class__.__dict__.keys() if 'rule' in _]

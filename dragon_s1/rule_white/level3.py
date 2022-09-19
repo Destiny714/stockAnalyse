@@ -575,6 +575,32 @@ class level3:
         except:
             pass
 
+    def rule42(self):
+        data = self.data
+        stock = self.stock
+        try:
+            for i in range(2, 22):
+                if not t_limit(stock, data, i):
+                    continue
+                if t_limit(stock, data, i - 1):
+                    continue
+                if not t_limit(stock, data, i - 2):
+                    continue
+                nxt_nxt = data[-i + 1]
+                if (nxt_nxt.buy_elg_vol() - nxt_nxt.sell_elg_vol()) / nxt_nxt.buy_elg_vol() > 0.6:
+                    return True
+        except:
+            pass
+
+    def rule43(self):
+        try:
+            d = self.data[-1]
+            if d.close() < 0.25 * d.his_high():
+                if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.6:
+                    return True
+        except:
+            pass
+
     def filter(self):
         rules = [_ for _ in self.__class__.__dict__.keys() if 'rule' in _]
         for rule in rules:

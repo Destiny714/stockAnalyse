@@ -9,15 +9,16 @@ from common.dateHandler import timeDelta, getMinute, lastMinute, joinTimeToStamp
 
 
 class level4:
-    def __init__(self, stock: str, data: list[dataModel], index: list[dataModel], limitTimeRank: list, industryLimitRank: list):
+    def __init__(self, stock: str, data: list[dataModel], index: list[dataModel],
+                 limitData: dict[str, list[limitDataModel]], industry: str):
         self.level = 4
         self.data = data
         self.stock = stock
         self.index = index
+        self.industry = industry
         self.shot_rule: list = []
         self.fail_rule: list = []
-        self.limitTimeRank: list = limitTimeRank
-        self.industryLimitRank = industryLimitRank
+        self.limitData = limitData
 
     def result(self):
         return {'level': self.level, 'stock': self.stock, 'detail': self.shot_rule, 'result': self.shot_rule != []}
@@ -291,9 +292,15 @@ class level4:
     def rule17(self):
         data = self.data
         stock = self.stock
-        if not t_limit(stock, data):
+        if model_1(stock, data):
+            return True
+        for i in range(3):
+            if not t_limit(stock, data, i):
+                return False
+        rank = rankLimitTimeByX('limitTime-height', data[-1].date(), self.limitData, eliminateModel1=True)
+        if 3 not in rank.keys():
             return False
-        if stock in self.limitTimeRank[0]:
+        if rank[3][0] == stock:
             return True
 
     def rule18(self):
@@ -538,9 +545,10 @@ class level4:
         stock = self.stock
         if not t_limit(stock, data):
             return False
-        if not self.industryLimitRank:
-            return False
-        if stock in self.industryLimitRank[0]:
+        if model_1(stock, data):
+            return True
+        rank = rankLimitTimeByX('limitTime-industry', data[-1].date(), self.limitData, eliminateModel1=True)[self.industry]
+        if rank[0] == stock:
             return True
 
     def rule33(self):
@@ -585,6 +593,65 @@ class level4:
                     return True
         except:
             pass
+
+    def rule35(self):
+        data = self.data
+        for i in range(1, 31):
+            if limit_height(self.stock, data, i) >= 3:
+                return False
+        for i in range(30, 121):
+            d = data[-i - 1]
+            if t_close_pct(data, i) <= 0.05:
+                continue
+            ma20 = move_avg(data, 20, i)
+            ma30 = move_avg(data, 30, i)
+            ma60 = move_avg(data, 60, i)
+            if d.low() >= ma20:
+                continue
+            if d.low() >= ma30:
+                continue
+            if d.low() >= ma60:
+                continue
+            if d.high() <= ma20:
+                continue
+            if d.high() <= ma30:
+                continue
+            if d.high() <= ma60:
+                continue
+            afterData = [_ for _ in range(30, i) if data[-_ - 1].close() < d.low()]
+            if len(afterData) <= 3:
+                return True
+
+    def rule36(self):
+        data = self.data
+        for i in range(1, 31):
+            if limit_height(self.stock, data, i) >= 3:
+                return False
+        for i in range(30, 121):
+            d = data[-i - 1]
+            if t_close_pct(data, i) <= 0.05:
+                continue
+            ma10 = move_avg(data, 10, i)
+            ma20 = move_avg(data, 20, i)
+            ma30 = move_avg(data, 30, i)
+            ma60 = move_avg(data, 60, i)
+            if ma30 <= ma60:
+                continue
+            if d.low() >= ma20:
+                continue
+            if d.low() >= ma30:
+                continue
+            if d.low() >= ma60:
+                continue
+            if d.close() <= ma10:
+                continue
+            if d.close() <= ma20:
+                continue
+            if d.close() <= ma30:
+                continue
+            afterData = [_ for _ in range(30, i) if data[-_ - 1].close() < d.low()]
+            if len(afterData) <= 3:
+                return True
 
     def filter(self):
         rules = [_ for _ in self.__class__.__dict__.keys() if 'rule' in _]

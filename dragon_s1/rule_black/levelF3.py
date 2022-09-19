@@ -557,7 +557,7 @@ class levelF3:
             return False
         if not t_limit(stock, data):
             return False
-        for i in range(10, 61):
+        for i in range(10, 91):
             if limit_height(stock, data, i) >= 3:
                 return False
         plus = 0

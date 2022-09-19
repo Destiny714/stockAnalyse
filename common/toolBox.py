@@ -6,13 +6,34 @@
 
 import os
 import yaml
+import time
 import logging
 from typing import List
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
+
+
+def timeCount(func):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        res = func(*args, **kwargs)
+        print(f'use {int((time.time() - start) * 1000)}ms')
+        return res
+
+    return wrapper
 
 
 def thread_pool_executor(func, iterable, thread_num=20):
+    """多线程"""
     executor = ThreadPoolExecutor(max_workers=thread_num)
+    tasks = [executor.submit(func, _) for _ in iterable]
+    for task in as_completed(tasks):
+        task.result()
+
+
+def process_pool_executor(func, iterable, process_num=10):
+    """多进程"""
+    assert process_num <= 10
+    executor = ProcessPoolExecutor(max_workers=process_num)
     tasks = [executor.submit(func, _) for _ in iterable]
     for task in as_completed(tasks):
         task.result()
@@ -30,6 +51,7 @@ def errorHandler(e: Exception) -> str:
 
 
 def cutList(full_list: list, piece: int) -> List[list]:
+    """切割大列表 --> list[小列表]"""
     cut_list = []
     extra_num = len(full_list) % piece
     if extra_num != 0:
@@ -47,6 +69,7 @@ def cutList(full_list: list, piece: int) -> List[list]:
 
 
 def arg_yaml():
+    """读取args.yaml"""
     yaml_path = os.path.join(projectPath(), "api/args.yaml")
     try:
         with open(yaml_path, "r", encoding="utf-8") as f:
@@ -57,10 +80,12 @@ def arg_yaml():
 
 
 def projectPath() -> str:
+    """获取项目根目录"""
     return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 class log:
+    """自定义log类 单例"""
     _instance = None
 
     def __new__(cls, *args, **kwargs):

@@ -184,8 +184,9 @@ class Tushare:
         return details
 
     def fullLimitDetail(self, start, end=dateHandler.lastTradeDay()):
-        """获取股票涨停详情(全) 返回 dataFrame"""
-        df = self._instance.limit_list_d(**{
+        """获取股票涨停详情(全)"""
+        details = []
+        data = self._instance.limit_list_d(**{
             "trade_date": "",
             "ts_code": "",
             "limit_type": "U",
@@ -215,4 +216,6 @@ class Tushare:
             "up_stat",
             "swing"
         ])
-        return df
+        for i in range(len(data)):
+            details.append(data.iloc[i])
+        return details

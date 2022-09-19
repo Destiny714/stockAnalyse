@@ -8,16 +8,13 @@ from common.dataOperation import t_low_pct, t_close_pct, t_open_pct, limit, data
 
 
 class level5:
-    def __init__(self, stock: str, data: list[dataModel], index: list[dataModel], limitTimeRank: list,
-                 industryLimitRank: list):
+    def __init__(self, stock: str, data: list[dataModel], index: list[dataModel]):
         self.level = 5
         self.data = data
         self.index = index
         self.stock = stock
         self.shot_rule: list = []
         self.fail_rule: list = []
-        self.limitTimeRank: list = limitTimeRank
-        self.industryLimitRank: list = industryLimitRank
 
     def result(self):
         return {'level': self.level, 'stock': self.stock, 'detail': self.shot_rule, 'result': self.shot_rule != []}

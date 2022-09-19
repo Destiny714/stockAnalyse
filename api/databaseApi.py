@@ -238,12 +238,12 @@ class Mysql:
 
     def stockDetailUpdateDate(self, date):
         """更新股票详情更新日期"""
-        self.word = f"UPDATE version SET stockDetailUpdateDate='{date}'"
+        self.word = f"UPDATE version SET stockDetailUpdateDate='{date}' WHERE 1/1 = 1"
         self.action(output=False)
 
     def stockListUpdateDate(self, date):
         """更新股票列表更新日期"""
-        self.word = f"UPDATE version SET stockListUpdateDate='{date}'"
+        self.word = f"UPDATE version SET stockListUpdateDate='{date}' WHERE 1/1 = 1"
         self.action(output=False)
 
     def updateLimitDetailData(self, data):
@@ -314,3 +314,38 @@ class Mysql:
         """更新分时交易数据"""
         self.word = f"UPDATE No{json['symbol']} SET time='{json['data']}' WHERE date='{json['date']}'"
         self.action(output=False)
+
+    def insertOneLimitStock(self, data):
+        """将每日涨停股票详情插入 -stockLimit表- """
+        firstTime = data['first_time']
+        lastTime = data['last_time']
+        new_firstTime = f'{0 if len(firstTime[:-4]) == 1 else ""}{firstTime[:-4]}:{firstTime[-4:-2]}:{firstTime[-2:]}' if firstTime != '' else '09:25:00'
+        new_lastTime = f'{0 if len(lastTime[:-4]) == 1 else ""}{lastTime[:-4]}:{lastTime[-4:-2]}:{lastTime[-2:]}' if lastTime != '' else None
+        date = data['trade_date']
+        stockNo = str(data['ts_code']).split('.')[0]
+        self.word = f"INSERT IGNORE INTO stockLimit " \
+                    f"(trade_date, ts_code, industry, open, close, pre_close, pct_chg,amount, " \
+                    f"turnover, fd_amount, first_time, last_time, open_times, up_stat, limit_times) VALUES " \
+                    f"('{date}'," \
+                    f"'{stockNo}'," \
+                    f"(SELECT industry FROM stockList where symbol={stockNo})," \
+                    f"(SELECT open FROM No{stockNo} WHERE date = {date})," \
+                    f"{data['close']}," \
+                    f"(SELECT preClose FROM No{stockNo} WHERE date = {date})," \
+                    f"{data['pct_chg']}," \
+                    f"{data['amount']}," \
+                    f"{data['turnover_ratio']}," \
+                    f"{data['fd_amount']}," \
+                    f"{dateHandler.joinTimeToStamp(date, new_firstTime)}," \
+                    f"{6666666666 if new_lastTime is None else dateHandler.joinTimeToStamp(date, new_lastTime)}," \
+                    f"{data['open_times']}," \
+                    f"'{data['up_stat']}'," \
+                    f"{data['limit_times']}) ON DUPLICATE KEY UPDATE " \
+                    f"open=(SELECT open FROM No{stockNo} WHERE date = {date})," \
+                    f"pre_close=(SELECT preClose FROM No{stockNo} WHERE date = {date})"
+        self.action(output=False)
+
+    def selectLimitStockByDate(self, date):
+        """根据日期查找 stockLimit 表"""
+        self.word = f"SELECT * FROM stockLimit WHERE trade_date = {date}"
+        return self.action(output=True)

@@ -9,29 +9,33 @@ import pymysql
 import warnings
 import excelProcess
 from rule_level import A, S, F
+from common.dataOperation import *
 from api import databaseApi, tushareApi
 from common import toolBox, concurrentActions, dateHandler, push
 from rule_black import levelF1, levelF2, levelF3, levelF4, levelF5
 from rule_white import level1, level2, level3, level4, level5, level6, levelA1, levelA2, levelA3, levelA4
-from common.dataOperation import collectData, t_open_pct, limit_height, collectIndexData, virtualIndexData
 
 if __name__ == '__main__':
     log = toolBox.log()
     warnings.filterwarnings('ignore')
     stocks = concurrentActions.initStock(needReload=False, extra=False)
     tradeDays = databaseApi.Mysql().selectTradeDate()
-    aimDates = [dateHandler.lastTradeDay()]
+    aimDates = ['20220913', '20220914', '20220915', '20220916']
 
 
     def process(aimDate):
-        industryIndexDict = concurrentActions.industryIndex(aimDate=aimDate)
+        _limitData = concurrentActions.getStockLimitDataByDate(date=aimDate)
+        limitData_virtualDict = {
+            's': virtualLimitData(_limitData, 's'),
+            'f': virtualLimitData(_limitData, 'f'),
+        }
+        industryLimitDict = rankLimitTimeByX('limitTime-industry', aimDate, _limitData)
         limitUpCount = tushareApi.Tushare().dailyLimitCount(date=aimDate)
-        limitTimeRank = concurrentActions.rankingLimitTime(aimDate)
         errors = []
         excelDatas = []
         virtualDict = {f'{stock}': {} for stock in stocks}
         indexData = collectIndexData('GemIndex', aimDate=aimDate)
-        nextTradeDay = databaseApi.Mysql().selectNextTradeDay(aimDate)
+        indexData_virtual = virtualIndexData(indexData)
         excelDict: dict = excelProcess.readScoreFromExcel(databaseApi.Mysql().selectLastTradeDate(aimDate))
 
         def processOneStock(argMap: dict):
@@ -39,13 +43,16 @@ if __name__ == '__main__':
             virtual = argMap['virtual']
             stockDetail = databaseApi.Mysql().selectStockDetail(stock)
             industry = stockDetail[3]
-            industryLimitRank = industryIndexDict[industry]['rank']
+            industryLimitCount = 0 if industry not in industryLimitDict.keys() else len(industryLimitDict[industry])
             if virtual is not None:
-                index = virtualIndexData(indexData, nextTradeDay)
+                index = indexData_virtual.copy()
+                limitData = limitData_virtualDict[virtual].copy()
             else:
                 index = indexData.copy()
+                limitData = _limitData.copy()
             try:
                 data = collectData(stock, aimDate=aimDate, virtual=virtual)
+                height = limit_height(stock, data)
                 t0Day = data[-1]
                 details = {}
                 score = 0
@@ -55,7 +62,7 @@ if __name__ == '__main__':
                 lA2 = levelA2.levelA2(stock, data).filter()
                 lA3 = levelA3.levelA3(stock, data).filter()
                 lA4 = levelA4.levelA4(stock, data).filter()
-                lF1 = levelF1.levelF1(stock, data, index, industryLimitRank).filter()
+                lF1 = levelF1.levelF1(stock, data, index, limitData, industry, height).filter()
                 lF2 = levelF2.levelF2(stock, data, index).filter()
                 lF3 = levelF3.levelF3(stock, data, index).filter()
                 lF4 = levelF4.levelF4(stock, data, index).filter()
@@ -63,8 +70,8 @@ if __name__ == '__main__':
                 l1 = level1.level1(stock, data).filter()
                 l2 = level2.level2(stock, data).filter()
                 l3 = level3.level3(stock, data, index).filter()
-                l4 = level4.level4(stock, data, index, limitTimeRank, industryLimitRank).filter()
-                l5 = level5.level5(stock, data, index, limitTimeRank, industryLimitRank).filter()
+                l4 = level4.level4(stock, data, index, limitData, industry).filter()
+                l5 = level5.level5(stock, data, index).filter()
                 l6 = level6.level6(stock, data, index).filter()
                 for white in [lA1, lA2, lA3, lA4]:
                     white_sum += len(white['detail'])
@@ -94,7 +101,6 @@ if __name__ == '__main__':
                 score -= len(lF4['detail']) * 7
                 score -= len(lF5['detail']) * 8
                 if virtual is None:
-                    height = limit_height(stock, data)
                     T1S = virtualDict[stock]['s']
                     T1F = virtualDict[stock]['f']
                     _S = int(score - excelDict[stock]['score'] if excelDict != {} else -8888)
@@ -119,7 +125,7 @@ if __name__ == '__main__':
                         'code': stock,
                         'name': stockDetail[2],
                         'industry': stockDetail[3],
-                        'ptg_industry': f'{industryIndexDict[industry]["limit"]}/{limitUpCount}',
+                        'ptg_industry': f'{industryLimitCount}/{limitUpCount}',
                         'AJ': AJ,
                         'CF': CF,
                         'TF': TF,
@@ -168,9 +174,11 @@ if __name__ == '__main__':
         errStocks = list(set([_[0] for _ in errors]))
         for errStock in errStocks:
             errStockDetail = databaseApi.Mysql().selectStockDetail(errStock)
+            _industry = errStockDetail[3]
+            _industryLimitCount = 0 if _industry not in industryLimitDict.keys() else len(industryLimitDict[_industry])
             excelDatas.append([
-                errStock, errStockDetail[2], errStockDetail[3],
-                f'{industryIndexDict[errStockDetail[3]]["limit"]}/{limitUpCount}',
+                errStock, errStockDetail[2], _industry,
+                f'{_industryLimitCount}/{limitUpCount}',
                 'N/A', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '0%', aimDate, '', '', ''
             ])
 

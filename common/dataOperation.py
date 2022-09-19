@@ -3,162 +3,10 @@
 # @Author  : Destiny_
 # @File    : dataOperation.py
 # @Software: PyCharm
-import json
+
 from api import databaseApi
-from common import dateHandler
-
-
-class dataModel:
-    def __init__(self, data):
-        self.data = data
-
-    def __setitem__(self, key, value):
-        self.data[key] = value
-
-    def __getitem__(self, item):
-        return self.data[item]
-
-    def date(self):
-        return self.data[1]
-
-    def open(self):
-        return self.data[2]
-
-    def close(self):
-        return self.data[3]
-
-    def preClose(self):
-        return self.data[4]
-
-    def high(self):
-        return self.data[5]
-
-    def low(self):
-        return self.data[6]
-
-    def pctChange(self):
-        return self.data[7]
-
-    def volume(self):
-        return self.data[8]
-
-    def amount(self):
-        return self.data[9]
-
-    def turnover(self):
-        return self.data[10]
-
-    def firstLimitTime(self):
-        return self.data[11]
-
-    def lastLimitTime(self):
-        return self.data[12]
-
-    def limitOpenTime(self):
-        return self.data[13]
-
-    def buy_sm_vol(self):
-        return self.data[14]
-
-    def buy_sm_amount(self):
-        return self.data[15]
-
-    def sell_sm_vol(self):
-        return self.data[16]
-
-    def sell_sm_amount(self):
-        return self.data[17]
-
-    def buy_md_vol(self):
-        return self.data[18]
-
-    def buy_md_amount(self):
-        return self.data[19]
-
-    def sell_md_vol(self):
-        return self.data[20]
-
-    def sell_md_amount(self):
-        return self.data[21]
-
-    def buy_lg_vol(self):
-        return self.data[22]
-
-    def buy_lg_amount(self):
-        return self.data[23]
-
-    def sell_lg_vol(self):
-        return self.data[24]
-
-    def sell_lg_amount(self):
-        return self.data[25]
-
-    def buy_elg_vol(self):
-        return self.data[26]
-
-    def buy_elg_amount(self):
-        return self.data[27]
-
-    def sell_elg_vol(self):
-        return self.data[28]
-
-    def sell_elg_amount(self):
-        return self.data[29]
-
-    def net_mf_vol(self):
-        return self.data[30]
-
-    def net_mf_amount(self):
-        return self.data[31]
-
-    def trade_count(self):
-        return self.data[32]
-
-    def his_low(self):
-        return self.data[33]
-
-    def his_high(self):
-        return self.data[34]
-
-    def cost_5pct(self):
-        return self.data[35]
-
-    def cost_15pct(self):
-        return self.data[36]
-
-    def cost_50pct(self):
-        return self.data[37]
-
-    def cost_85pct(self):
-        return self.data[38]
-
-    def cost_95pct(self):
-        return self.data[39]
-
-    def weight_avg(self):
-        return self.data[40]
-
-    def winner_rate(self):
-        return self.data[41]
-
-    def time(self) -> dict:
-        return json.loads(self.data[42])
-
-    def concentration(self):
-        cost5pct = self.cost_5pct()
-        cost95pct = self.cost_95pct()
-        if cost95pct + cost5pct == 0:
-            return 100
-        return (cost95pct - cost5pct) / (cost95pct + cost5pct)
-
-    def timeVol(self, timeStamp: int = None, minute: str = None):
-        assert (timeStamp is None or minute is None)
-        time = self.time()
-        if minute is None:
-            limitMinute = dateHandler.getMinute(timeStamp)
-        else:
-            limitMinute = minute
-        return time[limitMinute]
+from common.models.initDataModel import *
+from common.models.limitDataModel import *
 
 
 def collectIndexData(index, dateRange: int = 500, aimDate=dateHandler.lastTradeDay()) -> list[dataModel]:
@@ -168,13 +16,46 @@ def collectIndexData(index, dateRange: int = 500, aimDate=dateHandler.lastTradeD
     return res
 
 
-def virtualIndexData(data: list[dataModel], nextTradeDay) -> list[dataModel]:
+def virtualIndexData(data: list[dataModel]) -> list[dataModel]:
     res = data.copy()
     modifyData = list(res[-1])
     modifyData[0] = 8888
-    modifyData[1] = nextTradeDay
+    modifyData[1] = databaseApi.Mysql().selectNextTradeDay(modifyData[1])
     res.append(dataModel(modifyData))
     return res
+
+
+def virtualLimitData(data: dict[str, list[limitDataModel]], virtual=None) -> dict[str, list[limitDataModel]]:
+    d = data.copy()
+    today = str(max(int(_) for _ in data.keys()))
+    nextDay = databaseApi.Mysql().selectNextTradeDay(today)
+    modifyDatas = d[today].copy()
+
+    def one(a: limitDataModel):
+        b = list(a)
+        b[1] = nextDay
+        b[6] = a.close()
+        if virtual == 's':
+            b[4] = a.close() * 1.07
+            b[5] = a.close() * (1 + (limit(a.stock()) / 100)),
+            b[8] = a.amount() * 0.6
+            b[9] = a.turnover() * 0.6
+            b[11] = dateHandler.joinTimeToStamp(nextDay, '09:36:00')
+            b[12] = dateHandler.joinTimeToStamp(nextDay, '09:36:00')
+            b[15] = a.limitHeight() + 1
+        if virtual == 'f':
+            b[4] = a.close() * 1.03
+            b[5] = a.close() * (1 + (limit(a.stock()) / 100)),
+            b[8] = a.amount() * 1.4
+            b[9] = a.turnover() * 1.4
+            b[11] = dateHandler.joinTimeToStamp(nextDay, '09:50:00')
+            b[12] = dateHandler.joinTimeToStamp(nextDay, '14:00:00')
+            b[15] = a.limitHeight() + 1
+        return limitDataModel(b)
+
+    newModifyDatas = [one(_) for _ in modifyDatas]
+    d[nextDay] = newModifyDatas
+    return d
 
 
 def collectData(stock, dateRange: int = 800, aimDate=dateHandler.lastTradeDay(), virtual=None) -> list[dataModel]:
@@ -351,3 +232,91 @@ def move_avg(data: list[dataModel], dateRange: int, plus: int):
     j = plus + 1
     moveAVG = sum([data[-_].close() for _ in range(j, j + dateRange)]) / dateRange
     return moveAVG
+
+
+def rankLimitTimeByX(keyword: str, date: str, dataDict: dict[str, list[limitDataModel]], eliminateModel1=False):
+    """
+    根据关键词对某日涨停股票进行排序
+    :key eliminateModel1 剔除一字板
+    """
+    data = dataDict[date].copy()
+    rubbish = []
+    for _ in data:
+        if _.open() is None:
+            rubbish.append(_)
+            continue
+        if _.preClose() is None:
+            rubbish.append(_)
+            continue
+    for rub in rubbish:
+        data.remove(rub)
+    if eliminateModel1:
+        data = [_ for _ in data if (_.open() / _.preClose()) <= 1.098]
+    if keyword == 'limitTime-industry':
+        dictByIndustry = {}
+        for _ in data:
+            if _.industry() not in dictByIndustry.keys():
+                dictByIndustry[_.industry()] = [_]
+            else:
+                dictByIndustry[_.industry()].append(_)
+
+        def rank(d: limitDataModel):
+            return d.firstLimitTime()
+
+        res = {}
+        for industry in dictByIndustry.keys():
+            industryStocks: list[limitDataModel] = dictByIndustry[industry]
+            industryStocks.sort(key=rank)
+            res[industry] = [_.stock() for _ in industryStocks]
+        return res
+    if keyword == 'open-industry':
+        dictByIndustry = {}
+        for _ in data:
+            if _.industry() not in dictByIndustry.keys():
+                dictByIndustry[_.industry()] = [_]
+            else:
+                dictByIndustry[_.industry()].append(_)
+
+        def rank(d: limitDataModel):
+            return d.open() / d.preClose()
+
+        res = {}
+        for industry in dictByIndustry.keys():
+            industryStocks: list[limitDataModel] = dictByIndustry[industry]
+            industryStocks.sort(key=rank, reverse=True)
+            res[industry] = [_.stock() for _ in industryStocks]
+        return res
+    if keyword == 'open-height':
+        dictByHeight = {}
+        for _ in data:
+            if _.limitHeight() not in dictByHeight.keys():
+                dictByHeight[_.limitHeight()] = [_]
+            else:
+                dictByHeight[_.limitHeight()].append(_)
+
+        def rank(d: limitDataModel):
+            return d.open() / d.preClose()
+
+        res = {}
+        for height in dictByHeight.keys():
+            heightStocks: list[limitDataModel] = dictByHeight[height]
+            heightStocks.sort(key=rank, reverse=True)
+            res[height] = [_.stock() for _ in heightStocks]
+        return res
+    if keyword == 'limitTime-height':
+        dictByHeight = {}
+        for _ in data:
+            if _.limitHeight() not in dictByHeight.keys():
+                dictByHeight[_.limitHeight()] = [_]
+            else:
+                dictByHeight[_.limitHeight()].append(_)
+
+        def rank(d: limitDataModel):
+            return d.firstLimitTime()
+
+        res = {}
+        for height in dictByHeight.keys():
+            heightStocks: list[limitDataModel] = dictByHeight[height]
+            heightStocks.sort(key=rank)
+            res[height] = [_.stock() for _ in heightStocks]
+        return res

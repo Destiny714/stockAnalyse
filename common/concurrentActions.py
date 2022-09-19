@@ -4,11 +4,11 @@
 # @File    : concurrentActions.py
 # @Software: PyCharm
 from api import extApi
-from api import databaseApi
 from api.databaseApi import Mysql
 from api.tushareApi import Tushare
 from common.middleWare.stockFilter import stockFilter
 from common import toolBox, dateHandler, dataOperation
+from common.models.limitDataModel import limitDataModel
 
 log = toolBox.log()
 
@@ -119,7 +119,7 @@ def updateShIndex(start=dateHandler.lastTradeDay(), end=dateHandler.lastTradeDay
     code = '000001.SH'
     data = Tushare().indexData(start=start, end=end, code=code)
     for d in data:
-        databaseApi.Mysql().insertIndex(d, indexTable='NoShIndex')
+        Mysql().insertIndex(d, indexTable='NoShIndex')
 
 
 def updateGemIndex(start=dateHandler.lastTradeDay(), end=dateHandler.lastTradeDay()):
@@ -127,7 +127,7 @@ def updateGemIndex(start=dateHandler.lastTradeDay(), end=dateHandler.lastTradeDa
     code = '399006.SZ'
     data = Tushare().indexData(start=start, end=end, code=code)
     for d in data:
-        databaseApi.Mysql().insertIndex(d, indexTable='NoGemIndex')
+        Mysql().insertIndex(d, indexTable='NoGemIndex')
 
 
 def updateMoneyFlow(aimDate=dateHandler.lastTradeDay()):
@@ -192,6 +192,20 @@ def updateTimeDataToday():
     print(f'update time data done')
 
 
+def updateStockLimit(start=dateHandler.lastTradeDay(), end=dateHandler.lastTradeDay()):
+    """每日更新 stockLimit 表"""
+    data = Tushare().fullLimitDetail(start=start, end=end)
+
+    def updateOneDay(d):
+        try:
+            mysql = Mysql()
+            mysql.insertOneLimitStock(d)
+        except Exception as e:
+            log.warning(f'update stockLimit error - {e}')
+
+    toolBox.thread_pool_executor(updateOneDay, data, 10)
+
+
 def rankingLimitTime(aimDate=dateHandler.lastTradeDay()) -> list:
     """涨停时间排序"""
     print('ranking limit time')
@@ -229,10 +243,25 @@ def rankingLimitTime(aimDate=dateHandler.lastTradeDay()) -> list:
     return [_['stocks'] for _ in rankList]
 
 
+def getStockLimitDataByDate(date: str = dateHandler.lastTradeDay(), lead: int = 100):
+    """并发获取 stockLimit表 内容"""  # TODO:可以用hashmap 不用并发
+    res: dict[str, list[limitDataModel]] = {}
+    tradeDates = Mysql().selectTradeDate()
+    index = tradeDates.index(date)
+
+    def one(d):
+        mysql = Mysql()
+        data = mysql.selectLimitStockByDate(d)
+        res[d] = [limitDataModel(_) for _ in data]
+
+    toolBox.thread_pool_executor(one, tradeDates[index - lead + 1:index + 1])
+    return res
+
+
 def industryIndex(aimDate=dateHandler.lastTradeDay()):
     """返回同行业涨停数以及同行业涨停排序"""
     limitRankDict = {}
-    industries = databaseApi.Mysql().selectAllIndustry()
+    industries = Mysql().selectAllIndustry()
     for i in industries:
         limitRankDict[i] = {}
     errors = []
@@ -240,14 +269,14 @@ def industryIndex(aimDate=dateHandler.lastTradeDay()):
 
     def processOne(industry):
         limit = 0
-        mysql = databaseApi.Mysql()
+        mysql = Mysql()
         industryStocks = mysql.selectStockByIndustry(industry)
         for industryStock in industryStocks:
             try:
                 stockData = dataOperation.collectData(industryStock, 5, aimDate=aimDate)
                 if dataOperation.t_limit(industryStock, stockData):
                     limit += 1
-                    if collect_data.t_open_pct(stockData) <= dataOperation.limit(industryStock):
+                    if dataOperation.t_open_pct(stockData) <= dataOperation.limit(industryStock):
                         if stockData[-1].firstLimitTime() not in limitRankDict[industry].keys():
                             limitRankDict[industry][stockData[-1].firstLimitTime()] = [industryStock]
                         else:
@@ -271,9 +300,9 @@ def industryIndex(aimDate=dateHandler.lastTradeDay()):
     return industryLimitDict
 
 
-def initStock(needReload: bool = True, extra: bool = False):
+def initStock(needReload=True, extra=False):
     """每日数据更新汇总脚本"""
-    mysql = databaseApi.Mysql()
+    mysql = Mysql()
     if needReload:
         updateShIndex()
         updateGemIndex()
@@ -285,8 +314,7 @@ def initStock(needReload: bool = True, extra: bool = False):
         mysql.stockListUpdateDate(dateHandler.lastTradeDay())
         if int(stockDetailVersion) < int(dateHandler.lastTradeDay()):
             fullDates = mysql.selectTradeDate()
-            dates = [_ for _ in fullDates if
-                     int(stockDetailVersion) < int(_) <= int(dateHandler.lastTradeDay())]
+            dates = [_ for _ in fullDates if int(stockDetailVersion) < int(_) <= int(dateHandler.lastTradeDay())]
             updateDaily(dates)
             mysql.stockDetailUpdateDate(dateHandler.lastTradeDay())
     else:
@@ -298,4 +326,5 @@ def initStock(needReload: bool = True, extra: bool = False):
         updateMoneyFlow()
         updateChipDetail()
         updateTimeDataToday()
+        updateStockLimit()
     return stocks

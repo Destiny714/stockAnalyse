@@ -174,6 +174,10 @@ class level2:
         except:
             return False
 
+    def rule17(self):
+        if self.data[-1].close() < 0.25 * self.data[-1].his_high():
+            return True
+
     def rule18(self):
         data = self.data
         stock = self.stock

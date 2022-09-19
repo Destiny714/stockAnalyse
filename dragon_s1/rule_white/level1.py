@@ -17,6 +17,23 @@ class level1:
     def result(self):
         return {'level': self.level, 'stock': self.stock, 'detail': self.shot_rule, 'result': self.shot_rule != []}
 
+    def rule1(self):
+        data = self.data
+        stock = self.stock
+        try:
+            for i in range(1, 31):
+                if limit_height(stock, data, i) >= 3:
+                    return False
+            for i in range(30, 121):
+                d = data[-i - 1]
+                if not t_limit(stock, data, i):
+                    continue
+                afterData = [_ for _ in range(30, i) if data[-_ - 1].close() < d.low()]
+                if len(afterData) <= 3:
+                    return True
+        except:
+            pass
+
     def rule2(self):
         data = self.data
         for i in range(1, 4):
