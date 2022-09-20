@@ -11,8 +11,8 @@ test.py
 .idea/
 .DS_Store
 *.yaml
-test/
-dragon_s1/result/
+.test/
+strategy/dragon/result/
 # Distribution / packaging
 .Python
 build/
@@ -43,7 +43,7 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Unit test / coverage reports
+# Unit .test / coverage reports
 htmlcov/
 .tox/
 .nox/

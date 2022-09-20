@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/7/28 04:12
+# @Time    : 2022/9/19 22:16
 # @Author  : Destiny_
 # @File    : __init__.py.py
 # @Software: PyCharm
-from utils import file_util
-
-args = file_util.arg_yaml()
