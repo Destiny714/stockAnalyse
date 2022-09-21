@@ -451,7 +451,7 @@ class levelF1(base_level):
             if model_1(stock, data, i):
                 return False
             d = data[-i - 1]
-            matchTime = joinTimeToStamp(d.date(), '09:50:00')
+            matchTime = joinTimeToStamp(d.date(), '09:40:00')
             if d.firstLimitTime() >= matchTime:
                 return False
         for i in range(3, 11):
@@ -553,3 +553,7 @@ class levelF1(base_level):
             return True
         except:
             pass
+
+    def rule39(self):
+        if '60' in self.stock:
+            return True

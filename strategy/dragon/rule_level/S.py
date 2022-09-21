@@ -3,24 +3,15 @@
 # @Author  : Destiny_
 # @File    : S.py
 # @Software: PyCharm
-from utils.stockdata_util import dataModel, t_limit
+from base.base_score_level_model import base_score_level
+from utils.stockdata_util import t_limit
 
 
-class ruleS:
+class ruleS(base_score_level):
 
-    def __init__(self, height: int, score: int, T1S: int, T1F: int, black: int, white: int, S: int,
-                 data: list[dataModel], stock: str, aj: float, details: dict[str, list[int]]):
-        self.S = S
-        self.aj = aj
-        self.T1S = T1S
-        self.T1F = T1F
-        self.data = data
-        self.stock = stock
-        self.black = black
-        self.white = white
-        self.score = score
-        self.height = height
-        self.details = details
+    def __init__(self, scoreLevelData: dict):
+        self.level = 'S'
+        super().__init__(self.level, scoreLevelData)
 
     def rule1(self):
         if self.height > 1 and self.T1S > 90 and self.black == 0:
@@ -116,12 +107,3 @@ class ruleS:
                 if 'A1' in self.details.keys():
                     if 2 in self.details['A1']:
                         return True
-
-    def filter(self):
-        if 'A1' not in self.details.keys():
-            return False
-        rules = [_ for _ in self.__class__.__dict__.keys() if 'rule' in _]
-        for rule in rules:
-            func = getattr(self, rule)
-            if func():
-                return True

@@ -15,6 +15,7 @@ class Tushare:
         self._token = args['tushareKey']
         tushare.set_token(self._token)
         self._tushare = tushare
+        self.bar = tushare.pro_bar()
         self._instance = tushare.pro_api()
 
     def tradeCalender(self):

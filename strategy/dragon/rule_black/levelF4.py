@@ -555,13 +555,16 @@ class levelF4(base_level):
     def rule34(self):
         data = self.data
         stock = self.stock
-        if t_low_pct(data) >= 0.05:
+        if t_low_pct(data) >= 0.035:
             return False
         if t_limit(stock, data, 2):
             return False
         for i in range(2):
             if not t_limit(stock, data, i):
                 return False
+        matchTime = joinTimeToStamp(data[-1].date(), '09:50:00')
+        if data[-1].firstLimitTime() <= matchTime:
+            return False
         if data[-1].turnover() > data[-2].turnover():
             matchTime = joinTimeToStamp(data[-2].date(), '09:40:00')
             if data[-2].firstLimitTime() < matchTime:
@@ -581,6 +584,13 @@ class levelF4(base_level):
                 if not t_limit(stock, data, i):
                     continue
                 if t_limit(stock, data, i - 1):
+                    continue
+                flag = False
+                for j in range(2):
+                    if t_limit(stock, data, i + j):
+                        flag = True
+                        break
+                if flag:
                     continue
                 if data[-i].turnover() > 1.3 * data[-1].turnover():
                     if data[-i].high() * 1.03 > data[-1].close():
@@ -794,6 +804,13 @@ class levelF4(base_level):
                 if not t_limit(stock, data, i):
                     continue
                 if t_limit(stock, data, i - 1):
+                    continue
+                flag = False
+                for j in range(2):
+                    if t_limit(stock, data, i + j):
+                        flag = True
+                        break
+                if flag:
                     continue
                 nxt = data[-i]
                 if nxt.turnover() > 1.3 * data[-1].turnover():

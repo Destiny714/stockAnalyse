@@ -586,6 +586,9 @@ class levelF3(base_level):
         stock = self.stock
         index = self.index
         try:
+            for i in range(20):
+                if limit_height(stock, data, i) >= 3:
+                    return False
             limitCount = 0
             for i in range(8):
                 if t_limit(stock, data, i):

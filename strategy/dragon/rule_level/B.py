@@ -3,17 +3,14 @@
 # @Author  : Destiny_
 # @File    : B.py
 # @Software: PyCharm
-from models.initDataModel import dataModel
+from base.base_score_level_model import base_score_level
 
 
-class ruleB:
+class ruleB(base_score_level):
 
-    def __init__(self, height: int, black: int, b1: int, b2: int, details: dict[str, list[int]]):
-        self.b1 = b1
-        self.b2 = b2
-        self.black = black
-        self.height = height
-        self.details = details
+    def __init__(self, scoreLevelData: dict):
+        self.level = 'B'
+        super().__init__(self.level, scoreLevelData)
 
     def rule1(self):
         if self.height > 1:
@@ -27,10 +24,3 @@ class ruleB:
                 if 'A1' in self.details.keys():
                     if 1 in self.details['A1']:
                         return True
-
-    def filter(self):
-        rules = [_ for _ in self.__class__.__dict__.keys() if 'rule' in _]
-        for rule in rules:
-            func = getattr(self, rule)
-            if func():
-                return True

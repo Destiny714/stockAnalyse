@@ -4,17 +4,14 @@
 # @File    : F.py
 # @Software: PyCharm
 
-class ruleF:
+from base.base_score_level_model import base_score_level
 
-    def __init__(self, height: int, score: int, T1S: int, T1F: int, white: int, black: int, S: int, details: dict[str, list[int]]):
-        self.S = S
-        self.T1S = T1S
-        self.T1F = T1F
-        self.white = white
-        self.black = black
-        self.score = score
-        self.height = height
-        self.details = details
+
+class ruleF(base_score_level):
+
+    def __init__(self, scoreLevelData: dict):
+        self.level = 'F'
+        super().__init__(self.level, scoreLevelData)
 
     def rule1(self):
         if self.height > 1 and self.score < 0:
@@ -63,10 +60,3 @@ class ruleF:
                 if _ in self.details.keys():
                     return False
             return True
-
-    def filter(self):
-        rules = [_ for _ in self.__class__.__dict__.keys() if 'rule' in _]
-        for rule in rules:
-            func = getattr(self, rule)
-            if func():
-                return True

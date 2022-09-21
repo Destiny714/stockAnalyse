@@ -157,7 +157,7 @@ class levelF5(base_level):
                 if (d.buy_elg_vol() + d1.buy_elg_vol() - d.sell_elg_vol() - d1.sell_elg_vol()) / (
                         d.buy_elg_vol() + d1.buy_elg_vol()) < 0.3:
                     if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() < 0.4:
-                        matchTime = joinTimeToStamp(data[-1].date(), '09:45:00')
+                        matchTime = joinTimeToStamp(data[-1].date(), '09:50:00')
                         if data[-1].lastLimitTime() > matchTime:
                             return True
         except:

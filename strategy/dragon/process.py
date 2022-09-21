@@ -20,10 +20,10 @@ if __name__ == '__main__':
     log = log_util.log()
     sqlClient = database_api.Mysql()
     warnings.filterwarnings('ignore')
-    stocks = concurrent_util.initStock(needReload=False, extra=False)
+    stocks = concurrent_util.initStock(needReload=True, extra=False)
     tradeDays = sqlClient.selectTradeDate()
     stockDetails = sqlClient.selectAllStockDetail()
-    aimDates = ['20220919', '20220920']
+    aimDates = [lastTradeDay()]
 
 
     def process(aimDate):
@@ -107,31 +107,45 @@ if __name__ == '__main__':
                     T1S = virtualDict[stock]['s']
                     T1F = virtualDict[stock]['f']
                     _S = int(score - excelDict[stock]['score'] if excelDict != {} else -8888)
-                    AJ = round(data[-1].concentration() * 100, 1)
+                    aj = round(data[-1].concentration() * 100, 1)
                     CF = -8888 if (t0Day.buy_elg_vol() + t0Day.buy_lg_vol()) == 0 else round(
                         ((t0Day.buy_elg_vol() + t0Day.buy_lg_vol() - t0Day.sell_elg_vol() - t0Day.sell_lg_vol()) / (
                                 t0Day.buy_elg_vol() + t0Day.buy_lg_vol())) * 100, 1)
                     TF = -8888 if t0Day.buy_elg_vol() == 0 else round(
                         ((t0Day.buy_elg_vol() - t0Day.sell_elg_vol()) / t0Day.buy_elg_vol()) * 100, 1)
                     TP = -8888 if t0Day.volume() == 0 else round((t0Day.buy_elg_vol() / t0Day.volume()) * 100, 1)
+                    b1 = virtualDict[stock]['b1']
+                    b2 = virtualDict[stock]['b2']
+                    scoreLevelData = {
+                        'b1': b1,
+                        'b2': b2,
+                        'score': score,
+                        'height': height,
+                        'T1S': T1S,
+                        'T1F': T1F,
+                        'black': black_sum,
+                        'white': white_sum,
+                        'S': _S,
+                        'data': data,
+                        'aj': aj,
+                        'stock': stock,
+                        'details': details,
+                    }
                     level = 'B'
-                    if A.ruleA(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum, S=_S,
-                               data=data, aj=AJ, stock=stock, details=details).filter():
+                    if A.ruleA(scoreLevelData).filter():
                         level = 'A'
-                    if S.ruleS(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum, S=_S,
-                               data=data, aj=AJ, stock=stock, details=details).filter():
+                    if S.ruleS(scoreLevelData).filter():
                         level = 'S'
-                    if F.ruleF(score=score, height=height, T1S=T1S, T1F=T1F, black=black_sum, white=white_sum,
-                               S=_S, details=details).filter():
+                    if F.ruleF(scoreLevelData).filter():
                         level = 'F'
-                    # if B.ruleB(height=height, black=black, b1=virtualDict[stock]['b1'], b2=virtualDict[stock]['b2']):
-                    #     level = 'B'
+                    if B.ruleB(scoreLevelData).filter():
+                        level = 'B'
                     result = {
                         'code': stock,
                         'name': stockDetail.name(),
                         'industry': stockDetail.industry(),
                         'ptg_industry': f'{industryLimitCount}/{limitUpCount}',
-                        'AJ': AJ,
+                        'AJ': aj,
                         'CF': CF,
                         'TF': TF,
                         'TP': TP,
@@ -139,8 +153,8 @@ if __name__ == '__main__':
                         'height': height,
                         'white': white_sum,
                         'black': black_sum,
-                        'b1': virtualDict[stock]['b1'],
-                        'b2': virtualDict[stock]['b2'],
+                        'b1': b1,
+                        'b2': b2,
                         'score': score,
                         'T1S': T1S,
                         'T1F': T1F,
