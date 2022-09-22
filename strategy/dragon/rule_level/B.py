@@ -15,7 +15,7 @@ class ruleB(base_score_level):
     def rule1(self):
         if self.height > 1:
             if self.black - self.b1 > 3:
-                if self.b1 < 3 and self.b2 < 4:
+                if self.b1 < 2 and self.b2 < 3:
                     return True
 
     def rule2(self):

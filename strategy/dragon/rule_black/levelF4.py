@@ -221,11 +221,9 @@ class levelF4(base_level):
                 return False
             if not t_limit(stock, data):
                 return False
-            range5 = data[-6:-1]
-            range10 = data[-11:-1]
-            if data[-1].turnover() > 2 * (sum([_.turnover() for _ in range5]) / 5):
-                if data[-1].turnover() > 3 * (sum([_.turnover() for _ in range10]) / 10):
-                    return True
+            sunDates = [_ for _ in data[-11:-1] if _.close() > _.open()]
+            if data[-1].turnover() > 2 * (sum([_.turnover() for _ in sunDates]) / len(sunDates)):
+                return True
         except:
             pass
 
@@ -639,12 +637,7 @@ class levelF4(base_level):
                 return False
             badCount = 0
             for i in range(50):
-                j = i + 1
-                ma30 = [data[-_] for _ in range(j, j + 30)]
-                ma60 = [data[-_] for _ in range(j, j + 60)]
-                avg30 = sum(_.close() for _ in ma30) / len(ma30)
-                avg60 = sum(_.close() for _ in ma60) / len(ma60)
-                if avg30 < avg60:
+                if move_avg(data, 30, i) < move_avg(data, 60, i):
                     badCount += 1
                 if badCount >= 15:
                     return True
@@ -706,9 +699,9 @@ class levelF4(base_level):
         data = self.data
         count1 = 0
         count2 = 0
-        for i in range(30):
+        for i in range(20):
             ma60 = move_avg(data, 60, i)
-            if i in range(20) and count1 == 0:
+            if count1 == 0:
                 ma30 = move_avg(data, 30, i)
                 if ma30 < ma60:
                     count1 += 1
@@ -867,3 +860,19 @@ class levelF4(base_level):
                     count += 1
             if count >= 2:
                 return True
+
+    def rule50(self):
+        data = self.data
+        stock = self.stock
+        try:
+            for i in range(3, 153):
+                if not t_limit(stock, data, i):
+                    continue
+                if t_limit(stock, data, i - 1):
+                    continue
+                nxt = data[-i]
+                afterDates = [data[-j - 1] for j in range(1, i)]
+                if nxt.high() > max([_.close() for _ in afterDates]):
+                    return True
+        except:
+            pass

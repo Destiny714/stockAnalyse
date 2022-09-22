@@ -590,16 +590,13 @@ class levelF3(base_level):
                 if limit_height(stock, data, i) >= 3:
                     return False
             limitCount = 0
-            for i in range(8):
-                if t_limit(stock, data, i):
-                    limitCount += 1
-            if limitCount >= 2:
-                return False
             plus = 1
             minus = 1
             plusVol = 0
             minusVol = 0
-            for i in range(8):
+            for i in range(11):
+                if t_limit(stock, data, i):
+                    limitCount += 1
                 if t_low_pct(index, i) <= -0.02:
                     continue
                 d = data[-i - 1]
@@ -609,6 +606,8 @@ class levelF3(base_level):
                 else:
                     minusVol += data[-i - 1].volume()
                     minus += 1
+            if limitCount >= 2:
+                return False
             return plusVol / plus < minusVol / minus
         except:
             pass
@@ -618,14 +617,11 @@ class levelF3(base_level):
         stock = self.stock
         index = self.index
         limitCount = 0
-        for i in range(8):
-            if t_limit(stock, data, i):
-                limitCount += 1
-        if limitCount >= 2:
-            return False
         plus = 0
         minus = 0
-        for i in range(8):
+        for i in range(11):
+            if t_limit(stock, data, i):
+                limitCount += 1
             if t_low_pct(index, i) <= -0.02:
                 continue
             d = data[-i - 1]
@@ -633,4 +629,6 @@ class levelF3(base_level):
                 plus += 1
             else:
                 minus += 1
+        if limitCount >= 2:
+            return False
         return plus < minus

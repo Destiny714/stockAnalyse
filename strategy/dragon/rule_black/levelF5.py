@@ -147,6 +147,9 @@ class levelF5(base_level):
     def rule10(self):
         data = self.data
         try:
+            for i in range(2):
+                if t_close_pct(data, i) <= 0.05:
+                    return False
             if not t_limit(self.stock, data):
                 return False
             if t_high_pct(data, 1) <= 0.05:

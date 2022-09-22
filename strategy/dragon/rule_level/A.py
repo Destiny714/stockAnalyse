@@ -111,6 +111,6 @@ class ruleA(base_score_level):
 
     def rule16(self):
         if self.height > 0 and self.black < 3:
-            if self.b1 < 2 and self.b2 < 2:
+            if self.b1 < 2 and self.b2 < 3:
                 if self.white > 25:
                     return True
