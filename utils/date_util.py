@@ -73,8 +73,12 @@ def timeDelta(start: str, end: str):
     return (delta.days * 86400).__abs__()
 
 
-def getMinute(stamp: int):
-    res = datetime.datetime.fromtimestamp(stamp)
+def getMinute(stamp: int = None, timeStr: str = None):
+    assert (stamp is not None or timeStr is not None)
+    if stamp:
+        res = datetime.datetime.fromtimestamp(stamp)
+    else:
+        res = datetime.datetime.strptime(timeStr, '%Y-%m-%d %H:%M:%S')
     hour = res.hour
     minute = res.minute
     return f'{0 if hour < 10 else ""}{hour}{0 if minute < 10 else ""}{minute}'

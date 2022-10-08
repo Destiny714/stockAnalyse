@@ -25,10 +25,10 @@ class level4(base_level):
             range1to20 = data[-21:-1]
             range1to30 = data[-31:-1]
             range1to60 = data[-61:-1]
-            if sum([_.close() for _ in range1to5]) / 5 > sum([_.close() for _ in range1to20]) / 20:
-                if sum([_.close() for _ in range1to20]) / 20 > sum([_.close() for _ in range1to60]) / 60:
-                    if sum([_.close() for _ in range1to30]) / 30 > sum([_.close() for _ in range1to60]) / 60:
-                        if data[-1].close() > sum([_.close() for _ in range1to10]) / 10:
+            if sum([_.close for _ in range1to5]) / 5 > sum([_.close for _ in range1to20]) / 20:
+                if sum([_.close for _ in range1to20]) / 20 > sum([_.close for _ in range1to60]) / 60:
+                    if sum([_.close for _ in range1to30]) / 30 > sum([_.close for _ in range1to60]) / 60:
+                        if data[-1].close > sum([_.close for _ in range1to10]) / 10:
                             return True
         except:
             return False
@@ -47,7 +47,7 @@ class level4(base_level):
                 if not (0.08 < t_open_pct(data, i) < limit(stock) / 100):
                     continue
                 range220 = data[-221 - i:-1 - i]
-                if data[-i - 1].close() > max([_.high() for _ in range220]):
+                if data[-i - 1].close > max([_.high for _ in range220]):
                     return True
         except:
             return False
@@ -59,10 +59,10 @@ class level4(base_level):
             return False
         if not t_limit(stock, data, 1):
             return False
-        if data[-1].turnover() <= data[-2].turnover():
+        if data[-1].turnover <= data[-2].turnover:
             return False
-        if data[-1].turnover() < 1.5 * data[-2].turnover():
-            if data[-2].turnover() < 0.7 * data[-3].turnover():
+        if data[-1].turnover < 1.5 * data[-2].turnover:
+            if data[-2].turnover < 0.7 * data[-3].turnover:
                 return True
 
     def rule4(self):
@@ -82,7 +82,7 @@ class level4(base_level):
             return False
         if t_low_pct(data) < 0.035:
             return False
-        if data[-1].turnover() < 0.8 * data[-2].turnover():
+        if data[-1].turnover < 0.8 * data[-2].turnover:
             return True
 
     def rule5(self):
@@ -103,7 +103,7 @@ class level4(base_level):
             return False
         if tLowPct <= 0.04:
             return False
-        if data[-1].turnover() < 20:
+        if data[-1].turnover < 20:
             return True
 
     def rule6(self):
@@ -117,12 +117,12 @@ class level4(base_level):
             return False
         if not (0.06 < t_open_pct(data) < 0.09):
             return False
-        if not (data[-1].turnover() < 0.7 * data[-2].turnover()):
+        if not (data[-1].turnover < 0.7 * data[-2].turnover):
             return False
         if t_low_pct(data) <= 0.005:
             return False
         range120 = data[-121:-1]
-        if data[-1].close() > max([_.high() for _ in range120]):
+        if data[-1].close > max([_.high for _ in range120]):
             return True
 
     def rule7(self):
@@ -134,14 +134,14 @@ class level4(base_level):
             return False
         if model_1(stock, data):
             return False
-        if 4 < data[-1].close() < 12:
-            if 3 < data[-1].turnover() < 9:
+        if 4 < data[-1].close < 12:
+            if 3 < data[-1].turnover < 9:
                 return True
 
     def rule8(self):
         data = self.data
-        if data[-1].concentration() < 0.115:
-            if data[-1].concentration() < data[-2].concentration():
+        if data[-1].concentration < 0.115:
+            if data[-1].concentration < data[-2].concentration:
                 return True
 
     def rule9(self):
@@ -149,9 +149,9 @@ class level4(base_level):
         stock = self.stock
         if model_1(stock, data):
             return False
-        if data[-1].turnover() <= 1.5 * data[-2].turnover():
+        if data[-1].turnover <= 1.5 * data[-2].turnover:
             range10 = data[-11:-1]
-            if data[-1].turnover() < 0.25 * max([_.turnover() for _ in range10]):
+            if data[-1].turnover < 0.25 * max([_.turnover for _ in range10]):
                 return True
 
     def rule10(self):
@@ -165,7 +165,7 @@ class level4(base_level):
                     continue
                 if t_open_pct(data, i - 1) <= 0.045:
                     continue
-                if data[-i].timeVol(minute='0930') > data[-i - 1].volume() / 12:
+                if data[-i].timeVol(minute='0930') > data[-i - 1].volume / 12:
                     return True
         except:
             return False
@@ -181,12 +181,12 @@ class level4(base_level):
                     return False
                 if model_1(stock, data, i - 1):
                     return False
-                if data[-i].open() == data[-i].close():
+                if data[-i].open == data[-i].close:
                     if t_close_pct(data, i - 1) > limit(stock) / 100:
                         if t_low_pct(data, i - 1) > 0.075:
                             count1 += 1
                 d = data[-i]
-                if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.5:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.5:
                     count2 += 1
                 if count1 == 1 and count2 >= 2:
                     return True
@@ -202,7 +202,7 @@ class level4(base_level):
             return False
         if not t_limit(stock, data, 2):
             return False
-        if data[-2].turnover() > 4 * data[-3].turnover():
+        if data[-2].turnover > 4 * data[-3].turnover:
             if t_open_pct(data, 0) > 1.04:
                 return True
 
@@ -215,13 +215,13 @@ class level4(base_level):
             return False
         if not t_limit(stock, data, 2):
             return False
-        if not (data[-3].turnover() < data[-2].turnover()):
+        if not (data[-3].turnover < data[-2].turnover):
             return False
-        if not (data[-1].turnover() < data[-2].turnover()):
+        if not (data[-1].turnover < data[-2].turnover):
             return False
         if t_open_pct(data, 2) > 0.035:
             if t_open_pct(data) > 0.01:
-                if data[-3].turnover() < data[-4].turnover() < data[-2].turnover():
+                if data[-3].turnover < data[-4].turnover < data[-2].turnover:
                     return True
 
     def rule14(self):
@@ -232,11 +232,11 @@ class level4(base_level):
                 return False
             if not t_limit(stock, data, 1):
                 return False
-            limitTime = data[-2].firstLimitTime()
-            limitMinute = getMinute(limitTime)
+            limitTime = data[-2].firstLimitTime
+            limitMinute = getMinute(stamp=limitTime)
             limitMinuteLast = lastMinute(limitMinute)
             if data[-2].timeVol(minute=limitMinute) > data[-2].timeVol(minute=limitMinuteLast) * 3:
-                if data[-2].limitOpenTime() == 0:
+                if data[-2].limitOpenTime == 0:
                     return True
         except:
             return False
@@ -249,12 +249,12 @@ class level4(base_level):
                 return False
             if not t_limit(stock, data):
                 return False
-            limitTime = data[-1].firstLimitTime()
-            limitMinute = getMinute(limitTime)
+            limitTime = data[-1].firstLimitTime
+            limitMinute = getMinute(stamp=limitTime)
             limitMinuteLast = lastMinute(limitMinute)
             if data[-1].timeVol(minute=limitMinute) <= data[-1].timeVol(minute=limitMinuteLast) * 10:
                 return False
-            if data[-1].timeVol(timeStamp=data[-1].firstLimitTime()) > 100000:
+            if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) > 100000:
                 return True
         except:
             return False
@@ -272,7 +272,7 @@ class level4(base_level):
                     continue
                 if 0.07 < t_open_pct(data, i - 1) < limit(stock) / 100:
                     range120 = data[-i - 120:-i]
-                    if data[-i].close() > max([_.high() for _ in range120]):
+                    if data[-i].close > max([_.high for _ in range120]):
                         return True
         except:
             return False
@@ -285,7 +285,7 @@ class level4(base_level):
         for i in range(3):
             if not t_limit(stock, data, i):
                 return False
-        rank = rankLimitTimeByX('limitTime-height', data[-1].date(), self.limitData, eliminateModel1=True)
+        rank = rankLimitTimeByX('limitTime-height', data[-1].date, self.limitData, eliminateModel1=True)
         if 3 not in rank.keys():
             return False
         if rank[3][0] == stock:
@@ -315,7 +315,7 @@ class level4(base_level):
                         if t_low_pct(data, i - 1) > -0.01:
                             count1 += 1
                 d = data[-i]
-                if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.4:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.4:
                     count3 += 1
                 if count1 >= 3 and count2 >= 2 and count3 >= 2:
                     return True
@@ -334,14 +334,14 @@ class level4(base_level):
                 return False
             if model_1(stock, data):
                 return False
-            if data[-1].turnover() >= 0.7 * data[-2].turnover():
+            if data[-1].turnover >= 0.7 * data[-2].turnover:
                 return False
             if t_open_pct(data) <= 0.065:
                 return False
             if t_low_pct(data) <= 0.05:
                 return False
             range90 = data[-91:-1]
-            if data[-1].close() > max([_.high() for _ in range90]):
+            if data[-1].close > max([_.high for _ in range90]):
                 return True
         except:
             return False
@@ -349,8 +349,8 @@ class level4(base_level):
     def rule21(self):
         data = self.data
         if t_close_pct(data) > 0.06:
-            if data[-1].concentration() < 0.11:
-                if data[-1].concentration() - data[-2].concentration() < 0.015:
+            if data[-1].concentration < 0.12:
+                if data[-1].concentration - data[-2].concentration < 0.015:
                     return True
 
     def rule22(self):
@@ -360,7 +360,7 @@ class level4(base_level):
             count = 0
             for i in range(3):
                 d = data[-i - 1]
-                if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.4:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.4:
                     count += 1
             if count < 2:
                 return False
@@ -368,9 +368,9 @@ class level4(base_level):
                 return False
             if not t_limit(stock, data, 1):
                 return False
-            if data[-3].turnover() > data[-2].turnover() > data[-1].turnover():
-                if data[-1].lastLimitTime() < data[-2].lastLimitTime() + timeDelta(data[-2].date(), data[-1].date()):
-                    if data[-2].lastLimitTime() < data[-3].lastLimitTime() + timeDelta(data[-3].date(), data[-2].date()):
+            if data[-3].turnover > data[-2].turnover > data[-1].turnover:
+                if data[-1].lastLimitTime < data[-2].lastLimitTime + timeDelta(data[-2].date, data[-1].date):
+                    if data[-2].lastLimitTime < data[-3].lastLimitTime + timeDelta(data[-3].date, data[-2].date):
                         return True
         except:
             pass
@@ -380,8 +380,8 @@ class level4(base_level):
         stock = self.stock
         if not model_t(stock, data):
             return False
-        if data[-1].concentration() - data[-2].concentration() < 0:
-            if data[-1].concentration() < 0.2:
+        if data[-1].concentration - data[-2].concentration < 0:
+            if data[-1].concentration < 0.18:
                 return True
 
     def rule24(self):
@@ -391,14 +391,14 @@ class level4(base_level):
             count = 0
             count1 = 0
             for i in range(1, 5):
-                if data[-i].pctChange() <= limit(stock):
+                if data[-i].pctChange <= limit(stock):
                     return False
                 if t_low_pct(data, i - 1) <= -0.01:
                     return False
                 if t_open_pct(data, i - 1) > 0.045:
                     count += 1
                 d = data[-i]
-                if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.4:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.4:
                     count1 += 1
                 if count >= 2 and count1 >= 3:
                     return True
@@ -411,21 +411,21 @@ class level4(base_level):
         for i in range(2):
             if not t_limit(stock, data, i):
                 return False
-            if data[-i - 1].limitOpenTime() >= 2:
+            if data[-i - 1].limitOpenTime >= 2:
                 return False
-        if data[-1].concentration() - data[-2].concentration() < 0.02:
+        if data[-1].concentration - data[-2].concentration < 0.015:
             return True
 
     def rule26(self):
         data = self.data
         try:
-            if data[-1].close() >= data[-1].his_high() / 3:
+            if data[-1].close >= data[-1].his_high / 3:
                 return False
             for i in range(20):
                 j = i + 1
                 ma = [data[-_] for _ in range(j, j + 30)]
-                avg = sum(_.close() for _ in ma) / len(ma)
-                if data[-i - 1].close() <= avg:
+                avg = sum(_.close for _ in ma) / len(ma)
+                if data[-i - 1].close <= avg:
                     return False
             return True
         except:
@@ -440,7 +440,7 @@ class level4(base_level):
                 if t_open_pct(data, i - 1) > 0:
                     if t_open_pct(self.index, i - 1) < -0.02:
                         d = data[-1]
-                        if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.3:
+                        if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.3:
                             return True
         except:
             pass
@@ -453,10 +453,10 @@ class level4(base_level):
             for i in range(1, 5):
                 if not t_limit(stock, data, i - 1):
                     return False
-                if data[-i].limitOpenTime() < 2:
+                if data[-i].limitOpenTime < 2:
                     count += 1
             d = data[-1]
-            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() <= 0.3:
+            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol <= 0.3:
                 return False
             return count >= 3
         except:
@@ -470,9 +470,9 @@ class level4(base_level):
                 return False
             if model_1(stock, data):
                 return False
-            if data[-1].timeVol(timeStamp=data[-1].firstLimitTime()) > 120000:
+            if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) > 120000:
                 d = data[-1]
-                if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.4:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.4:
                     return True
         except:
             pass
@@ -488,9 +488,9 @@ class level4(base_level):
                 ma20 = [data[-_] for _ in range(j, j + 20)]
                 ma30 = [data[-_] for _ in range(j, j + 30)]
                 ma60 = [data[-_] for _ in range(j, j + 60)]
-                avg20 = sum(_.close() for _ in ma20) / len(ma20)
-                avg30 = sum(_.close() for _ in ma30) / len(ma30)
-                avg60 = sum(_.close() for _ in ma60) / len(ma60)
+                avg20 = sum(_.close for _ in ma20) / len(ma20)
+                avg30 = sum(_.close for _ in ma30) / len(ma30)
+                avg60 = sum(_.close for _ in ma60) / len(ma60)
                 if not (avg30 > avg60):
                     return False
                 if not (avg20 > avg30):
@@ -508,7 +508,7 @@ class level4(base_level):
                     continue
                 d = data[-i - 1]
                 range20 = data[-i - 21:-i - 1]
-                if d.close() <= max([_.close() for _ in range20]):
+                if d.close <= max([_.close for _ in range20]):
                     continue
                 if t_limit(stock, data, i - 1):
                     continue
@@ -520,7 +520,7 @@ class level4(base_level):
                 for _i in range(-i, 0):
                     j = _i + 1
                     _range20 = [data[_] for _ in range(j - 20, j)]
-                    if data[_i].close() <= sum([_.close() for _ in _range20]) / len(_range20):
+                    if data[_i].close <= sum([_.close for _ in _range20]) / len(_range20):
                         flag = False
                         break
                 if flag:
@@ -535,8 +535,8 @@ class level4(base_level):
             return False
         if model_1(stock, data):
             return True
-        rank = rankLimitTimeByX('limitTime-industry', data[-1].date(), self.limitData, eliminateModel1=True)[self.industry]
-        if rank[0] == stock:
+        rank = rankLimitTimeByX('limitTime-industry', data[-1].date, self.limitData, eliminateModel1=True)[self.industry]
+        if stock in rank[:2]:
             return True
 
     def rule33(self):
@@ -549,11 +549,11 @@ class level4(base_level):
                 return False
             if not t_limit(stock, data):
                 return False
-            matchTime0 = joinTimeToStamp(data[-1].date(), '09:45:00')
-            matchTime1 = joinTimeToStamp(data[-2].date(), '09:45:00')
-            if data[-1].firstLimitTime() < matchTime0 and data[-2].firstLimitTime() > matchTime1:
+            matchTime0 = joinTimeToStamp(data[-1].date, '09:45:00')
+            matchTime1 = joinTimeToStamp(data[-2].date, '09:45:00')
+            if data[-1].firstLimitTime < matchTime0 and data[-2].firstLimitTime > matchTime1:
                 d = data[-1]
-                if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.3:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.3:
                     return True
         except:
             pass
@@ -562,81 +562,47 @@ class level4(base_level):
         data = self.data
         stock = self.stock
         try:
-            if data[-1].limitOpenTime() >= 1:
+            if data[-1].limitOpenTime >= 1:
                 return False
             if not t_limit(stock, data, 1):
                 return False
             if not t_limit(stock, data):
                 return False
-            if data[-2].turnover() <= data[-3].turnover():
+            if data[-2].turnover <= data[-3].turnover:
                 return False
-            if data[-2].turnover() <= data[-1].turnover():
+            if data[-2].turnover <= data[-1].turnover:
                 return False
-            matchTime = joinTimeToStamp(data[-1].date(), '09:55:00')
-            if data[-1].lastLimitTime() >= data[-2].lastLimitTime() + timeDelta(data[-2].date(), data[-1].date()):
+            matchTime = joinTimeToStamp(data[-1].date, '09:55:00')
+            if data[-1].lastLimitTime >= data[-2].lastLimitTime + timeDelta(data[-2].date, data[-1].date):
                 return False
-            if data[-1].lastLimitTime() < matchTime:
+            if data[-1].lastLimitTime < matchTime:
                 d = data[-1]
-                if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() > 0.3:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.3:
                     return True
         except:
             pass
 
-    def rule35(self):
+    def rule37(self):
         data = self.data
-        for i in range(1, 31):
-            if limit_height(self.stock, data, i) >= 3:
-                return False
-        for i in range(30, 121):
-            d = data[-i - 1]
-            if t_close_pct(data, i) <= 0.05:
-                continue
-            ma20 = move_avg(data, 20, i)
-            ma30 = move_avg(data, 30, i)
-            ma60 = move_avg(data, 60, i)
-            if d.low() >= ma20:
-                continue
-            if d.low() >= ma30:
-                continue
-            if d.low() >= ma60:
-                continue
-            if d.high() <= ma20:
-                continue
-            if d.high() <= ma30:
-                continue
-            if d.high() <= ma60:
-                continue
-            afterData = [_ for _ in range(30, i) if data[-_ - 1].close() < d.low()]
-            if len(afterData) <= 3:
-                return True
+        if data[-1].concentration < data[-2].concentration < data[-3].concentration > data[-4].concentration:
+            return True
 
-    def rule36(self):
+    def rule38(self):
         data = self.data
-        for i in range(1, 31):
-            if limit_height(self.stock, data, i) >= 3:
+        stock = self.stock
+        for i in range(2):
+            if not t_limit(stock, data, i):
                 return False
-        for i in range(30, 121):
-            d = data[-i - 1]
-            if t_close_pct(data, i) <= 0.05:
-                continue
+        if (data[-1].concentration - data[-2].concentration) / data[-2].concentration < 0.1:
+            return True
+
+    def rule39(self):
+        data = self.data
+        for i in range(10):
             ma10 = move_avg(data, 10, i)
             ma20 = move_avg(data, 20, i)
             ma30 = move_avg(data, 30, i)
             ma60 = move_avg(data, 60, i)
-            if ma30 <= ma60:
-                continue
-            if d.low() >= ma20:
-                continue
-            if d.low() >= ma30:
-                continue
-            if d.low() >= ma60:
-                continue
-            if d.close() <= ma10:
-                continue
-            if d.close() <= ma20:
-                continue
-            if d.close() <= ma30:
-                continue
-            afterData = [_ for _ in range(30, i) if data[-_ - 1].close() < d.low()]
-            if len(afterData) <= 3:
-                return True
+            if not (ma10 > ma20 > ma30 > ma60):
+                return False
+        return True

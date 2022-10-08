@@ -4,6 +4,7 @@
 # @File    : tool_box.py
 # @Software: PyCharm
 
+import os
 import time
 import requests
 from typing import List
@@ -14,27 +15,25 @@ def timeCount(func):
     def wrapper(*args, **kwargs):
         start = time.time()
         res = func(*args, **kwargs)
-        print(f'use {int((time.time() - start) * 1000)}ms')
+        print(f'use {(time.time() - start) * 1000}ms')
         return res
 
     return wrapper
 
 
-def thread_pool_executor(func, iterable, thread_num=20):
+def thread_pool_executor(func, iterable, thread_num=20, *args, **kwargs):
     """多线程"""
     executor = ThreadPoolExecutor(max_workers=thread_num)
-    tasks = [executor.submit(func, _) for _ in iterable]
-    for task in as_completed(tasks):
-        task.result()
+    tasks = [executor.submit(func, _, *args, **kwargs) for _ in iterable]
+    return [task.result() for task in as_completed(tasks)]
 
 
-def process_pool_executor(func, iterable, process_num=10):
+def process_pool_executor(func, iterable, process_num=10, *args, **kwargs):
     """多进程"""
-    assert process_num <= 10
+    assert process_num <= os.cpu_count() * 2, '进程数超出'
     executor = ProcessPoolExecutor(max_workers=process_num)
-    tasks = [executor.submit(func, _) for _ in iterable]
-    for task in as_completed(tasks):
-        task.result()
+    tasks = [executor.submit(func, _, *args, **kwargs) for _ in iterable]
+    return [task.result() for task in as_completed(tasks)]
 
 
 def errorHandler(e: Exception) -> str:
@@ -48,18 +47,17 @@ def errorHandler(e: Exception) -> str:
     return f'< line {errLine} , in {errFile} >'
 
 
-def cutList(full_list: list, piece: int) -> List[list]:
+def cutList(full_list: list, piece_len: int) -> List[list]:
     """切割大列表 --> list[小列表]"""
     cut_list = []
-    extra_num = len(full_list) % piece
+    extra_num = len(full_list) % piece_len
+    extra = []
+    full = full_list
     if extra_num != 0:
         extra = full_list[-extra_num:]
         full = full_list[:-extra_num]
-    else:
-        extra = []
-        full = full_list
-    for i in range(len(full) // piece):
-        small_piece = full[piece * i:piece * (i + 1)]
+    for i in range(len(full) // piece_len):
+        small_piece = full[piece_len * i:piece_len * (i + 1)]
         cut_list.append(small_piece)
     if extra:
         cut_list.append(extra)

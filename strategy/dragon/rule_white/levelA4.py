@@ -18,8 +18,8 @@ class levelA4(base_level):
         try:
             d1 = data[-1]
             d2 = data[-2]
-            if (d2.buy_elg_vol() + d1.buy_elg_vol() - d2.sell_elg_vol() - d1.sell_elg_vol()) / (
-                    d2.buy_elg_vol() + d1.buy_elg_vol()) > 0.4:
+            if (d2.buy_elg_vol + d1.buy_elg_vol - d2.sell_elg_vol - d1.sell_elg_vol) / (
+                    d2.buy_elg_vol + d1.buy_elg_vol) > 0.4:
                 return True
         except:
             pass
@@ -30,8 +30,8 @@ class levelA4(base_level):
             d0 = data[-1]
             d1 = data[-2]
             d2 = data[-3]
-            if (d2.buy_elg_vol() + d1.buy_elg_vol() + d0.buy_elg_vol() - d0.sell_elg_vol() - d1.sell_elg_vol() - d2.sell_elg_vol()) / (
-                    d0.buy_elg_vol() + d1.buy_elg_vol() + d2.buy_elg_vol()) > 0.4:
+            if (d2.buy_elg_vol + d1.buy_elg_vol + d0.buy_elg_vol - d0.sell_elg_vol - d1.sell_elg_vol - d2.sell_elg_vol) / (
+                    d0.buy_elg_vol + d1.buy_elg_vol + d2.buy_elg_vol) > 0.4:
                 return True
         except:
             pass
@@ -42,9 +42,9 @@ class levelA4(base_level):
             d0 = data[-1]
             d1 = data[-2]
             d2 = data[-3]
-            if (d2.buy_elg_vol() + d1.buy_elg_vol() - d2.sell_elg_vol() - d1.sell_elg_vol()) / (
-                    d2.buy_elg_vol() + d1.buy_elg_vol()) > 0.6:
-                if (d0.buy_elg_vol() - d0.sell_elg_vol()) / d0.buy_elg_vol() > 0:
+            if (d2.buy_elg_vol + d1.buy_elg_vol - d2.sell_elg_vol - d1.sell_elg_vol) / (
+                    d2.buy_elg_vol + d1.buy_elg_vol) > 0.6:
+                if (d0.buy_elg_vol - d0.sell_elg_vol) / d0.buy_elg_vol > 0:
                     return True
         except:
             pass
@@ -55,9 +55,9 @@ class levelA4(base_level):
             d0 = data[-1]
             d1 = data[-2]
             d2 = data[-3]
-            if (d2.buy_elg_vol() + d1.buy_elg_vol() - d2.sell_elg_vol() - d1.sell_elg_vol()) / (
-                    d2.buy_elg_vol() + d1.buy_elg_vol()) > 0.7:
-                if (d0.buy_elg_vol() - d0.sell_elg_vol()) / d0.buy_elg_vol() > -0.1:
+            if (d2.buy_elg_vol + d1.buy_elg_vol - d2.sell_elg_vol - d1.sell_elg_vol) / (
+                    d2.buy_elg_vol + d1.buy_elg_vol) > 0.7:
+                if (d0.buy_elg_vol - d0.sell_elg_vol) / d0.buy_elg_vol > -0.1:
                     return True
         except:
             pass
@@ -68,9 +68,9 @@ class levelA4(base_level):
             d0 = data[-1]
             d1 = data[-2]
             d2 = data[-3]
-            if (d2.buy_elg_vol() + d1.buy_elg_vol() - d2.sell_elg_vol() - d1.sell_elg_vol()) / (
-                    d2.buy_elg_vol() + d1.buy_elg_vol()) > 0.8:
-                if (d0.buy_elg_vol() - d0.sell_elg_vol()) / d0.buy_elg_vol() > -0.2:
+            if (d2.buy_elg_vol + d1.buy_elg_vol - d2.sell_elg_vol - d1.sell_elg_vol) / (
+                    d2.buy_elg_vol + d1.buy_elg_vol) > 0.8:
+                if (d0.buy_elg_vol - d0.sell_elg_vol) / d0.buy_elg_vol > -0.2:
                     return True
         except:
             pass

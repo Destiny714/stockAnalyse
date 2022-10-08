@@ -24,17 +24,17 @@ class levelA2(base_level):
                 if not t_limit(stock, data, i):
                     return False
             d = data[-1]
-            if d.buy_elg_vol() / d.volume() <= 0.4:
+            if d.buy_elg_vol / d.volume <= 0.4:
                 return False
-            if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.6:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.6:
                 return False
-            if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                    d.buy_elg_vol() + d.buy_lg_vol()) <= 0.4:
+            if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
+                    d.buy_elg_vol + d.buy_lg_vol) <= 0.4:
                 return False
-            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() <= 0.7:
+            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol <= 0.7:
                 return False
             d1 = data[-2]
-            if (d1.buy_elg_vol() - d1.sell_elg_vol()) / d1.buy_elg_vol() > 0.5:
+            if (d1.buy_elg_vol - d1.sell_elg_vol) / d1.buy_elg_vol > 0.7:
                 return True
         except:
             pass
@@ -49,17 +49,17 @@ class levelA2(base_level):
                 if not t_limit(stock, data, i):
                     return False
             d = data[-1]
-            if d.buy_elg_vol() / d.volume() <= 0.35:
+            if d.buy_elg_vol / d.volume <= 0.35:
                 return False
-            if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.55:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.55:
                 return False
-            if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                    d.buy_elg_vol() + d.buy_lg_vol()) <= 0.35:
+            if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
+                    d.buy_elg_vol + d.buy_lg_vol) <= 0.35:
                 return False
-            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() <= 0.6:
+            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol <= 0.6:
                 return False
             d1 = data[-2]
-            if (d1.buy_elg_vol() - d1.sell_elg_vol()) / d1.buy_elg_vol() > 0.45:
+            if (d1.buy_elg_vol - d1.sell_elg_vol) / d1.buy_elg_vol > 0.6:
                 return True
         except:
             pass
@@ -74,17 +74,17 @@ class levelA2(base_level):
                 if not t_limit(stock, data, i):
                     return False
             d = data[-1]
-            if d.buy_elg_vol() / d.volume() <= 0.35:
+            if d.buy_elg_vol / d.volume <= 0.35:
                 return False
-            if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.5:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.5:
                 return False
-            if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                    d.buy_elg_vol() + d.buy_lg_vol()) <= 0.3:
+            if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
+                    d.buy_elg_vol + d.buy_lg_vol) <= 0.3:
                 return False
-            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() <= 0.5:
+            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol <= 0.5:
                 return False
             d1 = data[-2]
-            if (d1.buy_elg_vol() - d1.sell_elg_vol()) / d1.buy_elg_vol() > 0.4:
+            if (d1.buy_elg_vol - d1.sell_elg_vol) / d1.buy_elg_vol > 0.5:
                 return True
         except:
             pass
@@ -99,17 +99,17 @@ class levelA2(base_level):
                 if not t_limit(stock, data, i):
                     return False
             d = data[-1]
-            if d.buy_elg_vol() / d.volume() <= 0.35:
+            if d.buy_elg_vol / d.volume <= 0.35:
                 return False
-            if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.45:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.45:
                 return False
-            if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                    d.buy_elg_vol() + d.buy_lg_vol()) <= 0.2:
+            if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
+                    d.buy_elg_vol + d.buy_lg_vol) <= 0.2:
                 return False
-            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() <= 0.4:
+            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol <= 0.4:
                 return False
             d1 = data[-2]
-            if (d1.buy_elg_vol() - d1.sell_elg_vol()) / d1.buy_elg_vol() > 0.35:
+            if (d1.buy_elg_vol - d1.sell_elg_vol) / d1.buy_elg_vol > 0.4:
                 return True
         except:
             pass
@@ -124,17 +124,17 @@ class levelA2(base_level):
                 if not t_limit(stock, data, i):
                     return False
             d = data[-1]
-            if d.buy_elg_vol() / d.volume() <= 0.35:
+            if d.buy_elg_vol / d.volume <= 0.35:
                 return False
-            if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.4:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.4:
                 return False
-            if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                    d.buy_elg_vol() + d.buy_lg_vol()) <= 0.15:
+            if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
+                    d.buy_elg_vol + d.buy_lg_vol) <= 0.15:
                 return False
-            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() <= 0.3:
+            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol <= 0.3:
                 return False
             d1 = data[-2]
-            if (d1.buy_elg_vol() - d1.sell_elg_vol()) / d1.buy_elg_vol() > 0.3:
+            if (d1.buy_elg_vol - d1.sell_elg_vol) / d1.buy_elg_vol > 0.35:
                 return True
         except:
             pass

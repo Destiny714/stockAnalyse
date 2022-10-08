@@ -3,6 +3,7 @@
 # @Author  : Destiny_
 # @File    : levelF3.py
 # @Software: PyCharm
+
 from utils.stockdata_util import *
 from base.base_level_model import base_level
 from models.stockDetailModel import stockDetailModel
@@ -20,23 +21,23 @@ class levelF3(base_level):
             return False
         if not model_1(stock, data, 1):
             return False
-        if data[-1].turnover() > 1.5 * data[-2].turnover():
+        if data[-1].turnover > 1.5 * data[-2].turnover:
             return True
 
     def rule2(self):
         data = self.data
         stock = self.stock
-        if data[-1].pctChange() <= limit(stock):
+        if data[-1].pctChange <= limit(stock):
             return False
-        if data[-2].pctChange() <= limit(stock):
+        if data[-2].pctChange <= limit(stock):
             return False
         if model_1(stock, data, 1):
             return False
         if t_low_pct(data) <= 0.06:
             return False
-        if data[-1].turnover() <= 1.5 * data[-2].turnover():
+        if data[-1].turnover <= 1.5 * data[-2].turnover:
             return False
-        if data[-1].firstLimitTime() > data[-2].firstLimitTime() + timeDelta(data[-2].date(), data[-1].date()):
+        if data[-1].firstLimitTime > data[-2].firstLimitTime + timeDelta(data[-2].date, data[-1].date):
             return True
 
     def rule3(self):
@@ -49,10 +50,10 @@ class levelF3(base_level):
                 if t_low_pct(data, i - 1) >= 0.06:
                     continue
                 range10 = data[-10 - i:-i]
-                if data[-i].volume() > 3 * max([_.volume() for _ in range10]):
+                if data[-i].volume > 3 * max([_.volume for _ in range10]):
                     d = data[-i]
-                    if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                            d.buy_elg_vol() + d.buy_lg_vol()) < 0.2:
+                    if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
+                            d.buy_elg_vol + d.buy_lg_vol) < 0.2:
                         return True
         except:
             pass
@@ -72,20 +73,20 @@ class levelF3(base_level):
     def rule5(self):
         data = self.data
         stock = self.stock
-        turnOver = data[-1].turnover() + 1
+        turnOver = data[-1].turnover + 1
         for i in range(1, 4):
             d = data[-i]
-            if d.pctChange() <= limit(stock):
+            if d.pctChange <= limit(stock):
                 return False
             if model_1(stock, data, i - 1):
                 return False
-            if d.turnover() < turnOver:
-                turnOver = d.turnover()
+            if d.turnover < turnOver:
+                turnOver = d.turnover
             else:
                 return False
-        if data[-1].firstLimitTime() <= data[-2].firstLimitTime() + timeDelta(data[-2].date(), data[-1].date()):
+        if data[-1].firstLimitTime <= data[-2].firstLimitTime + timeDelta(data[-2].date, data[-1].date):
             return False
-        if data[-2].firstLimitTime() <= data[-3].firstLimitTime() + date_util.timeDelta(data[-3].date(), data[-2].date()):
+        if data[-2].firstLimitTime <= data[-3].firstLimitTime + date_util.timeDelta(data[-3].date, data[-2].date):
             return False
         return True
 
@@ -97,15 +98,15 @@ class levelF3(base_level):
                 if t_low_pct(self.index, i - 1) <= -0.01:
                     continue
                 d = data[-i]
-                if d.open() != d.close():
+                if d.open != d.close:
                     continue
                 if t_close_pct(data, i - 1) <= limit(stock) / 100:
                     continue
                 if t_low_pct(data, i - 1) >= 0.06:
                     continue
-                if data[-i].limitOpenTime() > 2:
-                    if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                            d.buy_elg_vol() + d.buy_lg_vol()) < 0.2:
+                if data[-i].limitOpenTime > 2:
+                    if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
+                            d.buy_elg_vol + d.buy_lg_vol) < 0.2:
                         return True
         except:
             pass
@@ -113,7 +114,7 @@ class levelF3(base_level):
     def rule7(self):
         data = self.data
         stock = self.stock
-        if data[-4].pctChange() > limit(stock):
+        if data[-4].pctChange > limit(stock):
             return False
         if not model_1(stock, data, 2):
             return False
@@ -132,8 +133,8 @@ class levelF3(base_level):
         for i in range(3):
             if t_limit(stock, data, i + 1):
                 return False
-        if data[-2].close() > data[-3].close() > data[-4].close():
-            if data[-2].close() / data[-5].close() > 1.1:
+        if data[-2].close > data[-3].close > data[-4].close:
+            if data[-2].close / data[-5].close > 1.1:
                 return True
 
     def rule9(self):
@@ -147,10 +148,10 @@ class levelF3(base_level):
             return False
         if not t_limit(stock, data, 3):
             return False
-        if data[-2].turnover() > (1 / 3) * data[-3].turnover():
-            t2Time = data[-3].lastLimitTime()
-            t3Time = data[-4].lastLimitTime()
-            if t2Time > t3Time + timeDelta(data[-4].date(), data[-3].date()):
+        if data[-2].turnover > (1 / 3) * data[-3].turnover:
+            t2Time = data[-3].lastLimitTime
+            t3Time = data[-4].lastLimitTime
+            if t2Time > t3Time + timeDelta(data[-4].date, data[-3].date):
                 return True
 
     def rule10(self):
@@ -158,12 +159,12 @@ class levelF3(base_level):
         stock = self.stock
         count = 0
         for i in range(1, 4):
-            if data[-i].pctChange() <= limit(stock):
+            if data[-i].pctChange <= limit(stock):
                 return False
             if t_open_pct(data, i - 1) < 0.025:
                 count += 1
-        if count >= 2 and data[-1].turnover() > data[-2].turnover():
-            if data[-1].limitOpenTime() > 0:
+        if count >= 2 and data[-1].turnover > data[-2].turnover:
+            if data[-1].limitOpenTime > 0:
                 return True
 
     def rule11(self):
@@ -174,11 +175,11 @@ class levelF3(base_level):
                 return False
             if not t_limit(stock, data, 1):
                 return False
-            if data[-1].turnover() <= 1.8 * data[-2].turnover():
+            if data[-1].turnover <= 1.8 * data[-2].turnover:
                 return False
-            matchTime = joinTimeToStamp(data[-1].date(), '09:45:00')
-            if data[-1].firstLimitTime() > matchTime and data[-1].lastLimitTime() > matchTime:
-                if data[-1].timeVol(timeStamp=data[-1].firstLimitTime()) < 100000:
+            matchTime = joinTimeToStamp(data[-1].date, '09:45:00')
+            if data[-1].firstLimitTime > matchTime and data[-1].lastLimitTime > matchTime:
+                if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < 35000:
                     if t_low_pct(self.index) > -0.01:
                         return True
         except:
@@ -187,17 +188,17 @@ class levelF3(base_level):
     def rule12(self):
         data = self.data
         stock = self.stock
-        if data[-1].pctChange() <= limit(stock):
+        if data[-1].pctChange <= limit(stock):
             return False
-        if data[-2].pctChange() <= limit(stock):
+        if data[-2].pctChange <= limit(stock):
             return False
         if t_open_pct(data, 1) >= 0.03:
             return False
         if t_open_pct(data) <= 0.05:
             return False
-        if data[-1].turnover() <= 0.8 * data[-2].turnover():
+        if data[-1].turnover <= 0.8 * data[-2].turnover:
             return False
-        if data[-1].firstLimitTime() > data[-2].firstLimitTime() + timeDelta(data[-2].date(), data[-1].date()):
+        if data[-1].firstLimitTime > data[-2].firstLimitTime + timeDelta(data[-2].date, data[-1].date):
             return True
 
     def rule13(self):
@@ -211,18 +212,18 @@ class levelF3(base_level):
             return False
         if t_open_pct(data, 1) <= 0.05:
             return False
-        if data[-2].turnover() <= 0.8 * data[-3].turnover():
+        if data[-2].turnover <= 0.8 * data[-3].turnover:
             return False
-        if data[-2].lastLimitTime() <= data[-3].lastLimitTime() + timeDelta(data[-3].date(), data[-2].date()):
+        if data[-2].lastLimitTime <= data[-3].lastLimitTime + timeDelta(data[-3].date, data[-2].date):
             return False
-        if data[-2].firstLimitTime() > data[-3].firstLimitTime() + timeDelta(data[-3].date(), data[-2].date()):
+        if data[-2].firstLimitTime > data[-3].firstLimitTime + timeDelta(data[-3].date, data[-2].date):
             return True
 
     def rule14(self):
         data = self.data
         range20 = data[-20:]
         range30 = data[-30:]
-        if max([_.close() for _ in range20]) < sum([_.close() for _ in range30]) / 30:
+        if max([_.close for _ in range20]) < sum([_.close for _ in range30]) / 30:
             return True
 
     def rule15(self):
@@ -233,7 +234,7 @@ class levelF3(base_level):
                 return False
         if t_limit(stock, data, 1):
             return False
-        if data[-1].turnover() > max([_.turnover() for _ in data[-31:-1]]) * 1.8:
+        if data[-1].turnover > max([_.turnover for _ in data[-31:-1]]) * 1.8:
             return True
 
     def rule16(self):
@@ -246,9 +247,9 @@ class levelF3(base_level):
         if not t_limit(stock, data):
             return False
         range20 = data[-22:-2]
-        avgRate = (sum([_.turnover() for _ in range20]) / 20) * 5
-        if data[-1].turnover() > avgRate and data[-2].turnover() > avgRate:
-            if data[-1].turnover() > 1.8 * data[-2].turnover():
+        avgRate = (sum([_.turnover for _ in range20]) / 20) * 5
+        if data[-1].turnover > avgRate and data[-2].turnover > avgRate:
+            if data[-1].turnover > 1.8 * data[-2].turnover:
                 return True
 
     def rule17(self):
@@ -258,10 +259,10 @@ class levelF3(base_level):
                 if t_open_pct(data, i - 1) > 0.09 and t_low_pct(data, i - 1) < 0.03:
                     if t_low_pct(self.index, i - 1) > -0.01:
                         d = data[-i]
-                        if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() < 0.5 and d.buy_elg_vol() < d.sell_elg_vol():
-                            if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                                    d.buy_elg_vol() + d.buy_lg_vol()) < 0.2:
-                                if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() < 0.3:
+                        if (d.buy_elg_vol + d.buy_lg_vol) / d.volume < 0.5 and d.buy_elg_vol < d.sell_elg_vol:
+                            if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
+                                    d.buy_elg_vol + d.buy_lg_vol) < 0.2:
+                                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.3:
                                     return True
         except:
             pass
@@ -274,10 +275,10 @@ class levelF3(base_level):
                 return False
             if model_1(stock, data, 1):
                 return False
-            if data[-1].limitOpenTime() <= 3:
+            if data[-1].limitOpenTime <= 3:
                 return False
-            if data[-1].turnover() > 3 * data[-2].turnover():
-                if data[-1].timeVol(timeStamp=data[-1].firstLimitTime()) < 100000:
+            if data[-1].turnover > 3 * data[-2].turnover:
+                if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < 100000:
                     if t_low_pct(self.index) > -0.01:
                         return True
         except:
@@ -288,7 +289,7 @@ class levelF3(base_level):
         stock = self.stock
         count = 0
         for i in range(1, 4):
-            if data[-i].pctChange() < limit(stock):
+            if data[-i].pctChange < limit(stock):
                 return False
             if t_open_pct(data, i - 1) >= 0.035:
                 continue
@@ -304,16 +305,16 @@ class levelF3(base_level):
             for i in range(2):
                 if not t_limit(stock, data, i):
                     return False
-            if data[-1].limitOpenTime() <= 2:
+            if data[-1].limitOpenTime <= 2:
                 return False
-            matchTime = joinTimeToStamp(data[-1].date(), '09:45:00')
-            if data[-1].firstLimitTime() <= matchTime:
+            matchTime = joinTimeToStamp(data[-1].date, '09:45:00')
+            if data[-1].firstLimitTime <= matchTime:
                 return False
-            if data[-1].timeVol(timeStamp=data[-1].firstLimitTime()) >= 100000:
+            if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) >= 100000:
                 return False
             if t_low_pct(self.index) > -0.01:
                 d = data[-1]
-                if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() < 0.5 and d.buy_elg_vol() < d.sell_elg_vol():
+                if (d.buy_elg_vol + d.buy_lg_vol) / d.volume < 0.5 and d.buy_elg_vol < d.sell_elg_vol:
                     return True
         except:
             pass
@@ -324,16 +325,16 @@ class levelF3(base_level):
         if t_limit(stock, data, 2):
             return False
         d = data[-1]
-        if d.buy_elg_vol() / d.volume() >= 0.25:
+        if d.buy_elg_vol / d.volume >= 0.25:
             return False
         range1 = data[-3:]
         range2 = data[-6:-3]
-        if sum([_.turnover() for _ in range1]) < sum([_.turnover() for _ in range2]):
-            matchTime = joinTimeToStamp(data[-1].date(), '09:40:00')
-            if data[-1].firstLimitTime() < matchTime:
+        if sum([_.turnover for _ in range1]) < sum([_.turnover for _ in range2]):
+            matchTime = joinTimeToStamp(data[-1].date, '09:40:00')
+            if data[-1].firstLimitTime < matchTime:
                 range20 = data[-21:-1]
                 range30 = data[-31:-1]
-                if sum([_.close() for _ in range20]) / 20 < sum([_.close() for _ in range30]) / 30:
+                if sum([_.close for _ in range20]) / 20 < sum([_.close for _ in range30]) / 30:
                     return True
 
     def rule22(self):
@@ -341,7 +342,7 @@ class levelF3(base_level):
         try:
             for i in range(-661, -120):
                 range10 = data[i:i + 10]
-                if range10[-1].close() / range10[0].close() > 1.8:
+                if range10[-1].close / range10[0].close > 1.8:
                     return True
         except:
             return False
@@ -349,10 +350,10 @@ class levelF3(base_level):
     def rule23(self):
         data = self.data
         stock = self.stock
-        if data[-1].turnover() <= 0.5 * data[-2].turnover():
+        if data[-1].turnover <= 0.5 * data[-2].turnover:
             return False
-        matchTime = joinTimeToStamp(data[-1].date(), '09:45:00')
-        if data[-1].lastLimitTime() <= matchTime:
+        matchTime = joinTimeToStamp(data[-1].date, '09:45:00')
+        if data[-1].lastLimitTime <= matchTime:
             return False
         count = 0
         for i in range(5):
@@ -367,24 +368,24 @@ class levelF3(base_level):
         data = self.data
         stock = self.stock
         for i in range(2):
-            if not (data[-i - 1].limitOpenTime() > 1 and t_open_pct(data, i) > limit(stock) / 100):
+            if not (data[-i - 1].limitOpenTime > 1 and t_open_pct(data, i) > limit(stock) / 100):
                 return False
         return True
 
     def rule25(self):
         data = self.data
         stock = self.stock
-        if data[-1].turnover() <= 0.5 * data[-2].turnover():
+        if data[-1].turnover <= 0.5 * data[-2].turnover:
             return False
-        matchTime = joinTimeToStamp(data[-1].date(), '09:45:00')
-        if data[-1].lastLimitTime() <= matchTime:
+        matchTime = joinTimeToStamp(data[-1].date, '09:45:00')
+        if data[-1].lastLimitTime <= matchTime:
             return False
         flag: bool = False
         for i in range(5):
             if t_open_pct(data, i) - t_low_pct(data, i) > 0.05:
                 if t_high_pct(data, i) > limit(stock) / 100:
-                    matchTime = joinTimeToStamp(data[-i - 1].date(), '10:30:00')
-                    if data[-i - 1].lastLimitTime() > matchTime:
+                    matchTime = joinTimeToStamp(data[-i - 1].date, '10:30:00')
+                    if data[-i - 1].lastLimitTime > matchTime:
                         if flag:
                             return True
                         else:
@@ -397,7 +398,9 @@ class levelF3(base_level):
         for i in range(2):
             if not t_limit(stock, data, i + 1):
                 return False
-        if data[-2].limitOpenTime() <= 2:
+        if data[-2].limitOpenTime <= 2:
+            return False
+        if data[-3].turnover <= data[-4].turnover:
             return False
         if t_low_pct(self.index, 1) > -0.01:
             return True
@@ -409,17 +412,17 @@ class levelF3(base_level):
             if not t_limit(stock, data):
                 return False
             d = data[-1]
-            if d.buy_elg_vol() / d.volume() >= 0.45:
+            if d.buy_elg_vol / d.volume >= 0.45:
                 return False
-            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() >= 0.6:
+            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol >= 0.6:
                 return False
             flag = False
             for i in range(30):
                 j = i + 1
                 ma30 = [data[-_] for _ in range(j, j + 30)]
                 ma60 = [data[-_] for _ in range(j, j + 60)]
-                avg30 = sum(_.close() for _ in ma30) / len(ma30)
-                avg60 = sum(_.close() for _ in ma60) / len(ma60)
+                avg30 = sum(_.close for _ in ma30) / len(ma30)
+                avg60 = sum(_.close for _ in ma60) / len(ma60)
                 if avg30 < avg60:
                     flag = True
                     break
@@ -430,8 +433,8 @@ class levelF3(base_level):
                     return False
             count = 0
             range90 = data[-90:]
-            highPrice = max([_.high() for _ in range90])
-            if data[-1].close() >= highPrice:
+            highPrice = max([_.high for _ in range90])
+            if data[-1].close >= highPrice:
                 return False
             for i in range(3, 93):
                 if not t_limit(stock, data, i):
@@ -471,8 +474,8 @@ class levelF3(base_level):
             if not t_limit(stock, data):
                 return False
             d = data[-1]
-            if d.buy_elg_vol() / d.volume() < 0.3:
-                if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() < 0.35:
+            if d.buy_elg_vol / d.volume < 0.3:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.35:
                     return True
         except:
             pass
@@ -484,7 +487,7 @@ class levelF3(base_level):
             return False
         if not t_limit(stock, data):
             return False
-        if data[-1].concentration() - data[-2].concentration() > 2:
+        if data[-1].concentration - data[-2].concentration > 2:
             return True
 
     def rule31(self):
@@ -495,21 +498,21 @@ class levelF3(base_level):
         for i in range(2):
             if not t_limit(stock, data, i):
                 return False
-        if data[-1].concentration() - data[-2].concentration() > 3.5:
+        if data[-1].concentration - data[-2].concentration > 3.5:
             return True
 
     def rule32(self):
         data = self.data
         stock = self.stock
         try:
-            if data[-1].turnover() <= 0.25 * data[-2].turnover():
+            if data[-1].turnover <= 0.25 * data[-2].turnover:
                 return False
             count = 0
             for i in range(3):
                 if not t_limit(stock, data, i):
                     return False
-                matchTime = joinTimeToStamp(data[-i - 1].date(), '09:45:00')
-                if data[-i - 1].firstLimitTime() >= matchTime:
+                matchTime = joinTimeToStamp(data[-i - 1].date, '09:45:00')
+                if data[-i - 1].firstLimitTime >= matchTime:
                     return False
                 if t_open_pct(data, i) < limit(stock) / 100:
                     count += 1
@@ -522,10 +525,10 @@ class levelF3(base_level):
         stock = self.stock
         if not t_limit(stock, data):
             return False
-        if data[-1].limitOpenTime() <= 1:
+        if data[-1].limitOpenTime <= 1:
             return False
         if t_down_limit(stock, data):
-            if data[-1].buy_elg_vol() / data[-1].volume() < 0.3:
+            if data[-1].buy_elg_vol / data[-1].volume < 0.3:
                 return True
 
     def rule34(self):
@@ -550,11 +553,11 @@ class levelF3(base_level):
                 return False
         plus = 0
         minus = 0
-        for i in range(40):
-            if t_low_pct(self.index, i) < -0.01:
+        for i in range(50):
+            if t_low_pct(self.index, i) < -0.02:
                 continue
             d = data[-i - 1]
-            if d.close() > d.open():
+            if d.close > d.open:
                 plus += 1
             else:
                 minus += 1
@@ -573,9 +576,11 @@ class levelF3(base_level):
                 return False
         plus = 0
         minus = 0
-        for i in range(40):
+        for i in range(50):
+            if t_low_pct(self.index, i) < -0.02:
+                continue
             d = data[-i - 1]
-            if d.close() > d.open():
+            if d.close > d.open:
                 plus += 1
             else:
                 minus += 1
@@ -600,11 +605,11 @@ class levelF3(base_level):
                 if t_low_pct(index, i) <= -0.02:
                     continue
                 d = data[-i - 1]
-                if d.close() > d.open():
-                    plusVol += data[-i - 1].volume()
+                if d.close > d.open:
+                    plusVol += data[-i - 1].volume
                     plus += 1
                 else:
-                    minusVol += data[-i - 1].volume()
+                    minusVol += data[-i - 1].volume
                     minus += 1
             if limitCount >= 2:
                 return False
@@ -619,16 +624,17 @@ class levelF3(base_level):
         limitCount = 0
         plus = 0
         minus = 0
-        for i in range(11):
+        for i in range(30):
             if t_limit(stock, data, i):
                 limitCount += 1
+                if limitCount >= 2:
+                    return False
+        for i in range(11):
             if t_low_pct(index, i) <= -0.02:
                 continue
             d = data[-i - 1]
-            if d.close() > d.open():
+            if d.close > d.open:
                 plus += 1
             else:
                 minus += 1
-        if limitCount >= 2:
-            return False
         return plus < minus

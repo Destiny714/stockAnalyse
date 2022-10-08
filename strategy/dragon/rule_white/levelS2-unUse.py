@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/7/31 22:40
 # @Author  : Destiny_
-# @File    : levelS2.py
+# @File    : levelS2-unUse.py
 # @Software: PyCharm
 
 from utils.stockdata_util import *
@@ -22,16 +22,16 @@ class levelS2(base_level):
                 if not t_limit(stock, data, i):
                     return False
             d = data[-1]
-            if d.buy_elg_vol() / d.volume() <= 0.45:
+            if d.buy_elg_vol / d.volume <= 0.45:
                 return False
-            if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.65:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.65:
                 return False
-            if d.buy_elg_vol() <= d.sell_elg_vol():
+            if d.buy_elg_vol <= d.sell_elg_vol:
                 return False
-            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() <= 0.5:
+            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol <= 0.5:
                 return False
-            if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                    d.buy_elg_vol() + d.buy_lg_vol()) > 0.2:
+            if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
+                    d.buy_elg_vol + d.buy_lg_vol) > 0.2:
                 return True
         except:
             pass
@@ -46,16 +46,16 @@ class levelS2(base_level):
                 if not t_limit(stock, data, i):
                     return False
             d = data[-1]
-            if d.buy_elg_vol() / d.volume() <= 0.4:
+            if d.buy_elg_vol / d.volume <= 0.4:
                 return False
-            if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.7:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.7:
                 return False
-            if d.buy_elg_vol() <= d.sell_elg_vol():
+            if d.buy_elg_vol <= d.sell_elg_vol:
                 return False
-            if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() <= 0.5:
+            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol <= 0.5:
                 return False
-            if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                    d.buy_elg_vol() + d.buy_lg_vol()) > 0.2:
+            if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
+                    d.buy_elg_vol + d.buy_lg_vol) > 0.2:
                 return True
         except:
             pass
@@ -65,12 +65,12 @@ class levelS2(base_level):
         try:
             for i in range(2):
                 d = data[-i - 1]
-                if (d.buy_elg_vol() + d.buy_lg_vol() - d.sell_elg_vol() - d.sell_lg_vol()) / (
-                        d.buy_elg_vol() + d.buy_lg_vol()) <= 0.2:
+                if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
+                        d.buy_elg_vol + d.buy_lg_vol) <= 0.2:
                     return False
-                if (d.buy_elg_vol() + d.buy_lg_vol()) / d.volume() <= 0.5:
+                if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.5:
                     return False
-                if (d.buy_elg_vol() - d.sell_elg_vol()) / d.buy_elg_vol() <= 0.5:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol <= 0.5:
                     return False
             return True
         except:

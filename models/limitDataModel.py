@@ -17,6 +17,7 @@ class limitDataModel:
     def __getitem__(self, item):
         return self.data[item]
 
+    @property
     def date(self):
         return self.data[1]
 
@@ -26,38 +27,48 @@ class limitDataModel:
     def industry(self):
         return self.data[3]
 
+    @property
     def open(self):
         return self.data[4]
 
+    @property
     def close(self):
         return self.data[5]
 
+    @property
     def preClose(self):
         return self.data[6]
 
+    @property
     def pctChange(self):
         return self.data[7]
 
     def amount(self):
         return self.data[8]
 
+    @property
     def turnover(self):
         return self.data[9]
 
     def fdAmount(self):
         return self.data[10]
 
+    @property
     def firstLimitTime(self):
         return self.data[11]
 
+    @property
     def lastLimitTime(self):
         return self.data[12]
 
-    def openTime(self):
+    @property
+    def limitOpenTime(self):
         return self.data[13]
 
+    @property
     def upStat(self):
         return self.data[14]
 
+    @property
     def limitHeight(self):
         return self.data[15]

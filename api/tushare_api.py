@@ -4,6 +4,7 @@
 # @File    : tushare_api.py
 # @Software: PyCharm
 
+import time
 import tushare
 from api import args
 from utils import date_util
@@ -54,7 +55,7 @@ class Tushare:
             stockList.append(stock)
         return [_['symbol'] for _ in stockList]
 
-    def oneDayDetail(self, date):
+    def dailyData(self, date):
         """获取单日所有股票基础数据"""
         details = []
         data = self._instance.query('daily', trade_date=date)
@@ -218,6 +219,46 @@ class Tushare:
             "up_stat",
             "swing"
         ])
+        for i in range(len(data)):
+            details.append(data.iloc[i])
+        return details
+
+    def minuteData(self, stockWithSuffix: str, start: str, end: str):
+        """
+        获取分时数据
+        每分钟限制500次
+        :param stockWithSuffix: 带后缀的股票代码
+        :param start: 分时开始时间 xxxx-xx-xx xx:xx:xx
+        :param end: 分时结束时间
+        :return: list[pd.df]
+        """
+        details = []
+        _end = f'{end[:4]}-{end[4:6]}-{end[6:]}'
+        _start = f'{start[:4]}-{start[4:6]}-{start[6:]}'
+        data = tushare.pro_bar(ts_code=stockWithSuffix, freq='1min', start_date=f'{_start} 09:30:00', end_date=f'{_end} 15:00:00', asset='E')
+        for i in range(len(data)):
+            details.append(data.iloc[i])
+        return details
+
+    def qfqDailyData(self, date=lastTradeDay()):
+        """
+        每日基础数据前复权版
+        :param date: 查询日期
+        :return: list[pd.df]
+        """
+        print(f'request {date}')
+        details = []
+        data = None
+        retry = 0
+        while data is None and retry <= 3:
+            try:
+                data = tushare.pro_api().stk_factor(ts_code='', trade_date=date,
+                                                    fields='ts_code,trade_date,open_qfq,close_qfq,high_qfq,low_qfq,pre_close_qfq,pct_change,vol,amount')
+                retry += 1
+            except:
+                time.sleep(20)
+        if data is None:
+            raise Exception(f'{date} 获取数据出错')
         for i in range(len(data)):
             details.append(data.iloc[i])
         return details

@@ -20,10 +20,10 @@ if __name__ == '__main__':
     log = log_util.log()
     sqlClient = database_api.Mysql()
     warnings.filterwarnings('ignore')
-    stocks = concurrent_util.initStock(needReload=True, extra=False)
+    stocks = concurrent_util.initStock(needReload=False, extra=False)
     tradeDays = sqlClient.selectTradeDate()
     stockDetails = sqlClient.selectAllStockDetail()
-    aimDates = [lastTradeDay()]
+    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 3)
 
 
     def process(aimDate):
@@ -91,7 +91,7 @@ if __name__ == '__main__':
                 score += len(l1['detail']) * 1
                 score += len(l2['detail']) * 1
                 score += len(l3['detail']) * 2
-                score += len(l4['detail']) * 4
+                score += len(l4['detail']) * 3
                 score += len(l5['detail']) * 5
                 score += len(l6['detail']) * 7
                 score += len(lA1['detail']) * 4
@@ -102,18 +102,18 @@ if __name__ == '__main__':
                 score -= len(lF2['detail']) * 5
                 score -= len(lF3['detail']) * 7
                 score -= len(lF4['detail']) * 7
-                score -= len(lF5['detail']) * 8
+                score -= len(lF5['detail']) * 7
                 if virtual is None:
                     T1S = virtualDict[stock]['s']
                     T1F = virtualDict[stock]['f']
                     _S = int(score - excelDict[stock]['score'] if excelDict != {} else -8888)
-                    aj = round(data[-1].concentration() * 100, 1)
-                    CF = -8888 if (t0Day.buy_elg_vol() + t0Day.buy_lg_vol()) == 0 else round(
-                        ((t0Day.buy_elg_vol() + t0Day.buy_lg_vol() - t0Day.sell_elg_vol() - t0Day.sell_lg_vol()) / (
-                                t0Day.buy_elg_vol() + t0Day.buy_lg_vol())) * 100, 1)
-                    TF = -8888 if t0Day.buy_elg_vol() == 0 else round(
-                        ((t0Day.buy_elg_vol() - t0Day.sell_elg_vol()) / t0Day.buy_elg_vol()) * 100, 1)
-                    TP = -8888 if t0Day.volume() == 0 else round((t0Day.buy_elg_vol() / t0Day.volume()) * 100, 1)
+                    aj = round(data[-1].concentration * 100, 1)
+                    CF = -8888 if (t0Day.buy_elg_vol + t0Day.buy_lg_vol) == 0 else round(
+                        ((t0Day.buy_elg_vol + t0Day.buy_lg_vol - t0Day.sell_elg_vol - t0Day.sell_lg_vol) / (
+                                t0Day.buy_elg_vol + t0Day.buy_lg_vol)) * 100, 1)
+                    TF = -8888 if t0Day.buy_elg_vol == 0 else round(
+                        ((t0Day.buy_elg_vol - t0Day.sell_elg_vol) / t0Day.buy_elg_vol) * 100, 1)
+                    TP = -8888 if t0Day.volume == 0 else round((t0Day.buy_elg_vol / t0Day.volume) * 100, 1)
                     b1 = virtualDict[stock]['b1']
                     b2 = virtualDict[stock]['b2']
                     scoreLevelData = {
@@ -127,7 +127,10 @@ if __name__ == '__main__':
                         'white': white_sum,
                         'S': _S,
                         'data': data,
-                        'aj': aj,
+                        'AJ': aj,
+                        'CF': CF,
+                        'TF': TF,
+                        'TP': TP,
                         'stock': stock,
                         'details': details,
                     }

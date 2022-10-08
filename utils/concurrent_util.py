@@ -72,7 +72,7 @@ def updateLimitDetailData(date=lastTradeDay()):
     print('stock limit detail update done')
 
 
-def updateStockListDailyIndex(date=lastTradeDay()):
+def updateTurnover(date=lastTradeDay()):
     """更新换手率数据"""
     print(f'start update {date} stock index...')
     errors = []
@@ -81,7 +81,7 @@ def updateStockListDailyIndex(date=lastTradeDay()):
     def update(d):
         try:
             mysql = Mysql()
-            mysql.updateStockListDailyIndex(d)
+            mysql.updateTurnover(d)
         except Exception as e:
             errors.append(e)
             pass
@@ -96,18 +96,18 @@ def updateDaily(dateList):
     print(f'start update stock data for {dateList[0]} to {dateList[-1]}')
 
     def tmp(d):
-        if d['ts_code'][0] == '8':
+        if d['ts_code'][0] in ['4','8']:
             return
         mysql = Mysql()
         try:
-            mysql.insertOneRecord(d)
+            mysql.insertOneDailyBasicRecord(d)
         except Exception as e:
             print(f'update daily error : {e}')
             pass
 
     for date in dateList:
         print(f'updating {date} stock data')
-        data = Tushare().oneDayDetail(date)
+        data = Tushare().qfqDailyData(date)
         if data[0]['trade_date'] != date or data is None:
             print('数据未更新')
             exit()
@@ -165,7 +165,7 @@ def updateChipDetail(aimDate=lastTradeDay()):
     data = Tushare().chipDetail(aimDate)
 
     def updateOne(d):
-        if str(d['ts_code'])[0] != '8':
+        if str(d['ts_code'])[0] not in ['4', '8']:
             try:
                 client = Mysql()
                 client.updateChipDetail(d)
@@ -236,7 +236,7 @@ def rankingLimitTime(aimDate=lastTradeDay()) -> list:
                     return
                 if model_1(stock, data):
                     return
-                limitTime = data[-1].firstLimitTime()
+                limitTime = data[-1].firstLimitTime
                 if limitTime in datas.keys():
                     datas[limitTime].append(stock)
                 else:
@@ -297,9 +297,9 @@ def initStock(needReload=True, extra=False):
         stocks = stockFilter(stocks).result()
     if extra:
         updateLimitDetailData()
-        updateStockListDailyIndex()
+        updateTurnover()
         updateMoneyFlow()
         updateChipDetail()
-        updateTimeDataToday()
+        # updateTimeDataToday() #TODO:fix minuteData update method
         updateStockLimit()
     return stocks

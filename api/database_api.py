@@ -6,6 +6,7 @@
 
 import pymysql
 from api import args
+from json import dumps
 from utils import date_util
 
 
@@ -113,6 +114,11 @@ class Mysql:
         data = self.action(output=True)
         return [_[0] for _ in data]
 
+    def selectAllStockWithSuffix(self):
+        self.word = "SELECT symbol,exchange FROM stockList"
+        data = self.action(output=True)
+        return [f'{_[0]}.{"SZ" if _[1] == "SZSE" else "SH"}' for _ in data]
+
     def selectAllStockDetail(self):
         """查找所有股票详情"""
         self.word = "SELECT * FROM stockList"
@@ -128,6 +134,11 @@ class Mysql:
     def selectTradeDate(self):
         """查找所有交易日"""
         self.word = 'SELECT date FROM tradeCalender'
+        data = self.action(output=True)
+        return [_[0] for _ in data]
+
+    def selectTradeDateRange(self, start, end):
+        self.word = f'SELECT date FROM tradeCalender WHERE (date <= {end} AND date >= {start})'
         data = self.action(output=True)
         return [_[0] for _ in data]
 
@@ -168,12 +179,21 @@ class Mysql:
         self.word = f"DELETE FROM stockList WHERE symbol='{stock}'"
         self.action(output=False)
 
-    def insertOneRecord(self, data):
+    def insertOneDailyBasicRecord(self, data):
         """新增股票每日基础数据"""
+        low_qfq = data['low_qfq']
+        high_qfq = data['high_qfq']
+        open_qfq = data['open_qfq']
+        close_qfq = data['close_qfq']
+        pct_change = data['pct_change']
+        pre_close_qfq = data['pre_close_qfq']
         self.word = f"INSERT ignore INTO No{str(data['ts_code']).split('.')[0]} " \
                     f"(date,open,close,preClose,high,low,pctChange,volume,amount) VALUES " \
-                    f"('{data['trade_date']}',{data['open']},{data['close']},{data['pre_close']}," \
-                    f"{data['high']},{data['low']},{data['pct_chg']},{data['vol']},{data['amount']})"
+                    f"('{data['trade_date']}',{open_qfq},{close_qfq},{pre_close_qfq}," \
+                    f"{high_qfq},{low_qfq},{pct_change},{data['vol']},{data['amount']}) " \
+                    f"ON DUPLICATE KEY UPDATE " \
+                    f"open={open_qfq},close={close_qfq},low={low_qfq}," \
+                    f"high={high_qfq},preClose={pre_close_qfq},pctChange={pct_change}"
         self.action(output=False)
 
     def insertIndex(self, data, indexTable='NoShIndex'):
@@ -265,7 +285,7 @@ class Mysql:
                     f"WHERE date = '{data['trade_date']}'"
         self.action(output=False)
 
-    def updateStockListDailyIndex(self, data):
+    def updateTurnover(self, data):
         """单独更新换手率"""
         if data['circ_mv'] is None or '':
             return
@@ -318,7 +338,10 @@ class Mysql:
 
     def updateTimeData(self, json: dict):
         """更新分时交易数据"""
-        self.word = f"UPDATE No{json['symbol']} SET time='{json['data']}' WHERE date='{json['date']}'"
+        date = json['date']
+        data = json["data"]
+        symbol = json['symbol']
+        self.word = f"UPDATE No{symbol} SET time='{dumps(data)}' WHERE date='{date}'"
         self.action(output=False)
 
     def insertOneLimitStock(self, data):
@@ -351,7 +374,7 @@ class Mysql:
                     f"pre_close=(SELECT preClose FROM No{stockNo} WHERE date = {date})"
         self.action(output=False)
 
-    def selectLimitStockByDateRange(self, dates:list[str]):
+    def selectLimitStockByDateRange(self, dates: list[str]):
         """根据日期查找 stockLimit 表"""
         self.word = f"SELECT * FROM stockLimit WHERE trade_date in ({','.join(dates)})"
         return self.action(output=True)
