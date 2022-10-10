@@ -23,7 +23,7 @@ if __name__ == '__main__':
     stocks = concurrent_util.initStock(needReload=False, extra=False)
     tradeDays = sqlClient.selectTradeDate()
     stockDetails = sqlClient.selectAllStockDetail()
-    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 3)
+    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 2)
 
 
     def process(aimDate):
@@ -33,12 +33,12 @@ if __name__ == '__main__':
             's': virtualLimitData(_limitData, 's'),
             'f': virtualLimitData(_limitData, 'f'),
         }
-        industryLimitDict = rankLimitTimeByX('limitTime-industry', aimDate, _limitData)
+        industryLimitDict = rankStockByX('limitTime-industry', aimDate, _limitData)
         limitUpCount = tushare_api.Tushare().dailyLimitCount(date=aimDate)
         errors = []
         excelDatas = []
         virtualDict = {f'{stock}': {} for stock in stocks}
-        indexData = collectIndexData('GemIndex', aimDate=aimDate)
+        indexData = queryIndexData('GemIndex', aimDate=aimDate)
         indexData_virtual = virtualIndexData(indexData)
         excelDict: dict = excel_util.readScoreFromExcel(database_api.Mysql().selectLastTradeDate(aimDate))
 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
                 index = indexData.copy()
                 limitData = _limitData.copy()
             try:
-                data = collectData(stock, aimDate=aimDate, virtual=virtual)
+                data = queryData(stock, aimDate=aimDate, virtual=virtual)
                 height = limit_height(stock, data)
                 t0Day = data[-1]
                 details = {}
@@ -97,9 +97,9 @@ if __name__ == '__main__':
                 score += len(lA1['detail']) * 4
                 score += len(lA2['detail']) * 3
                 score += len(lA3['detail']) * 3
-                score += len(lA4['detail']) * 3
-                score -= len(lF1['detail']) * 5
-                score -= len(lF2['detail']) * 5
+                score += len(lA4['detail']) * 2
+                score -= len(lF1['detail']) * 7
+                score -= len(lF2['detail']) * 7
                 score -= len(lF3['detail']) * 7
                 score -= len(lF4['detail']) * 7
                 score -= len(lF5['detail']) * 7

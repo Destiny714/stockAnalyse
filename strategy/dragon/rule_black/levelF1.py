@@ -38,7 +38,8 @@ class levelF1(base_level):
         if not model_1(stock, data, 1):
             return False
         if data[-1].turnover > 2.5 * data[-2].turnover:
-            return True
+            if data[-1].turnover > 1:
+                return True
 
     def rule3(self):
         data = self.data
@@ -387,7 +388,7 @@ class levelF1(base_level):
                         return False
                     flag = True
                     date = self.data[-i - 1].date
-                    rank: list = rankLimitTimeByX('limitTime-industry', str(date), self.limitData, eliminateModel1=True)[self.industry]
+                    rank: list = rankStockByX('limitTime-industry', str(date), self.limitData, eliminateModel1=True)[self.industry]
                     if self.stock in rank[:2]:
                         return False
             return flag
@@ -453,6 +454,8 @@ class levelF1(base_level):
     def rule33(self):
         data = self.data
         stock = self.stock
+        if model_1(stock, data):
+            return False
         if not t_limit(stock, data, 2):
             return False
         matchTime = joinTimeToStamp(data[-3].date, '10:00:00')
@@ -474,14 +477,14 @@ class levelF1(base_level):
             for i in range(90):
                 if t_limit(stock, data, i):
                     if model_1(stock, data, i):
-                        return False
+                        continue
                     limitDates.append(data[-i - 1].date)
                     if len(limitDates) >= 2:
                         break
             if len(limitDates) < 2:
                 return False
             for date in limitDates:
-                rank = rankLimitTimeByX('limitTime-industry', str(date), self.limitData, eliminateModel1=True)[self.industry]
+                rank = rankStockByX('limitTime-industry', str(date), self.limitData, eliminateModel1=True)[self.industry]
                 if stock in rank[:3]:
                     return False
             return True
@@ -489,11 +492,15 @@ class levelF1(base_level):
             pass
 
     def rule35(self):
+        data = self.data
+        stock = self.stock
         try:
+            if model_1(stock, data):
+                return False
             for i in range(2):
                 if not t_limit(self.stock, self.data, i):
                     return False
-            rank: list = rankLimitTimeByX('open-industry', self.data[-1].date, self.limitData)[self.industry]
+            rank: list = rankStockByX('open-industry', self.data[-1].date, self.limitData)[self.industry]
             if self.stock in rank[:2]:
                 return False
             return True
@@ -501,27 +508,33 @@ class levelF1(base_level):
             pass
 
     def rule36(self):
+        data = self.data
+        stock = self.stock
         try:
+            if model_1(stock, data):
+                return False
             for i in range(2):
                 if not t_limit(self.stock, self.data, i):
                     return False
-            rank: list = rankLimitTimeByX('open-height', self.data[-1].date, self.limitData, eliminateModel1=True)[self.height]
-            if self.stock in rank[:2]:
+            rank: list = rankStockByX('open-height', self.data[-1].date, self.limitData, eliminateModel1=True)[self.height]
+            if self.stock in rank[:3]:
                 return False
             return True
         except:
             pass
 
     def rule37(self):
+        data = self.data
+        stock = self.stock
         try:
-            data = self.data
-            stock = self.stock
             if not t_limit(stock, data, 2):
                 return False
             for i in range(2):
+                if model_1(stock, data, i):
+                    return False
                 if not t_limit(stock, data, i):
                     return False
-                rank: list = rankLimitTimeByX('open-industry', data[-i - 1].date, self.limitData)[self.industry]
+                rank: list = rankStockByX('open-industry', data[-i - 1].date, self.limitData)[self.industry]
                 if stock in rank[:2]:
                     return False
             return True
@@ -529,16 +542,18 @@ class levelF1(base_level):
             pass
 
     def rule38(self):
+        data = self.data
+        stock = self.stock
         try:
-            data = self.data
-            stock = self.stock
             if not t_limit(stock, data, 2):
                 return False
             for i in range(2):
+                if model_1(stock, data, i):
+                    return False
                 if not t_limit(stock, data, i):
                     return False
-                rank: list = rankLimitTimeByX('open-height', data[-i - 1].date, self.limitData)[self.height]
-                if stock in rank[:3]:
+                rank: list = rankStockByX('open-height', data[-i - 1].date, self.limitData, eliminateModel1=True)[self.height]
+                if stock in rank[:2]:
                     return False
             return True
         except:

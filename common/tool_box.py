@@ -37,14 +37,12 @@ def process_pool_executor(func, iterable, process_num=10, *args, **kwargs):
 
 
 def errorHandler(e: Exception) -> str:
-    errFile = None
-    errLine = None
+    errMsg = ''
     tb = e.__traceback__
-    while tb:
-        errLine = tb.tb_lineno
-        errFile = tb.tb_frame.f_code.co_filename
+    while tb is not None:
+        errMsg += f' <line {tb.tb_lineno} , in {tb.tb_frame.f_code.co_filename}> '
         tb = tb.tb_next
-    return f'< line {errLine} , in {errFile} >'
+    return errMsg
 
 
 def cutList(full_list: list, piece_len: int) -> List[list]:

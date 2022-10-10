@@ -363,7 +363,13 @@ class levelF2(base_level):
 
     def rule23(self):
         data = self.data
-        if (data[-1].concentration - data[-2].concentration) / data[-2].concentration > 0.1:
+        stock = self.stock
+        for i in range(2):
+            if not t_limit(stock, data, i):
+                return False
+        if t_limit(stock, data, 2):
+            return False
+        if (data[-1].concentration - data[-2].concentration) / data[-2].concentration > 0.15:
             return True
 
     def rule24(self):
@@ -382,7 +388,7 @@ class levelF2(base_level):
                 return False
             matchTime = date_util.joinTimeToStamp(data[-1].date, '09:40:00')
             if data[-1].firstLimitTime < matchTime:
-                if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < 100000:
+                if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < data[-1].volume * 0.1:
                     return True
         except:
             pass

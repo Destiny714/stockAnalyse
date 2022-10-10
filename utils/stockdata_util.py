@@ -9,7 +9,7 @@ from models.initDataModel import *
 from models.limitDataModel import *
 
 
-def collectIndexData(index, dateRange: int = 500, aimDate=lastTradeDay()) -> list[dataModel]:
+def queryIndexData(index, dateRange: int = 500, aimDate=lastTradeDay()) -> list[dataModel]:
     mysql = database_api.Mysql()
     allData = mysql.selectOneAllData(stock=index, dateRange=dateRange, aimDate=aimDate)
     res = [dataModel(allData[i]) for i in range(len(allData))]
@@ -58,7 +58,7 @@ def virtualLimitData(data: dict[str, list[limitDataModel]], virtual=None) -> dic
     return d
 
 
-def collectData(stock, dateRange: int = 800, aimDate=lastTradeDay(), virtual=None) -> list[dataModel]:
+def queryData(stock, dateRange: int = 800, aimDate=lastTradeDay(), virtual=None) -> list[dataModel]:
     mysql = database_api.Mysql()
     try:
         allData = mysql.selectOneAllData(stock=stock, dateRange=dateRange, aimDate=aimDate)
@@ -240,7 +240,7 @@ def move_avg(data: list[dataModel], dateRange: int, plus: int):
     return sum([data[-_].close for _ in range(j, j + dateRange)]) / dateRange
 
 
-def rankLimitTimeByX(keyword: str, date: str, dataDict: dict[str, list[limitDataModel]], eliminateModel1=False):
+def rankStockByX(keyword: str, date: str, dataDict: dict[str, list[limitDataModel]], eliminateModel1=False):
     """
     根据关键词对某日涨停股票进行排序
     :param keyword: 排序方法名称

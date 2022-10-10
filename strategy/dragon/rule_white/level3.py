@@ -563,9 +563,9 @@ class level3(base_level):
             if model_1(stock, data, 1):
                 return False
             d = data[-2]
-            if d.timeVol(timeStamp=d.firstLimitTime) <= 100000:
+            if d.timeVol(timeStamp=d.firstLimitTime) <= d.volume * 0.1:
                 return False
-            if d.timeVol(timeStamp=d.firstLimitTime) > d.timeVol(timeStamp=d.firstLimitTime - 60) * 10:
+            if d.timeVol(timeStamp=d.firstLimitTime) > d.timeVol(minute=prevMinute(getMinute(stamp=d.firstLimitTime))) * 10:
                 return True
         except:
             pass

@@ -4,6 +4,7 @@
 # @File    : base_level_model.py
 # @Software: PyCharm
 
+from prefs.params import *
 from utils.stockdata_util import *
 from models.initDataModel import dataModel
 from models.limitDataModel import limitDataModel
@@ -23,6 +24,8 @@ class base_level(object):
         self.shot_rule: list = []
         self.fail_rule: list = []
         self.f_rule: bool = 'F' in self.level
+        if level not in levelRuleDict.keys():
+            levelRuleDict[level] = [_ for _ in self.__class__.__dict__.keys() if 'rule' in _]
 
     def result(self):
         return {'level': self.level, 'stock': self.stock, 'detail': self.shot_rule,

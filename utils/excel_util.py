@@ -3,9 +3,11 @@
 # @Author  : Destiny_
 # @File    : excel_util.py
 # @Software: PyCharm
+
 import xlwt
 import xlrd
 from utils.file_util import *
+from utils.log_util import log
 from common.tool_box import errorHandler
 
 
@@ -44,5 +46,5 @@ def readScoreFromExcel(date):
                                     'black': detail[header.index("black")],
                                     'score': detail[header.index("score")]}
     except Exception as e:
-        errorHandler(e)
+        log().error(errorHandler(e))
     return excelDict

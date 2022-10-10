@@ -234,7 +234,7 @@ class level4(base_level):
                 return False
             limitTime = data[-2].firstLimitTime
             limitMinute = getMinute(stamp=limitTime)
-            limitMinuteLast = lastMinute(limitMinute)
+            limitMinuteLast = prevMinute(limitMinute)
             if data[-2].timeVol(minute=limitMinute) > data[-2].timeVol(minute=limitMinuteLast) * 3:
                 if data[-2].limitOpenTime == 0:
                     return True
@@ -251,10 +251,10 @@ class level4(base_level):
                 return False
             limitTime = data[-1].firstLimitTime
             limitMinute = getMinute(stamp=limitTime)
-            limitMinuteLast = lastMinute(limitMinute)
+            limitMinuteLast = prevMinute(limitMinute)
             if data[-1].timeVol(minute=limitMinute) <= data[-1].timeVol(minute=limitMinuteLast) * 10:
                 return False
-            if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) > 100000:
+            if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) > data[-1].volume * 0.1:
                 return True
         except:
             return False
@@ -285,7 +285,7 @@ class level4(base_level):
         for i in range(3):
             if not t_limit(stock, data, i):
                 return False
-        rank = rankLimitTimeByX('limitTime-height', data[-1].date, self.limitData, eliminateModel1=True)
+        rank = rankStockByX('limitTime-height', data[-1].date, self.limitData, eliminateModel1=True)
         if 3 not in rank.keys():
             return False
         if rank[3][0] == stock:
@@ -535,7 +535,7 @@ class level4(base_level):
             return False
         if model_1(stock, data):
             return True
-        rank = rankLimitTimeByX('limitTime-industry', data[-1].date, self.limitData, eliminateModel1=True)[self.industry]
+        rank = rankStockByX('limitTime-industry', data[-1].date, self.limitData, eliminateModel1=True)[self.industry]
         if stock in rank[:2]:
             return True
 

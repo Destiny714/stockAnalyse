@@ -3,6 +3,8 @@
 # @Author  : Destiny_
 # @File    : B.py
 # @Software: PyCharm
+
+from prefs.params import *
 from base.base_score_level_model import base_score_level
 
 
@@ -24,3 +26,9 @@ class ruleB(base_score_level):
                 if 'A1' in self.details.keys():
                     if 1 in self.details['A1']:
                         return True
+
+    def rule3(self):
+        if self.height > 0 and self.black > 4:
+            if 'A1' in self.details.keys():
+                if len(self.details['A1']) == len(levelRuleDict['A1']):
+                    return True

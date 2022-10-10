@@ -62,11 +62,23 @@ def week_day(day: datetime.datetime):
 
 
 def joinTimeToStamp(date: str, detail: str):
+    """
+    将标准日期格式与hh:mm:ss时间格式合并获得当时的时间戳
+    :param date: YYMMDD
+    :param detail: hh:mm:ss
+    :return: timestamp (s)
+    """
     result = datetime.datetime.strptime(f'{date[0:4]}-{date[4:6]}-{date[6:8]} {detail}', '%Y-%m-%d %H:%M:%S')
     return result.timestamp()
 
 
 def timeDelta(start: str, end: str):
+    """
+    求时间差 返回秒数
+    :param start: 开始日期
+    :param end: 结束日期
+    :return: 返回两日期相差的秒数绝对值
+    """
     startDate = datetime.datetime.strptime(start, '%Y%m%d')
     endDate = datetime.datetime.strptime(end, '%Y%m%d')
     delta = endDate - startDate
@@ -74,6 +86,12 @@ def timeDelta(start: str, end: str):
 
 
 def getMinute(stamp: int = None, timeStr: str = None):
+    """
+    通过时间戳或者标准时间格式获取当时的hhmm
+    :param stamp: 时间戳
+    :param timeStr: YY-MM-DD hh:mm:ss
+    :return: hhmm
+    """
     assert (stamp is not None or timeStr is not None)
     if stamp:
         res = datetime.datetime.fromtimestamp(stamp)
@@ -85,16 +103,26 @@ def getMinute(stamp: int = None, timeStr: str = None):
 
 
 def nextMinute(now: str):
-    result = datetime.datetime.strptime(f'2022-02-22 {now[0:2]}:{now[2:4]}:00', '%Y-%m-%d %H:%M:%S')
-    nxt = result + datetime.timedelta(minutes=1)
+    if now == '1130':
+        nxt = datetime.datetime.strptime(f'2022-02-22 13:01:00', '%Y-%m-%d %H:%M:%S')
+    elif now == '1500':
+        nxt = datetime.datetime.strptime(f'2022-02-22 15:00:00', '%Y-%m-%d %H:%M:%S')
+    else:
+        result = datetime.datetime.strptime(f'2022-02-22 {now[0:2]}:{now[2:4]}:00', '%Y-%m-%d %H:%M:%S')
+        nxt = result + datetime.timedelta(minutes=1)
     hour = nxt.hour
     minute = nxt.minute
     return f'{0 if hour < 10 else ""}{hour}{0 if minute < 10 else ""}{minute}'
 
 
-def lastMinute(now: str):
-    result = datetime.datetime.strptime(f'2022-02-22 {now[0:2]}:{now[2:4]}:00', '%Y-%m-%d %H:%M:%S')
-    nxt = result - datetime.timedelta(minutes=1)
+def prevMinute(now: str):
+    if now in ['1300', '1301']:
+        nxt = datetime.datetime.strptime(f'2022-02-22 11:30:00', '%Y-%m-%d %H:%M:%S')
+    elif now == '0930':
+        nxt = datetime.datetime.strptime(f'2022-02-22 09:30:00', '%Y-%m-%d %H:%M:%S')
+    else:
+        result = datetime.datetime.strptime(f'2022-02-22 {now[0:2]}:{now[2:4]}:00', '%Y-%m-%d %H:%M:%S')
+        nxt = result - datetime.timedelta(minutes=1)
     hour = nxt.hour
     minute = nxt.minute
     return f'{0 if hour < 10 else ""}{hour}{0 if minute < 10 else ""}{minute}'

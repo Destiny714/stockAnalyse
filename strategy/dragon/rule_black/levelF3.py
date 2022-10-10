@@ -22,7 +22,8 @@ class levelF3(base_level):
         if not model_1(stock, data, 1):
             return False
         if data[-1].turnover > 1.5 * data[-2].turnover:
-            return True
+            if data[-1].turnover > 1:
+                return True
 
     def rule2(self):
         data = self.data
@@ -179,7 +180,7 @@ class levelF3(base_level):
                 return False
             matchTime = joinTimeToStamp(data[-1].date, '09:45:00')
             if data[-1].firstLimitTime > matchTime and data[-1].lastLimitTime > matchTime:
-                if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < 35000:
+                if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < data[-1].volume * 0.1:
                     if t_low_pct(self.index) > -0.01:
                         return True
         except:
@@ -310,7 +311,7 @@ class levelF3(base_level):
             matchTime = joinTimeToStamp(data[-1].date, '09:45:00')
             if data[-1].firstLimitTime <= matchTime:
                 return False
-            if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) >= 100000:
+            if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) >= data[-1].volume * 0.1:
                 return False
             if t_low_pct(self.index) > -0.01:
                 d = data[-1]

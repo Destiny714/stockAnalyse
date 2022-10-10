@@ -223,7 +223,7 @@ class levelF4(base_level):
             if not t_limit(stock, data):
                 return False
             sunDates = [_ for _ in data[-11:-1] if _.close > _.open]
-            if data[-1].turnover > 2 * (sum([_.turnover for _ in sunDates]) / len(sunDates)):
+            if data[-1].turnover > 3 * (sum([_.turnover for _ in sunDates]) / len(sunDates)):
                 return True
         except:
             pass
@@ -315,7 +315,7 @@ class levelF4(base_level):
             if data[-1].lastLimitTime <= data[-2].lastLimitTime + timeDelta(data[-2].date, data[-1].date):
                 return False
             if t_low_pct(self.index) > -0.01:
-                if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < 100000:
+                if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < data[-1].volume * 0.1:
                     return True
         except:
             pass
@@ -334,7 +334,7 @@ class levelF4(base_level):
                 return False
             matchTime = joinTimeToStamp(data[-1].date, '10:30:00')
             if data[-1].firstLimitTime > matchTime and data[-1].lastLimitTime > matchTime:
-                if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < 100000:
+                if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < data[-1].volume * 0.1:
                     return True
         except:
             pass
@@ -370,7 +370,7 @@ class levelF4(base_level):
             matchTime = joinTimeToStamp(data[-1].date, '09:45:00')
             if data[-1].firstLimitTime <= matchTime:
                 return False
-            if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) >= 100000:
+            if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) >= data[-1].volume * 0.1:
                 return False
             if data[-1].lastLimitTime > data[-2].lastLimitTime + timeDelta(data[-2].date, data[-1].date):
                 if t_low_pct(self.index) > -0.01:
@@ -455,10 +455,10 @@ class levelF4(base_level):
             matchTime = joinTimeToStamp(data[-1].date, '09:45:00')
             if data[-1].firstLimitTime <= matchTime:
                 return False
-            if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) >= 100000:
+            if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) >= data[-1].volume * 0.1:
                 return False
             d = data[-1]
-            if (d.buy_elg_vol - d.sell_elg_vol) / (d.buy_elg_vol) < 0.3:
+            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.3:
                 if t_low_pct(data) < t_open_pct(data):
                     return True
         except:
@@ -480,7 +480,7 @@ class levelF4(base_level):
                 return False
             matchTime = joinTimeToStamp(data[-1].date, '09:50:00')
             if data[-1].firstLimitTime > matchTime:
-                if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < 100000:
+                if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < data[-1].volume * 0.1:
                     if t_low_pct(data) < t_open_pct(data):
                         return True
         except:
@@ -500,7 +500,7 @@ class levelF4(base_level):
                 return False
             range5 = data[-7:-2]
             if data[-2].turnover > 3 * (sum([_.turnover for _ in range5]) / 5):
-                if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < 100000:
+                if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < data[-1].volume * 0.1:
                     return True
         except:
             pass
@@ -543,7 +543,7 @@ class levelF4(base_level):
             matchTime = date_util.joinTimeToStamp(data[-1].date, '09:45:00')
             if data[-1].firstLimitTime <= matchTime:
                 return False
-            if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) >= 100000:
+            if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) >= data[-1].volume * 0.1:
                 return False
             if data[-1].turnover > data[-2].turnover:
                 return True
@@ -656,7 +656,7 @@ class levelF4(base_level):
                 return False
             limitTime = data[-1].firstLimitTime
             limitMinute = getMinute(stamp=limitTime)
-            limitMinuteLast = lastMinute(limitMinute)
+            limitMinuteLast = prevMinute(limitMinute)
             if data[-1].timeVol(minute=limitMinute) < data[-1].timeVol(minute=limitMinuteLast) * 3:
                 d = data[-1]
                 if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.4:
@@ -881,6 +881,13 @@ class levelF4(base_level):
         data = self.data
         stock = self.stock
         try:
+            flag = False
+            for i in range(3):
+                if not t_limit(stock, data, i):
+                    flag = True
+                    break
+            if not flag:
+                return False
             min50 = min([_.low for _ in data[-50:]])
             if (data[-1].close - min50) / min50 <= 0.4:
                 return False

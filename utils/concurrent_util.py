@@ -228,7 +228,7 @@ def rankingLimitTime(aimDate=lastTradeDay()) -> list:
 
     def addData(stock):
         try:
-            data = collectData(stock, dateRange=5, aimDate=aimDate)
+            data = queryData(stock, dateRange=5, aimDate=aimDate)
             if stockdata_util.t_open_pct(data) > limit(stock):
                 return
             for i in range(3):
