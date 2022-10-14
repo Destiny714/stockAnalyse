@@ -7,9 +7,11 @@
 
 import pymysql
 import warnings
+from prefs.params import *
 from common import tool_box
 from rule_level import A, B, S, F
 from utils.stockdata_util import *
+from common.prepare import Prepare
 from api import database_api, tushare_api
 from models.stockDetailModel import stockDetailModel
 from utils import concurrent_util, excel_util, log_util
@@ -17,42 +19,48 @@ from rule_black import levelF1, levelF2, levelF3, levelF4, levelF5
 from rule_white import level1, level2, level3, level4, level5, level6, levelA1, levelA2, levelA3, levelA4
 
 if __name__ == '__main__':
+    runMode = RunMode.DEBUG
     log = log_util.log()
-    sqlClient = database_api.Mysql()
+    sqlClient = database_api.Mysql()  # 数据库查询client
     warnings.filterwarnings('ignore')
-    stocks = concurrent_util.initStock(needReload=False, extra=False)
-    tradeDays = sqlClient.selectTradeDate()
-    stockDetails = sqlClient.selectAllStockDetail()
-    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 2)
+    stocks = concurrent_util.initStock(needReload=False, extra=False)  # 经过筛选的所有股票
+    tradeDays = sqlClient.selectTradeDate()  # 所有交易日
+    stockDetails = sqlClient.selectAllStockDetail()  # 所有股票的detail 从stockList表查到
+    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 2)  # 要计算的日期范围
+    Prepare(stocks, aimDates).do()
 
 
     def process(aimDate):
-        stockDetailDict = concurrent_util.createStockDetailMap(stockDetails)
-        _limitData = concurrent_util.getStockLimitDataByDate(date=aimDate)
-        limitData_virtualDict = {
+        stockDetailDict = concurrent_util.createStockDetailMap(stockDetails)  # 利用stockDetails生成stock为key的dict
+        _limitData = concurrent_util.getStockLimitDataByDate(date=aimDate)  # 从stockLimit表读取当日所有涨停票详情 返回 dict[str, list[limitDataModel]]
+        limitData_virtualDict = {  # 生成下一天虚拟数据的涨停票详情
             's': virtualLimitData(_limitData, 's'),
             'f': virtualLimitData(_limitData, 'f'),
         }
-        industryLimitDict = rankStockByX('limitTime-industry', aimDate, _limitData)
+        industryLimitDict = RankLimitStock(_limitData).by('limitTime-industry', aimDate)  # 通过行业分类生成行业涨停票列表 返回dict[行业，股票列表]
         limitUpCount = tushare_api.Tushare().dailyLimitCount(date=aimDate)
         errors = []
         excelDatas = []
         virtualDict = {f'{stock}': {} for stock in stocks}
-        indexData = queryIndexData('GemIndex', aimDate=aimDate)
-        indexData_virtual = virtualIndexData(indexData)
+        shIndexData = queryIndexData('ShIndex', aimDate=aimDate)
+        gemIndexData = queryIndexData('GemIndex', aimDate=aimDate)
+        shIndexData_virtual = virtualIndexData(shIndexData)
+        gemIndexData_virtual = virtualIndexData(gemIndexData)
         excelDict: dict = excel_util.readScoreFromExcel(database_api.Mysql().selectLastTradeDate(aimDate))
 
         def processOneStock(argMap: dict):
             stock = argMap['stock']
             virtual = argMap['virtual']
             stockDetail = stockDetailModel(stockDetailDict[stock])
-            industryLimitCount = 0 if stockDetail.industry() not in industryLimitDict.keys() else len(industryLimitDict[stockDetail.industry()])
+            industryLimitCount = 0 if stockDetail.industry not in industryLimitDict.keys() else len(industryLimitDict[stockDetail.industry])
             if virtual is not None:
-                index = indexData_virtual.copy()
-                limitData = limitData_virtualDict[virtual].copy()
+                shIndex = shIndexData_virtual
+                gemIndex = gemIndexData_virtual
+                limitData = limitData_virtualDict[virtual]
             else:
-                index = indexData.copy()
-                limitData = _limitData.copy()
+                shIndex = shIndexData
+                gemIndex = gemIndexData
+                limitData = _limitData
             try:
                 data = queryData(stock, aimDate=aimDate, virtual=virtual)
                 height = limit_height(stock, data)
@@ -61,21 +69,21 @@ if __name__ == '__main__':
                 score = 0
                 white_sum = 0
                 black_sum = 0
-                lA1 = levelA1.levelA1(stockDetail, data, index, limitData).filter()
-                lA2 = levelA2.levelA2(stockDetail, data, index, limitData).filter()
-                lA3 = levelA3.levelA3(stockDetail, data, index, limitData).filter()
-                lA4 = levelA4.levelA4(stockDetail, data, index, limitData).filter()
-                lF1 = levelF1.levelF1(stockDetail, data, index, limitData).filter()
-                lF2 = levelF2.levelF2(stockDetail, data, index, limitData).filter()
-                lF3 = levelF3.levelF3(stockDetail, data, index, limitData).filter()
-                lF4 = levelF4.levelF4(stockDetail, data, index, limitData).filter()
-                lF5 = levelF5.levelF5(stockDetail, data, index, limitData).filter()
-                l1 = level1.level1(stockDetail, data, index, limitData).filter()
-                l2 = level2.level2(stockDetail, data, index, limitData).filter()
-                l3 = level3.level3(stockDetail, data, index, limitData).filter()
-                l4 = level4.level4(stockDetail, data, index, limitData).filter()
-                l5 = level5.level5(stockDetail, data, index, limitData).filter()
-                l6 = level6.level6(stockDetail, data, index, limitData).filter()
+                lA1 = levelA1.levelA1(stockDetail, data, gemIndex, shIndex, limitData).filter()
+                lA2 = levelA2.levelA2(stockDetail, data, gemIndex, shIndex, limitData).filter()
+                lA3 = levelA3.levelA3(stockDetail, data, gemIndex, shIndex, limitData).filter()
+                lA4 = levelA4.levelA4(stockDetail, data, gemIndex, shIndex, limitData).filter()
+                lF1 = levelF1.levelF1(stockDetail, data, gemIndex, shIndex, limitData).filter()
+                lF2 = levelF2.levelF2(stockDetail, data, gemIndex, shIndex, limitData).filter()
+                lF3 = levelF3.levelF3(stockDetail, data, gemIndex, shIndex, limitData).filter()
+                lF4 = levelF4.levelF4(stockDetail, data, gemIndex, shIndex, limitData).filter()
+                lF5 = levelF5.levelF5(stockDetail, data, gemIndex, shIndex, limitData).filter()
+                l1 = level1.level1(stockDetail, data, gemIndex, shIndex, limitData).filter()
+                l2 = level2.level2(stockDetail, data, gemIndex, shIndex, limitData).filter()
+                l3 = level3.level3(stockDetail, data, gemIndex, shIndex, limitData).filter()
+                l4 = level4.level4(stockDetail, data, gemIndex, shIndex, limitData).filter()
+                l5 = level5.level5(stockDetail, data, gemIndex, shIndex, limitData).filter()
+                l6 = level6.level6(stockDetail, data, gemIndex, shIndex, limitData).filter()
                 for white in [lA1, lA2, lA3, lA4]:
                     white_sum += len(white['detail'])
                     if white['result']:
@@ -107,13 +115,10 @@ if __name__ == '__main__':
                     T1S = virtualDict[stock]['s']
                     T1F = virtualDict[stock]['f']
                     _S = int(score - excelDict[stock]['score'] if excelDict != {} else -8888)
-                    aj = round(data[-1].concentration * 100, 1)
-                    CF = -8888 if (t0Day.buy_elg_vol + t0Day.buy_lg_vol) == 0 else round(
-                        ((t0Day.buy_elg_vol + t0Day.buy_lg_vol - t0Day.sell_elg_vol - t0Day.sell_lg_vol) / (
-                                t0Day.buy_elg_vol + t0Day.buy_lg_vol)) * 100, 1)
-                    TF = -8888 if t0Day.buy_elg_vol == 0 else round(
-                        ((t0Day.buy_elg_vol - t0Day.sell_elg_vol) / t0Day.buy_elg_vol) * 100, 1)
-                    TP = -8888 if t0Day.volume == 0 else round((t0Day.buy_elg_vol / t0Day.volume) * 100, 1)
+                    AJ = round(data[-1].concentration * 100, 1)
+                    CF = t0Day.CF
+                    TF = t0Day.TF
+                    TP = t0Day.TP
                     b1 = virtualDict[stock]['b1']
                     b2 = virtualDict[stock]['b2']
                     scoreLevelData = {
@@ -127,7 +132,7 @@ if __name__ == '__main__':
                         'white': white_sum,
                         'S': _S,
                         'data': data,
-                        'AJ': aj,
+                        'AJ': AJ,
                         'CF': CF,
                         'TF': TF,
                         'TP': TP,
@@ -145,10 +150,10 @@ if __name__ == '__main__':
                         level = 'B'
                     result = {
                         'code': stock,
-                        'name': stockDetail.name(),
-                        'industry': stockDetail.industry(),
+                        'name': stockDetail.name,
+                        'industry': stockDetail.industry,
                         'ptg_industry': f'{industryLimitCount}/{limitUpCount}',
-                        'AJ': aj,
+                        'AJ': AJ,
                         'CF': CF,
                         'TF': TF,
                         'TP': TP,
@@ -199,11 +204,10 @@ if __name__ == '__main__':
             _industry = errStockDetail[3]
             _stockName = errStockDetail[2]
             _industryLimitCount = 0 if _industry not in industryLimitDict.keys() else len(industryLimitDict[_industry])
-            excelDatas.append([
-                errStock, _stockName, _industry,
-                f'{_industryLimitCount}/{limitUpCount}',
-                'N/A', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '0%', aimDate, '', '', ''
-            ])
+            excelDatas.append(
+                [errStock, _stockName, _industry, f'{_industryLimitCount}/{limitUpCount}',
+                 'N/A', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '0%', aimDate, '', '', '']
+            )
 
         excel_util.write(aimDate, excelDatas)
 

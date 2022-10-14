@@ -10,16 +10,17 @@ from models.stockDetailModel import stockDetailModel
 
 
 class levelA1(base_level):
-    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], index: list[dataModel], limitData: dict[str, list[limitDataModel]]):
-        self.level = 'A1'
-        super().__init__(self.level, stockDetail, data, index, limitData)
+    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], gemIndex: list[dataModel], shIndex: list[dataModel],
+                 limitData: dict[str, list[limitDataModel]]):
+        self.level = self.__class__.__name__.replace('level', '')
+        super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 
     def rule1(self):
         data = self.data
         try:
             d = data[-1]
-            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume > 0.7:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.75:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume > 0.6:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.8:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                             d.buy_elg_vol + d.buy_lg_vol) > 0.4:
                         return True
@@ -30,8 +31,8 @@ class levelA1(base_level):
         data = self.data
         try:
             d = data[-1]
-            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume > 0.6:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.65:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume > 0.5:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.7:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                             d.buy_elg_vol + d.buy_lg_vol) > 0.3:
                         return True
@@ -42,8 +43,8 @@ class levelA1(base_level):
         data = self.data
         try:
             d = data[-1]
-            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume > 0.5:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.55:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume > 0.4:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.6:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                             d.buy_elg_vol + d.buy_lg_vol) > 0.2:
                         return True
@@ -54,8 +55,8 @@ class levelA1(base_level):
         data = self.data
         try:
             d = data[-1]
-            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume > 0.4:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.45:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume > 0.35:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.5:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                             d.buy_elg_vol + d.buy_lg_vol) > 0.05:
                         return True
@@ -115,3 +116,7 @@ class levelA1(base_level):
             return True
         except:
             pass
+
+    def rule9(self):
+        d = self.data[-1]
+        return d.CF > 55 and d.TF > 80 and d.TP > 35

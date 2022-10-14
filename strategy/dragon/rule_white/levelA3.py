@@ -9,9 +9,10 @@ from models.stockDetailModel import stockDetailModel
 
 
 class levelA3(base_level):
-    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], index: list[dataModel], limitData: dict[str, list[limitDataModel]]):
-        self.level = 'A3'
-        super().__init__(self.level, stockDetail, data, index, limitData)
+    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], gemIndex: list[dataModel], shIndex: list[dataModel],
+                 limitData: dict[str, list[limitDataModel]]):
+        self.level = self.__class__.__name__.replace('level', '')
+        super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 
     def rule1(self):
         data = self.data

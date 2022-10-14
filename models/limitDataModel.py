@@ -21,9 +21,11 @@ class limitDataModel:
     def date(self):
         return self.data[1]
 
+    @property
     def stock(self):
         return self.data[2]
 
+    @property
     def industry(self):
         return self.data[3]
 

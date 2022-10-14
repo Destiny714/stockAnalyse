@@ -5,11 +5,13 @@
 # @Software: PyCharm
 import os
 import logging
+from prefs.params import *
 from utils.file_util import projectPath
 
 
 class log:
     """自定义log类 单例"""
+    firstStart = True
     _instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -18,18 +20,25 @@ class log:
         return cls._instance
 
     def __init__(self):
-        logger = logging.getLogger('stock-log')
-        logger.setLevel(logging.INFO)
-        fh = logging.FileHandler(os.path.join(projectPath(), 'logs/dragon.log'))
-        fh.setLevel(logging.WARNING)
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.WARNING)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        fh.setFormatter(formatter)
-        ch.setFormatter(formatter)
-        logger.addHandler(fh)
-        logger.addHandler(ch)
-        self.logger = logger
+        if self.firstStart:
+            logger = logging.getLogger('stock-log')
+            logger.setLevel(logging.INFO)
+            fh = logging.FileHandler(os.path.join(projectPath(), 'logs/dragon.log'))
+            ch = logging.StreamHandler()
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            fh.setFormatter(formatter)
+            fh.setLevel(logging.WARNING)
+            ch.setFormatter(formatter)
+            ch.setLevel(logging.WARNING)
+            if runMode == RunMode.TEST:
+                logger.setLevel(logging.FATAL)
+                ch.setLevel(logging.FATAL)
+                fh.setLevel(logging.FATAL)
+            if runMode != RunMode.TEST:
+                logger.addHandler(fh)
+                logger.addHandler(ch)
+            self.logger = logger
+            self.firstStart = False
 
     def info(self, msg: str):
         self.logger.info(msg)

@@ -37,7 +37,7 @@ def virtualLimitData(data: dict[str, list[limitDataModel]], virtual=None) -> dic
         b[6] = a.close
         if virtual == 's':
             b[4] = a.close * 1.07
-            b[5] = a.close * (1 + (limit(a.stock()) / 100)),
+            b[5] = a.close * (1 + (limit(a.stock) / 100)),
             b[8] = a.amount() * 0.6
             b[9] = a.turnover * 0.6
             b[11] = joinTimeToStamp(nextDay, '09:36:00')
@@ -45,7 +45,7 @@ def virtualLimitData(data: dict[str, list[limitDataModel]], virtual=None) -> dic
             b[15] = a.limitHeight + 1
         if virtual == 'f':
             b[4] = a.close * 1.03
-            b[5] = a.close * (1 + (limit(a.stock()) / 100)),
+            b[5] = a.close * (1 + (limit(a.stock) / 100)),
             b[8] = a.amount() * 1.4
             b[9] = a.turnover * 1.4
             b[11] = joinTimeToStamp(nextDay, '09:50:00')
@@ -172,19 +172,19 @@ def queryData(stock, dateRange: int = 800, aimDate=lastTradeDay(), virtual=None)
     return res
 
 
-def t_low_pct(data: list[dataModel], plus: int = 0):
+def t_low_pct(data: list[dataModel], plus: int = 0) -> float:
     return (data[-plus - 1].low / data[-plus - 2].close) - 1
 
 
-def t_high_pct(data: list[dataModel], plus: int = 0):
+def t_high_pct(data: list[dataModel], plus: int = 0) -> float:
     return (data[-plus - 1].high / data[-plus - 2].close) - 1
 
 
-def t_close_pct(data: list[dataModel], plus: int = 0):
+def t_close_pct(data: list[dataModel], plus: int = 0) -> float:
     return (data[-plus - 1].close / data[-plus - 2].close) - 1
 
 
-def t_open_pct(data: list[dataModel], plus: int = 0):
+def t_open_pct(data: list[dataModel], plus: int = 0) -> float:
     return (data[-plus - 1].open / data[-plus - 2].close) - 1
 
 
@@ -192,14 +192,14 @@ def limit(stock: str) -> float:
     return 19.6 if stock[0:2] in ['30', '68'] else 9.8
 
 
-def model_1(stock: str, data: list[dataModel], plus: int = 0):
-    if (data[-plus - 1].close == data[-plus - 1].low) and (data[-plus - 1].open == data[-plus - 1].high) and (
-            data[-plus - 1].open == data[-plus - 1].close):
-        if data[-plus - 1].pctChange > limit(stock):
+def model_1(stock: str, data: list[dataModel], plus: int = 0) -> bool:
+    d = data[-plus - 1]
+    if (d.close == d.low) and (d.open == d.high) and (d.open == d.close):
+        if d.pctChange > limit(stock):
             return True
 
 
-def model_t(stock: str, data: list[dataModel], plus: int = 0):
+def model_t(stock: str, data: list[dataModel], plus: int = 0) -> bool:
     open_p = t_open_pct(data, plus)
     close_p = t_close_pct(data, plus)
     if open_p != close_p:
@@ -210,15 +210,15 @@ def model_t(stock: str, data: list[dataModel], plus: int = 0):
         return True
 
 
-def t_limit(stock: str, data: list[dataModel], plus: int = 0):
+def t_limit(stock: str, data: list[dataModel], plus: int = 0) -> bool:
     return data[-plus - 1].pctChange > limit(stock)
 
 
-def t_down_limit(stock: str, data: list[dataModel], plus: int = 0):
+def t_down_limit(stock: str, data: list[dataModel], plus: int = 0) -> bool:
     return data[-plus - 1].pctChange < - limit(stock)
 
 
-def limit_height(stock: str, data: list[dataModel], plus: int = 0):
+def limit_height(stock: str, data: list[dataModel], plus: int = 0) -> int:
     height = 0
     for i in range(20):
         if t_limit(stock, data, i + plus):
@@ -228,7 +228,7 @@ def limit_height(stock: str, data: list[dataModel], plus: int = 0):
     return height
 
 
-def move_avg(data: list[dataModel], dateRange: int, plus: int):
+def move_avg(data: list[dataModel], dateRange: int, plus: int = 0) -> float:
     """
     计算移动平均值
     :param data: list[dataModel]
@@ -240,92 +240,116 @@ def move_avg(data: list[dataModel], dateRange: int, plus: int):
     return sum([data[-_].close for _ in range(j, j + dateRange)]) / dateRange
 
 
-def rankStockByX(keyword: str, date: str, dataDict: dict[str, list[limitDataModel]], eliminateModel1=False):
-    """
-    根据关键词对某日涨停股票进行排序
-    :param keyword: 排序方法名称
-    :param date: 指定日期
-    :param dataDict: 以date为key，list[limitDataModel]为value的map
-    :param eliminateModel1: 是否剔除一字板
-    """
-    data = dataDict[date].copy()
-    rubbish = []
-    for _ in data:
-        if _.open is None:
-            rubbish.append(_)
-            continue
-        if _.preClose is None:
-            rubbish.append(_)
-            continue
-    for rub in rubbish:
-        data.remove(rub)
-    if eliminateModel1:
-        data = [_ for _ in data if (_.open / _.preClose) <= 1.098]
-    if keyword == 'limitTime-industry':
-        dictByIndustry = {}
+class RankLimitStock(object):
+    _instance = None
+    resultsDict = {}
+
+    def __init__(self, dataDict: dict[str, list[limitDataModel]]):
+        self.dataDict = dataDict.copy()
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def by(self, keyword: str, date: str = lastTradeDay(), eliminateModel1=False):
+        """
+        根据关键词对某日涨停股票进行排序
+        :param keyword: 排序方法名称
+        :param date: 指定日期
+        :param eliminateModel1: 是否剔除一字板
+        """
+        dataDict = self.dataDict
+        hashKey = hash(keyword + date + ''.join(self.dataDict.keys()))
+        if hashKey in self.resultsDict.keys():
+            return self.resultsDict[hashKey]
+        data = dataDict[date]
+        res = None
+        rubbish = []
         for _ in data:
-            if _.industry() not in dictByIndustry.keys():
-                dictByIndustry[_.industry()] = [_]
-            else:
-                dictByIndustry[_.industry()].append(_)
+            if _.open is None:
+                rubbish.append(_)
+                continue
+            if _.preClose is None:
+                rubbish.append(_)
+                continue
+        for rub in rubbish:
+            data.remove(rub)
+        if eliminateModel1:
+            data = [_ for _ in data if (_.open / _.preClose) <= 1.098]
+        if keyword == 'limitTime-industry':
+            dictByIndustry = {}
+            for _ in data:
+                if _.industry not in dictByIndustry.keys():
+                    dictByIndustry[_.industry] = [_]
+                else:
+                    dictByIndustry[_.industry].append(_)
 
-        def rank(d: limitDataModel):
-            return d.firstLimitTime
+            def rank(d: limitDataModel):
+                return d.firstLimitTime
 
-        res = {}
-        for industry in dictByIndustry.keys():
-            industryStocks: list[limitDataModel] = dictByIndustry[industry]
-            industryStocks.sort(key=rank)
-            res[industry] = [_.stock() for _ in industryStocks]
-        return res
-    if keyword == 'open-industry':
-        dictByIndustry = {}
-        for _ in data:
-            if _.industry() not in dictByIndustry.keys():
-                dictByIndustry[_.industry()] = [_]
-            else:
-                dictByIndustry[_.industry()].append(_)
+            res = {}
+            for industry in dictByIndustry.keys():
+                industryStocks: list[limitDataModel] = dictByIndustry[industry]
+                industryStocks.sort(key=rank)
+                res[industry] = [_.stock for _ in industryStocks]
+        if keyword == 'open-industry':
+            dictByIndustry = {}
+            for _ in data:
+                if _.industry not in dictByIndustry.keys():
+                    dictByIndustry[_.industry] = [_]
+                else:
+                    dictByIndustry[_.industry].append(_)
 
-        def rank(d: limitDataModel):
-            return d.open / d.preClose
+            def rank(d: limitDataModel):
+                return d.open / d.preClose
 
-        res = {}
-        for industry in dictByIndustry.keys():
-            industryStocks: list[limitDataModel] = dictByIndustry[industry]
-            industryStocks.sort(key=rank, reverse=True)
-            res[industry] = [_.stock() for _ in industryStocks]
-        return res
-    if keyword == 'open-height':
-        dictByHeight = {}
-        for _ in data:
-            if _.limitHeight not in dictByHeight.keys():
-                dictByHeight[_.limitHeight] = [_]
-            else:
-                dictByHeight[_.limitHeight].append(_)
+            res = {}
+            for industry in dictByIndustry.keys():
+                industryStocks: list[limitDataModel] = dictByIndustry[industry]
+                industryStocks.sort(key=rank, reverse=True)
+                res[industry] = [_.stock for _ in industryStocks]
+        if keyword == 'open-height':
+            dictByHeight = {}
+            for _ in data:
+                if _.limitHeight not in dictByHeight.keys():
+                    dictByHeight[_.limitHeight] = [_]
+                else:
+                    dictByHeight[_.limitHeight].append(_)
 
-        def rank(d: limitDataModel):
-            return d.open / d.preClose
+            def rank(d: limitDataModel):
+                return d.open / d.preClose
 
-        res = {}
-        for height in dictByHeight.keys():
-            heightStocks: list[limitDataModel] = dictByHeight[height]
-            heightStocks.sort(key=rank, reverse=True)
-            res[height] = [_.stock() for _ in heightStocks]
-        return res
-    if keyword == 'limitTime-height':
-        dictByHeight = {}
-        for _ in data:
-            if _.limitHeight not in dictByHeight.keys():
-                dictByHeight[_.limitHeight] = [_]
-            else:
-                dictByHeight[_.limitHeight].append(_)
+            res = {}
+            for height in dictByHeight.keys():
+                heightStocks: list[limitDataModel] = dictByHeight[height]
+                heightStocks.sort(key=rank, reverse=True)
+                res[height] = [_.stock for _ in heightStocks]
+        if keyword == 'limitTime-height':
+            dictByHeight = {}
+            for _ in data:
+                if _.limitHeight not in dictByHeight.keys():
+                    dictByHeight[_.limitHeight] = [_]
+                else:
+                    dictByHeight[_.limitHeight].append(_)
 
-        def rank(d: limitDataModel):
-            return d.firstLimitTime
+            def rank(d: limitDataModel):
+                return d.firstLimitTime
 
-        res = {}
-        for height in dictByHeight.keys():
-            heightStocks: list[limitDataModel] = dictByHeight[height]
-            heightStocks.sort(key=rank)
-            res[height] = [_.stock() for _ in heightStocks]
+            res = {}
+            for height in dictByHeight.keys():
+                heightStocks: list[limitDataModel] = dictByHeight[height]
+                heightStocks.sort(key=rank)
+                res[height] = [_.stock for _ in heightStocks]
+        if keyword == 'TF':
+            needRankData = [{'TF': queryData(_.stock, 5, aimDate=date)[0].TF, 'stock': _.stock} for _ in data]
+
+            def rank(d):
+                return d['TF']
+
+            needRankData.sort(key=rank, reverse=True)
+            res = [_['stock'] for _ in needRankData]
+        if res is None:
+            raise Exception('排序出现错误')
+        self.resultsDict[hashKey] = res
         return res

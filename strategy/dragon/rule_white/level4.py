@@ -10,9 +10,10 @@ from models.stockDetailModel import stockDetailModel
 
 
 class level4(base_level):
-    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], index: list[dataModel], limitData: dict[str, list[limitDataModel]]):
-        self.level = '4'
-        super().__init__(self.level, stockDetail, data, index, limitData)
+    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], gemIndex: list[dataModel], shIndex: list[dataModel],
+                 limitData: dict[str, list[limitDataModel]]):
+        self.level = self.__class__.__name__.replace('level', '')
+        super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 
     def rule1(self):
         data = self.data
@@ -140,7 +141,7 @@ class level4(base_level):
 
     def rule8(self):
         data = self.data
-        if data[-1].concentration < 0.115:
+        if data[-1].concentration < 0.09:
             if data[-1].concentration < data[-2].concentration:
                 return True
 
@@ -285,7 +286,7 @@ class level4(base_level):
         for i in range(3):
             if not t_limit(stock, data, i):
                 return False
-        rank = rankStockByX('limitTime-height', data[-1].date, self.limitData, eliminateModel1=True)
+        rank = RankLimitStock(self.limitData).by('limitTime-height', data[-1].date, eliminateModel1=True)
         if 3 not in rank.keys():
             return False
         if rank[3][0] == stock:
@@ -349,8 +350,10 @@ class level4(base_level):
     def rule21(self):
         data = self.data
         if t_close_pct(data) > 0.06:
-            if data[-1].concentration < 0.12:
-                if data[-1].concentration - data[-2].concentration < 0.015:
+            con1 = data[-1].concentration
+            con2 = data[-2].concentration
+            if con1 < 0.09:
+                if (con1 - con2) / con2 < 0.1:
                     return True
 
     def rule22(self):
@@ -413,7 +416,9 @@ class level4(base_level):
                 return False
             if data[-i - 1].limitOpenTime >= 2:
                 return False
-        if data[-1].concentration - data[-2].concentration < 0.015:
+        con1 = data[-1].concentration
+        con2 = data[-2].concentration
+        if (con1 - con2) / con2 < 0.09:
             return True
 
     def rule26(self):
@@ -438,7 +443,7 @@ class level4(base_level):
                 if t_low_pct(data, i - 1) <= -0.02:
                     continue
                 if t_open_pct(data, i - 1) > 0:
-                    if t_open_pct(self.index, i - 1) < -0.02:
+                    if t_open_pct(self.gemIndex, i - 1) < -0.02:
                         d = data[-1]
                         if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.3:
                             return True
@@ -535,7 +540,7 @@ class level4(base_level):
             return False
         if model_1(stock, data):
             return True
-        rank = rankStockByX('limitTime-industry', data[-1].date, self.limitData, eliminateModel1=True)[self.industry]
+        rank = RankLimitStock(self.limitData).by('limitTime-industry', data[-1].date, eliminateModel1=True)[self.industry]
         if stock in rank[:2]:
             return True
 
@@ -582,6 +587,22 @@ class level4(base_level):
         except:
             pass
 
+    def rule35(self):
+        if not t_limit(self.stock, self.data):
+            return False
+        rankList = RankLimitStock(self.limitData).by('TF', self.data[-1].date)
+        return self.stock in rankList[:3]
+
+    def rule36(self):
+        data = self.data
+        if data[-1].concentration >= 0.09:
+            return False
+        cons = [data[-i - 1].concentration for i in range(1, 5)]
+        maxCon = max(cons)
+        minCon = min(cons)
+        if (maxCon - minCon) / minCon < 0.08:
+            return True
+
     def rule37(self):
         data = self.data
         if data[-1].concentration < data[-2].concentration < data[-3].concentration > data[-4].concentration:
@@ -598,11 +619,14 @@ class level4(base_level):
 
     def rule39(self):
         data = self.data
-        for i in range(10):
-            ma10 = move_avg(data, 10, i)
-            ma20 = move_avg(data, 20, i)
-            ma30 = move_avg(data, 30, i)
-            ma60 = move_avg(data, 60, i)
-            if not (ma10 > ma20 > ma30 > ma60):
-                return False
-        return True
+        try:
+            for i in range(10):
+                ma10 = move_avg(data, 10, i)
+                ma20 = move_avg(data, 20, i)
+                ma30 = move_avg(data, 30, i)
+                ma60 = move_avg(data, 60, i)
+                if not (ma10 > ma20 > ma30 > ma60):
+                    return False
+            return True
+        except:
+            pass

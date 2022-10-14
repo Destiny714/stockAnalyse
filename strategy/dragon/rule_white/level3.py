@@ -10,9 +10,10 @@ from models.stockDetailModel import stockDetailModel
 
 
 class level3(base_level):
-    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], index: list[dataModel], limitData: dict[str, list[limitDataModel]]):
-        self.level = '3'
-        super().__init__(self.level, stockDetail, data, index, limitData)
+    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], gemIndex: list[dataModel], shIndex: list[dataModel],
+                 limitData: dict[str, list[limitDataModel]]):
+        self.level = self.__class__.__name__.replace('level', '')
+        super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 
     def rule1(self):
         data = self.data
@@ -286,7 +287,7 @@ class level3(base_level):
     def rule22(self):
         data = self.data
         stock = self.stock
-        index = self.index
+        index = self.gemIndex
         if not t_limit(stock, data):
             return False
         if t_low_pct(data) <= -0.05:
@@ -344,7 +345,7 @@ class level3(base_level):
         data = self.data
         try:
             if data[-1].concentration < data[-2].concentration:
-                if data[-1].concentration < 0.15:
+                if data[-1].concentration < 0.13:
                     return True
         except:
             pass
@@ -620,3 +621,16 @@ class level3(base_level):
             return limitCount <= 1 and count >= 2
         except:
             pass
+
+    def rule46(self):
+        data = self.data
+        stock = self.stock
+        if not model_1(stock, data):
+            return False
+        if t_limit(stock, data, 1):
+            return False
+        return data[-1].turnover < data[-2].turnover * 0.4
+
+    def rule47(self):
+        data = self.data
+        return t_open_pct(data) > 0.05 and t_low_pct(data) > 0.035

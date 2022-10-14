@@ -5,20 +5,19 @@
 # @Software: PyCharm
 
 import pymysql
-from api import args
+from api import config
 from json import dumps
 from utils import date_util
 
 
 class Mysql:
     def __init__(self):
-        self.__account = args['mysqlAccount']
-        self.__pswd = args['mysqlPassword']
-        self.__DB = args['mysqlDatabase']
-        self.host = args['mysqlHost']
+        self.__account = config['mysqlAccount']
+        self.__pswd = config['mysqlPassword']
+        self.__DB = config['mysqlDatabase']
+        self.host = config['mysqlHost']
         self.word = ''
-        self.db = pymysql.connect(host=self.host, port=3306, user=self.__account, password=self.__pswd,
-                                  database=self.__DB, connect_timeout=5)
+        self.db = pymysql.connect(host=self.host, port=3306, user=self.__account, password=self.__pswd, database=self.__DB, connect_timeout=5)
         self.cursor = self.db.cursor()
 
     def action(self, output: bool):

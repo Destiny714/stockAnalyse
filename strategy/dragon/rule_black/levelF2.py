@@ -10,9 +10,10 @@ from models.stockDetailModel import stockDetailModel
 
 
 class levelF2(base_level):
-    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], index: list[dataModel], limitData: dict[str, list[limitDataModel]]):
-        self.level = 'F2'
-        super().__init__(self.level, stockDetail, data, index, limitData)
+    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], gemIndex: list[dataModel], shIndex: list[dataModel],
+                 limitData: dict[str, list[limitDataModel]]):
+        self.level = self.__class__.__name__.replace('level', '')
+        super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 
     def rule1(self):
         data = self.data
@@ -58,7 +59,7 @@ class levelF2(base_level):
             if data[-1].firstLimitTime <= matchTime:
                 return False
             if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < 100000:
-                if t_low_pct(self.index) > -0.01:
+                if t_low_pct(self.gemIndex) > -0.01:
                     return True
         except:
             pass
@@ -239,7 +240,7 @@ class levelF2(base_level):
             plus = []
             minus = []
             for i in range(3, 43):
-                if t_low_pct(self.index, i) < -0.01:
+                if t_low_pct(self.gemIndex, i) < -0.01:
                     continue
                 d = data[-i - 1]
                 if d.close > d.open:
@@ -257,11 +258,11 @@ class levelF2(base_level):
             d = data[-1]
             if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.8:
                 if d.buy_elg_vol / d.volume < 0.5:
-                    range15 = data[-15:]
-                    range60 = data[-60:]
-                    avg15 = sum([_.close for _ in range15]) / 15
-                    avg60 = sum([_.close for _ in range60]) / 60
-                    if avg15 < avg60:
+                    range25 = data[-25:]
+                    range90 = data[-90:]
+                    avg25 = sum([_.close for _ in range25]) / 25
+                    avg90 = sum([_.close for _ in range90]) / 90
+                    if avg25 < avg90:
                         return True
         except:
             pass
@@ -541,3 +542,44 @@ class levelF2(base_level):
         if t_high_pct(data) > limit(stock):
             if t_close_pct(data) < 0.065:
                 return True
+
+    def rule34(self):
+        data = self.data
+        stock = self.stock
+        for i in [0, 1, 3, 4]:
+            if not t_limit(stock, data, i):
+                return False
+        if t_limit(stock, data, 2):
+            return False
+        return data[-1].TP < 40
+
+    def rule35(self):
+        data = self.data
+        stock = self.stock
+        for i in [0, 1, 3]:
+            if not t_limit(stock, data, i):
+                return False
+        if t_limit(stock, data, 2):
+            return False
+        return t_open_pct(data) < 0.05
+
+    def rule36(self):
+        pass
+        # TODO
+
+    def rule37(self):
+        for i in range(1, 11):
+            if t_down_limit(self.stock, self.data, i):
+                return True
+
+    def rule38(self):
+        data = self.data
+        stock = self.stock
+        if not t_limit(stock, data):
+            return False
+        if model_1(stock, data):
+            return False
+        if data[-1].turnover >= 1 / 3 * max([_.turnover for _ in data[-50:]]):
+            return False
+        if data[-1].close < move_avg(data, 10) and data[-1].close < move_avg(data, 20):
+            return True

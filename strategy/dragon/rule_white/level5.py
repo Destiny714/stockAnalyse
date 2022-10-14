@@ -10,9 +10,10 @@ from models.stockDetailModel import stockDetailModel
 
 
 class level5(base_level):
-    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], index: list[dataModel], limitData: dict[str, list[limitDataModel]]):
-        self.level = '5'
-        super().__init__(self.level, stockDetail, data, index, limitData)
+    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], gemIndex: list[dataModel], shIndex: list[dataModel],
+                 limitData: dict[str, list[limitDataModel]]):
+        self.level = self.__class__.__name__.replace('level', '')
+        super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 
     def rule1(self):
         data = self.data
@@ -139,62 +140,68 @@ class level5(base_level):
 
     def rule8(self):
         data = self.data
-        for i in range(1, 31):
-            if limit_height(self.stock, data, i) >= 3:
-                return False
-        for i in range(30, 121):
-            d = data[-i - 1]
-            if t_close_pct(data, i) <= 0.05:
-                continue
-            ma20 = move_avg(data, 20, i)
-            ma30 = move_avg(data, 30, i)
-            ma60 = move_avg(data, 60, i)
-            if d.low >= ma20:
-                continue
-            if d.low >= ma30:
-                continue
-            if d.low >= ma60:
-                continue
-            if d.high <= ma20:
-                continue
-            if d.high <= ma30:
-                continue
-            if d.high <= ma60:
-                continue
-            afterData = [_ for _ in range(30, i) if data[-_ - 1].close < d.low]
-            if len(afterData) <= 3:
-                return True
+        try:
+            for i in range(1, 31):
+                if limit_height(self.stock, data, i) >= 3:
+                    return False
+            for i in range(30, 121):
+                d = data[-i - 1]
+                if t_close_pct(data, i) <= 0.05:
+                    continue
+                ma20 = move_avg(data, 20, i)
+                ma30 = move_avg(data, 30, i)
+                ma60 = move_avg(data, 60, i)
+                if d.low >= ma20:
+                    continue
+                if d.low >= ma30:
+                    continue
+                if d.low >= ma60:
+                    continue
+                if d.high <= ma20:
+                    continue
+                if d.high <= ma30:
+                    continue
+                if d.high <= ma60:
+                    continue
+                afterData = [_ for _ in range(30, i) if data[-_ - 1].close < d.low]
+                if len(afterData) <= 3:
+                    return True
+        except:
+            pass
 
     def rule9(self):
         data = self.data
-        for i in range(1, 31):
-            if limit_height(self.stock, data, i) >= 3:
-                return False
-        for i in range(30, 121):
-            d = data[-i - 1]
-            if t_close_pct(data, i) <= 0.05:
-                continue
-            ma10 = move_avg(data, 10, i)
-            ma20 = move_avg(data, 20, i)
-            ma30 = move_avg(data, 30, i)
-            ma60 = move_avg(data, 60, i)
-            if ma30 <= ma60:
-                continue
-            if d.low >= ma20:
-                continue
-            if d.low >= ma30:
-                continue
-            if d.low >= ma60:
-                continue
-            if d.close <= ma10:
-                continue
-            if d.close <= ma20:
-                continue
-            if d.close <= ma30:
-                continue
-            afterData = [_ for _ in range(30, i) if data[-_ - 1].close < d.low]
-            if len(afterData) <= 3:
-                return True
+        try:
+            for i in range(1, 31):
+                if limit_height(self.stock, data, i) >= 3:
+                    return False
+            for i in range(30, 121):
+                d = data[-i - 1]
+                if t_close_pct(data, i) <= 0.05:
+                    continue
+                ma10 = move_avg(data, 10, i)
+                ma20 = move_avg(data, 20, i)
+                ma30 = move_avg(data, 30, i)
+                ma60 = move_avg(data, 60, i)
+                if ma30 <= ma60:
+                    continue
+                if d.low >= ma20:
+                    continue
+                if d.low >= ma30:
+                    continue
+                if d.low >= ma60:
+                    continue
+                if d.close <= ma10:
+                    continue
+                if d.close <= ma20:
+                    continue
+                if d.close <= ma30:
+                    continue
+                afterData = [_ for _ in range(30, i) if data[-_ - 1].close < d.low]
+                if len(afterData) <= 3:
+                    return True
+        except:
+            pass
 
     def rule10(self):
         data = self.data

@@ -5,4 +5,4 @@
 # @Software: PyCharm
 from utils import file_util
 
-args = file_util.arg_yaml()
+config = file_util.arg_yaml()

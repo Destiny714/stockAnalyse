@@ -28,7 +28,13 @@ class ruleB(base_score_level):
                         return True
 
     def rule3(self):
-        if self.height > 0 and self.black > 4:
+        if self.height > 1 and self.black > 4:
             if 'A1' in self.details.keys():
-                if len(self.details['A1']) == len(levelRuleDict['A1']):
+                if len(self.details['A1']) == len(Params.levelRuleDict['A1']):
+                    return True
+
+    def rule4(self):
+        if self.height > 1 and self.black > 4:
+            if 'A1' in self.details.keys():
+                if {1, 2, 3, 4, 9} <= set(self.details['A1']):
                     return True

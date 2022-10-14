@@ -7,7 +7,6 @@
 import os
 import time
 import requests
-from typing import List
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 
 
@@ -45,7 +44,7 @@ def errorHandler(e: Exception) -> str:
     return errMsg
 
 
-def cutList(full_list: list, piece_len: int) -> List[list]:
+def cutList(full_list: list, piece_len: int) -> list[list]:
     """切割大列表 --> list[小列表]"""
     cut_list = []
     extra_num = len(full_list) % piece_len

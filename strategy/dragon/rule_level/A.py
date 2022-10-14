@@ -107,10 +107,10 @@ class ruleA(base_score_level):
 
     def rule13(self):
         if self.height > 0:
-            if self.black == 0 and self.white > 25:
+            if self.black == 0 and self.white > 15:
                 if 'A1' in self.details.keys():
                     if 2 in self.details['A1']:
-                        if self.b1 < 2 and self.b2 < 3:
+                        if self.b1 == 0:
                             return True
 
     def rule14(self):
@@ -132,7 +132,7 @@ class ruleA(base_score_level):
     def rule16(self):
         if self.height > 0 and self.black < 2:
             if self.b1 < 2 and self.b2 < 3:
-                if self.white > 25:
+                if self.white > 20:
                     if 'A1' in self.details.keys():
                         if 3 in self.details['A1']:
                             if self.b1 < 2 and self.b2 < 3:
@@ -182,3 +182,9 @@ class ruleA(base_score_level):
                 if self.white > 20 and self.black < 2:
                     if self.b1 < 2 and self.b2 < 3:
                         return True
+
+    def rule22(self):
+        if self.height == 0 and self.black == 0:
+            if self.b1 < 2 and self.b2 < 3:
+                if self.white > 25:
+                    return True

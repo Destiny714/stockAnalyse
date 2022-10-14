@@ -10,9 +10,10 @@ from models.stockDetailModel import stockDetailModel
 
 
 class levelF5(base_level):
-    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], index: list[dataModel], limitData: dict[str, list[limitDataModel]]):
-        self.level = 'F5'
-        super().__init__(self.level, stockDetail, data, index, limitData)
+    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], gemIndex: list[dataModel], shIndex: list[dataModel],
+                 limitData: dict[str, list[limitDataModel]]):
+        self.level = self.__class__.__name__.replace('level', '')
+        super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 
     def rule1(self):
         data = self.data
@@ -190,7 +191,7 @@ class levelF5(base_level):
 
     def rule12(self):
         data = self.data
-        index = self.index
+        index = self.gemIndex
         try:
             if t_high_pct(data) <= 0.06:
                 return False
@@ -217,8 +218,8 @@ class levelF5(base_level):
             d = data[-1]
             if t_high_pct(data) <= 0.06:
                 return False
-            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.6:
-                if d.buy_elg_vol / d.volume < 0.4:
+            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.7:
+                if d.buy_elg_vol / d.volume < 0.3:
                     matchTime = date_util.joinTimeToStamp(data[-1].date, '10:00:00')
                     if data[-1].firstLimitTime > matchTime:
                         return True

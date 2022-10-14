@@ -10,9 +10,10 @@ from models.stockDetailModel import stockDetailModel
 
 
 class levelF3(base_level):
-    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], index: list[dataModel], limitData: dict[str, list[limitDataModel]]):
-        self.level = 'F3'
-        super().__init__(self.level, stockDetail, data, index, limitData)
+    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], gemIndex: list[dataModel], shIndex: list[dataModel],
+                 limitData: dict[str, list[limitDataModel]]):
+        self.level = self.__class__.__name__.replace('level', '')
+        super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 
     def rule1(self):
         data = self.data
@@ -96,7 +97,7 @@ class levelF3(base_level):
         stock = self.stock
         try:
             for i in range(1, 4):
-                if t_low_pct(self.index, i - 1) <= -0.01:
+                if t_low_pct(self.gemIndex, i - 1) <= -0.01:
                     continue
                 d = data[-i]
                 if d.open != d.close:
@@ -181,7 +182,7 @@ class levelF3(base_level):
             matchTime = joinTimeToStamp(data[-1].date, '09:45:00')
             if data[-1].firstLimitTime > matchTime and data[-1].lastLimitTime > matchTime:
                 if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < data[-1].volume * 0.1:
-                    if t_low_pct(self.index) > -0.01:
+                    if t_low_pct(self.gemIndex) > -0.01:
                         return True
         except:
             pass
@@ -230,13 +231,16 @@ class levelF3(base_level):
     def rule15(self):
         data = self.data
         stock = self.stock
-        for i in range(1, 21):
-            if limit_height(stock, data, i) >= 3:
+        try:
+            for i in range(1, 21):
+                if limit_height(stock, data, i) >= 3:
+                    return False
+            if t_limit(stock, data, 1):
                 return False
-        if t_limit(stock, data, 1):
-            return False
-        if data[-1].turnover > max([_.turnover for _ in data[-31:-1]]) * 1.8:
-            return True
+            if data[-1].turnover > max([_.turnover for _ in data[-31:-1]]) * 1.8:
+                return True
+        except:
+            pass
 
     def rule16(self):
         data = self.data
@@ -258,7 +262,7 @@ class levelF3(base_level):
         try:
             for i in range(1, 5):
                 if t_open_pct(data, i - 1) > 0.09 and t_low_pct(data, i - 1) < 0.03:
-                    if t_low_pct(self.index, i - 1) > -0.01:
+                    if t_low_pct(self.gemIndex, i - 1) > -0.01:
                         d = data[-i]
                         if (d.buy_elg_vol + d.buy_lg_vol) / d.volume < 0.5 and d.buy_elg_vol < d.sell_elg_vol:
                             if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
@@ -280,7 +284,7 @@ class levelF3(base_level):
                 return False
             if data[-1].turnover > 3 * data[-2].turnover:
                 if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < 100000:
-                    if t_low_pct(self.index) > -0.01:
+                    if t_low_pct(self.gemIndex) > -0.01:
                         return True
         except:
             pass
@@ -313,7 +317,7 @@ class levelF3(base_level):
                 return False
             if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) >= data[-1].volume * 0.1:
                 return False
-            if t_low_pct(self.index) > -0.01:
+            if t_low_pct(self.gemIndex) > -0.01:
                 d = data[-1]
                 if (d.buy_elg_vol + d.buy_lg_vol) / d.volume < 0.5 and d.buy_elg_vol < d.sell_elg_vol:
                     return True
@@ -403,7 +407,7 @@ class levelF3(base_level):
             return False
         if data[-3].turnover <= data[-4].turnover:
             return False
-        if t_low_pct(self.index, 1) > -0.01:
+        if t_low_pct(self.gemIndex, 1) > -0.01:
             return True
 
     def rule27(self):
@@ -461,7 +465,7 @@ class levelF3(base_level):
                 continue
             if t_low_pct(data, i) >= 0.05:
                 continue
-            if t_low_pct(self.index, i) > -0.01:
+            if t_low_pct(self.gemIndex, i) > -0.01:
                 count += 1
             if count >= 2:
                 return True
@@ -545,62 +549,78 @@ class levelF3(base_level):
     def rule35(self):
         data = self.data
         stock = self.stock
-        if t_limit(stock, data, 1):
-            return False
-        if not t_limit(stock, data):
-            return False
-        for i in range(10, 91):
-            if limit_height(stock, data, i) >= 3:
+        try:
+            d = data[-1]
+            if d.buy_elg_vol / d.volume / (1 + t_close_pct(self.shIndex) * 10) >= 0.4:
                 return False
-        plus = 0
-        minus = 0
-        for i in range(50):
-            if t_low_pct(self.index, i) < -0.02:
-                continue
-            d = data[-i - 1]
-            if d.close > d.open:
-                plus += 1
-            else:
-                minus += 1
-        return plus < minus
+            if t_limit(stock, data, 1):
+                return False
+            if not t_limit(stock, data):
+                return False
+            for i in range(10, 91):
+                if limit_height(stock, data, i) >= 3:
+                    return False
+            plus = 0
+            minus = 0
+            for i in range(50):
+                if t_low_pct(self.gemIndex, i) < -0.02:
+                    continue
+                d = data[-i - 1]
+                if d.close > d.open:
+                    plus += 1
+                else:
+                    minus += 1
+            return plus < minus
+        except:
+            pass
 
     def rule36(self):
         data = self.data
         stock = self.stock
-        if t_limit(stock, data, 2):
-            return False
-        for i in range(2):
-            if not t_limit(stock, data, i):
+        try:
+            d = data[-1]
+            if d.buy_elg_vol / d.volume / (1 + t_close_pct(self.shIndex) * 10) >= 0.4:
                 return False
-        for i in range(10, 61):
-            if limit_height(stock, data, i) >= 3:
+            if t_limit(stock, data, 2):
                 return False
-        plus = 0
-        minus = 0
-        for i in range(50):
-            if t_low_pct(self.index, i) < -0.02:
-                continue
-            d = data[-i - 1]
-            if d.close > d.open:
-                plus += 1
-            else:
-                minus += 1
-        return plus < minus
+            for i in range(2):
+                if not t_limit(stock, data, i):
+                    return False
+            for i in range(10, 61):
+                if limit_height(stock, data, i) >= 3:
+                    return False
+            plus = 0
+            minus = 0
+            for i in range(50):
+                if t_low_pct(self.gemIndex, i) < -0.02:
+                    continue
+                d = data[-i - 1]
+                if d.close > d.open:
+                    plus += 1
+                else:
+                    minus += 1
+            return plus < minus
+        except:
+            pass
 
     def rule37(self):
         data = self.data
         stock = self.stock
-        index = self.index
+        index = self.gemIndex
         try:
-            for i in range(20):
-                if limit_height(stock, data, i) >= 3:
-                    return False
+            d = data[-1]
+            if d.buy_elg_vol / d.volume / (1 + t_close_pct(self.shIndex) * 10) >= 0.4:
+                return False
+            if data[-1].TF >= 80:
+                return False
             limitCount = 0
             plus = 1
             minus = 1
             plusVol = 0
             minusVol = 0
-            for i in range(11):
+            for i in range(20):
+                if limit_height(stock, data, i) >= 3:
+                    return False
                 if t_limit(stock, data, i):
                     limitCount += 1
                 if t_low_pct(index, i) <= -0.02:
@@ -621,21 +641,29 @@ class levelF3(base_level):
     def rule38(self):
         data = self.data
         stock = self.stock
-        index = self.index
-        limitCount = 0
-        plus = 0
-        minus = 0
-        for i in range(30):
-            if t_limit(stock, data, i):
-                limitCount += 1
-                if limitCount >= 2:
-                    return False
-        for i in range(11):
-            if t_low_pct(index, i) <= -0.02:
-                continue
-            d = data[-i - 1]
-            if d.close > d.open:
-                plus += 1
-            else:
-                minus += 1
-        return plus < minus
+        index = self.gemIndex
+        try:
+            d = data[-1]
+            if d.buy_elg_vol / d.volume / (1 + t_close_pct(self.shIndex) * 10) >= 0.4:
+                return False
+            if data[-1].TF >= 80:
+                return False
+            limitCount = 0
+            plus = 0
+            minus = 0
+            for i in range(30):
+                if t_limit(stock, data, i):
+                    limitCount += 1
+                    if limitCount >= 2:
+                        return False
+                if i in range(20):
+                    if t_low_pct(index, i) <= -0.02:
+                        continue
+                    d = data[-i - 1]
+                    if d.close > d.open:
+                        plus += 1
+                    else:
+                        minus += 1
+            return plus < minus
+        except:
+            pass

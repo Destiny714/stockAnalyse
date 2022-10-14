@@ -12,20 +12,22 @@ from models.stockDetailModel import stockDetailModel
 
 
 class base_level(object):
-    def __init__(self, level, stockDetail: stockDetailModel, data: list[dataModel], index: list[dataModel],
+    def __init__(self, level, stockDetail: stockDetailModel, data: list[dataModel], gemIndex: list[dataModel], shIndex: list[dataModel],
                  limitData: dict[str, list[limitDataModel]]):
         self.data = data
-        self.index = index
         self.level = level
+        self.shIndex = shIndex
+        self.gemIndex = gemIndex
         self.limitData = limitData
         self.stock = stockDetail.symbol()
-        self.industry = stockDetail.industry()
+        self.industry = stockDetail.industry
         self.height: int = limit_height(stockDetail.symbol(), data)
         self.shot_rule: list = []
         self.fail_rule: list = []
         self.f_rule: bool = 'F' in self.level
-        if level not in levelRuleDict.keys():
-            levelRuleDict[level] = [_ for _ in self.__class__.__dict__.keys() if 'rule' in _]
+        self.errors = []
+        if level not in Params.levelRuleDict.keys():
+            Params.levelRuleDict[level] = [_ for _ in self.__class__.__dict__.keys() if 'rule' in _]
 
     def result(self):
         return {'level': self.level, 'stock': self.stock, 'detail': self.shot_rule,
@@ -36,5 +38,12 @@ class base_level(object):
         for rule in rules:
             func = getattr(self, rule)
             ruleID = int(str(rule).replace('rule', ''))
-            self.shot_rule.append(ruleID) if func() else self.fail_rule.append(ruleID)
+            try:
+                res = func()
+            except Exception as e:
+                res = False
+                self.errors.append(e)
+            self.shot_rule.append(ruleID) if res else self.fail_rule.append(ruleID)
+        for error in self.errors:
+            raise error
         return self.result()

@@ -12,8 +12,10 @@ class stockDetailModel:
     def symbol(self) -> str:
         return self.data[1]
 
+    @property
     def name(self) -> str:
         return self.data[2]
 
+    @property
     def industry(self) -> str:
         return self.data[3]

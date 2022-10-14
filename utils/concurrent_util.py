@@ -96,13 +96,13 @@ def updateDaily(dateList):
     print(f'start update stock data for {dateList[0]} to {dateList[-1]}')
 
     def tmp(d):
-        if d['ts_code'][0] in ['4','8']:
+        if d['ts_code'][0] in ['4', '8']:
             return
         mysql = Mysql()
         try:
             mysql.insertOneDailyBasicRecord(d)
         except Exception as e:
-            print(f'update daily error : {e}')
+            print(f'{d["ts_code"]} update daily error : {e}')
             pass
 
     for date in dateList:
@@ -256,7 +256,7 @@ def rankingLimitTime(aimDate=lastTradeDay()) -> list:
     return [_['stocks'] for _ in rankList]
 
 
-def getStockLimitDataByDate(date: str = lastTradeDay(), lead: int = 100):
+def getStockLimitDataByDate(date: str = lastTradeDay(), lead: int = 100) -> dict[str, list[limitDataModel]]:
     """并发获取 stockLimit表 内容"""
     res: dict[str, list[limitDataModel]] = {}
     tradeDates = Mysql().selectTradeDate()

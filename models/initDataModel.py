@@ -51,7 +51,7 @@ class dataModel:
         return self.data[8]
 
     @property
-    def amount(self):
+    def amount(self):  # 单位k
         return self.data[9]
 
     @property
@@ -188,11 +188,26 @@ class dataModel:
 
     @property
     def concentration(self):
-        cost5pct = self.cost_5pct
-        cost95pct = self.cost_95pct
-        if cost95pct + cost5pct == 0:
+        _sum = self.cost_95pct + self.cost_5pct
+        if _sum == 0:
             return 100
-        return (cost95pct - cost5pct) / (cost95pct + cost5pct)
+        return (self.cost_95pct - self.cost_5pct) / _sum
+
+    @property
+    def CF(self):
+        if (self.buy_elg_vol + self.buy_lg_vol) == 0:
+            return 0
+        return round(((self.buy_elg_vol + self.buy_lg_vol - self.sell_elg_vol - self.sell_lg_vol) / (self.buy_elg_vol + self.buy_lg_vol)) * 100, 1)
+
+    @property
+    def TF(self):
+        if self.buy_elg_vol == 0:
+            return 0
+        return round(((self.buy_elg_vol - self.sell_elg_vol) / self.buy_elg_vol) * 100, 1)
+
+    @property
+    def TP(self):
+        return 0 if self.volume == 0 else round((self.buy_elg_vol / self.volume) * 100, 1)
 
     def timeVol(self, timeStamp: int = None, minute: str = None):
         assert (timeStamp is None or minute is None)

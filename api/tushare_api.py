@@ -6,14 +6,14 @@
 
 import time
 import tushare
-from api import args
+from api import config
 from utils import date_util
 from utils.date_util import lastTradeDay
 
 
 class Tushare:
     def __init__(self):
-        self._token = args['tushareKey']
+        self._token = config['tushareKey']
         tushare.set_token(self._token)
         self._tushare = tushare
         self.bar = tushare.pro_bar()

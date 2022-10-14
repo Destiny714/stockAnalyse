@@ -28,8 +28,8 @@ class base_score_level(object):
         self.score = scoreLevelData['score']
         self.height = scoreLevelData['height']
         self.details = scoreLevelData['details']
-        if level not in scoreRuleDict.keys():
-            scoreRuleDict[level] = [_ for _ in self.__class__.__dict__.keys() if 'rule' in _]
+        if level not in Params.scoreRuleDict.keys():
+            Params.scoreRuleDict[level] = [_ for _ in self.__class__.__dict__.keys() if 'rule' in _]
 
     def filter(self):
         rules = [_ for _ in self.__class__.__dict__.keys() if 'rule' in _]
