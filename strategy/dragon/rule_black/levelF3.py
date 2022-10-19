@@ -5,13 +5,13 @@
 # @Software: PyCharm
 
 from utils.stockdata_util import *
-from base.base_level_model import base_level
-from models.stockDetailModel import stockDetailModel
+from base_class.base_level_model import base_level
+from models.stock_detail_model import StockDetailModel
 
 
 class levelF3(base_level):
-    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], gemIndex: list[dataModel], shIndex: list[dataModel],
-                 limitData: dict[str, list[limitDataModel]]):
+    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel],
+                 limitData: dict[str, list[LimitDataModel]]):
         self.level = self.__class__.__name__.replace('level', '')
         super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 
@@ -136,7 +136,7 @@ class levelF3(base_level):
             if t_limit(stock, data, i + 1):
                 return False
         if data[-2].close > data[-3].close > data[-4].close:
-            if data[-2].close / data[-5].close > 1.1:
+            if data[-2].close / data[-5].close > 1.13:
                 return True
 
     def rule9(self):
@@ -345,7 +345,10 @@ class levelF3(base_level):
     def rule22(self):
         data = self.data
         try:
-            for i in range(-661, -120):
+            for i in range(2):
+                if not t_limit(self.stock, data, i):
+                    return False
+            for i in range(-301, -120):
                 range10 = data[i:i + 10]
                 if range10[-1].close / range10[0].close > 1.8:
                     return True
@@ -510,7 +513,7 @@ class levelF3(base_level):
         data = self.data
         stock = self.stock
         try:
-            if data[-1].turnover <= 0.25 * data[-2].turnover:
+            if data[-1].turnover <= 0.8 * data[-2].turnover:
                 return False
             count = 0
             for i in range(3):
@@ -533,7 +536,7 @@ class levelF3(base_level):
         if data[-1].limitOpenTime <= 1:
             return False
         if t_down_limit(stock, data):
-            if data[-1].buy_elg_vol / data[-1].volume < 0.3:
+            if data[-1].buy_elg_vol / data[-1].volume < 0.4:
                 return True
 
     def rule34(self):

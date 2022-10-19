@@ -5,13 +5,13 @@
 # @Software: PyCharm
 
 from utils.stockdata_util import *
-from base.base_level_model import base_level
-from models.stockDetailModel import stockDetailModel
+from base_class.base_level_model import base_level
+from models.stock_detail_model import StockDetailModel
 
 
 class levelF4(base_level):
-    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], gemIndex: list[dataModel], shIndex: list[dataModel],
-                 limitData: dict[str, list[limitDataModel]]):
+    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel],
+                 limitData: dict[str, list[LimitDataModel]]):
         self.level = self.__class__.__name__.replace('level', '')
         super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 
@@ -150,7 +150,7 @@ class levelF4(base_level):
             if model_1(stock, data, i + 1):
                 continue
             if data[-i - 1].turnover > 1:
-                if data[-i - 1].turnover > max([_.turnover for _ in data[-i - 6:-i - 1]]) / 2:
+                if data[-i - 1].turnover > max([_.turnover for _ in data[-i - 21:-i - 1]]) / 2:
                     return True
 
     def rule10(self):
@@ -167,6 +167,8 @@ class levelF4(base_level):
     def rule11(self):
         data = self.data
         stock = self.stock
+        if data[-1].turnover <= data[-2].turnover:
+            return False
         if not model_1(stock, data):
             return False
         if not model_1(stock, data, 1):
@@ -387,10 +389,10 @@ class levelF4(base_level):
             for i in range(1, 6):
                 if not t_limit(stock, data, i - 1):
                     continue
-                if data[-i].limitOpenTime > 5:
+                if data[-i].limitOpenTime > 3:
                     d = data[-i]
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
-                            d.buy_elg_vol + d.buy_lg_vol) < 0.2:
+                            d.buy_elg_vol + d.buy_lg_vol) < 0.3:
                         count += 1
                 if count >= 2:
                     return True
@@ -661,6 +663,8 @@ class levelF4(base_level):
         data = self.data
         stock = self.stock
         try:
+            if t_open_pct(data) >= 0.05:
+                return False
             if model_1(stock, data):
                 return False
             if not t_limit(stock, data):
@@ -851,23 +855,24 @@ class levelF4(base_level):
         data = self.data
         stock = self.stock
         try:
+            flag = False
             d = data[-1]
-            if d.TP >= 50:
-                return False
-            if d.buy_elg_vol / d.volume / (1 + t_close_pct(self.shIndex) * 10) >= 0.4:
-                return False
             if d.buy_elg_vol / d.volume >= 0.45:
                 return False
             for i in range(3, 153):
-                if not t_limit(stock, data, i):
-                    continue
-                if t_limit(stock, data, i - 1):
-                    continue
-                nxt = data[-i]
-                if nxt.turnover > 1.3 * data[-1].turnover:
-                    if nxt.high * 1.03 > data[-1].close:
-                        if nxt.high > max([_.close for _ in data[-5:]]):
-                            return True
+                if limit_height(stock, data, i) >= 6:
+                    return False
+                if not flag:
+                    if not t_limit(stock, data, i):
+                        continue
+                    if t_limit(stock, data, i - 1):
+                        continue
+                    nxt = data[-i]
+                    if nxt.turnover > 1.5 * data[-1].turnover:
+                        if nxt.high * 1.03 > data[-1].close:
+                            if nxt.high > max([_.close for _ in data[-5:]]):
+                                flag = True
+            return flag
         except:
             pass
 
@@ -950,3 +955,16 @@ class levelF4(base_level):
                     return True
         except:
             pass
+
+    def rule51(self):
+        data = self.data
+        count = 0
+        if t_limit(self.stock, data, 3):
+            return False
+        if sum([_.turnover for _ in data[-5:]]) / 5 >= 1.5 * sum([_.turnover for _ in data[-20:]]) / 20:
+            return False
+        for i in range(30):
+            if data[-i - 1].close < move_avg(data, 60, i):
+                count += 1
+                if count >= 15:
+                    return True

@@ -5,13 +5,13 @@
 # @Software: PyCharm
 
 from utils.stockdata_util import *
-from base.base_level_model import base_level
-from models.stockDetailModel import stockDetailModel
+from base_class.base_level_model import base_level
+from models.stock_detail_model import StockDetailModel
 
 
 class levelF2(base_level):
-    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], gemIndex: list[dataModel], shIndex: list[dataModel],
-                 limitData: dict[str, list[limitDataModel]]):
+    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel],
+                 limitData: dict[str, list[LimitDataModel]]):
         self.level = self.__class__.__name__.replace('level', '')
         super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 
@@ -208,11 +208,12 @@ class levelF2(base_level):
         data = self.data
         stock = self.stock
         flag = False
-        for i in range(1, 6):
-            if model_1(stock, data, i - 1):
+        model1Count = 0
+        for i in range(5):
+            if model_1(stock, data, i):
                 flag = True
-                break
-        if flag:
+                model1Count += 1
+        if flag and model1Count <= 4:
             allVol = [_.turnover for _ in data[-5:]]
             if min(allVol) > (1 / 3) * max(allVol):
                 return True
@@ -569,7 +570,11 @@ class levelF2(base_level):
 
     def rule37(self):
         for i in range(1, 11):
-            if t_down_limit(self.stock, self.data, i):
+            if not t_down_limit(self.stock, self.data, i):
+                continue
+            if t_limit(self.stock, self.data, i - 1):
+                continue
+            if self.data[-i - 1].CF < -40:
                 return True
 
     def rule38(self):
@@ -583,3 +588,33 @@ class levelF2(base_level):
             return False
         if data[-1].close < move_avg(data, 10) and data[-1].close < move_avg(data, 20):
             return True
+
+    def rule39(self):
+        flag = 0
+        for i in range(2):
+            if not t_limit(self.stock, self.data, i):
+                return False
+            if self.data[-i - 1].turnover >= 2:
+                return False
+            if model_1(self.stock, self.data, i):
+                flag += 1
+        return flag < 2
+
+    def rule40(self):
+        data = self.data
+        stock = self.stock
+        if t_limit(stock, data, 2):
+            return False
+        if not t_limit(stock, data):
+            return False
+        return t_open_pct(data) > 0.09 and t_low_pct(data) < 0.055
+
+    def rule41(self):
+        if model_1(self.stock, self.data):
+            return False
+        sumTurnover = 0
+        for i in range(2, 22):
+            if t_limit(self.stock, self.data, i):
+                return False
+            sumTurnover += self.data[-i - 1].turnover
+        return (sumTurnover / 20) < 2

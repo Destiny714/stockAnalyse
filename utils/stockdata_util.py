@@ -5,33 +5,33 @@
 # @Software: PyCharm
 
 from utils.date_util import *
-from models.initDataModel import *
-from models.limitDataModel import *
+from models.stock_data_model import *
+from models.limit_data_model import *
 
 
-def queryIndexData(index, dateRange: int = 500, aimDate=lastTradeDay()) -> list[dataModel]:
-    mysql = database_api.Mysql()
+def queryIndexData(index, dateRange: int = 500, aimDate=lastTradeDay()) -> list[StockDataModel]:
+    mysql = db.Mysql()
     allData = mysql.selectOneAllData(stock=index, dateRange=dateRange, aimDate=aimDate)
-    res = [dataModel(allData[i]) for i in range(len(allData))]
+    res = [StockDataModel(allData[i]) for i in range(len(allData))]
     return res
 
 
-def virtualIndexData(data: list[dataModel]) -> list[dataModel]:
+def virtualIndexData(data: list[StockDataModel]) -> list[StockDataModel]:
     res = data.copy()
     modifyData = list(res[-1])
     modifyData[0] = 8888
-    modifyData[1] = database_api.Mysql().selectNextTradeDay(modifyData[1])
-    res.append(dataModel(modifyData))
+    modifyData[1] = db.Mysql().selectNextTradeDay(modifyData[1])
+    res.append(StockDataModel(modifyData))
     return res
 
 
-def virtualLimitData(data: dict[str, list[limitDataModel]], virtual=None) -> dict[str, list[limitDataModel]]:
+def virtualLimitData(data: dict[str, list[LimitDataModel]], virtual=None) -> dict[str, list[LimitDataModel]]:
     d = data.copy()
     today = str(max(int(_) for _ in data.keys()))
-    nextDay = database_api.Mysql().selectNextTradeDay(today)
+    nextDay = db.Mysql().selectNextTradeDay(today)
     modifyDatas = d[today].copy()
 
-    def one(a: limitDataModel):
+    def one(a: LimitDataModel):
         b = list(a)
         b[1] = nextDay
         b[6] = a.close
@@ -51,20 +51,20 @@ def virtualLimitData(data: dict[str, list[limitDataModel]], virtual=None) -> dic
             b[11] = joinTimeToStamp(nextDay, '09:50:00')
             b[12] = joinTimeToStamp(nextDay, '14:00:00')
             b[15] = a.limitHeight + 1
-        return limitDataModel(b)
+        return LimitDataModel(b)
 
     newModifyDatas = [one(_) for _ in modifyDatas]
     d[nextDay] = newModifyDatas
     return d
 
 
-def queryData(stock, dateRange: int = 800, aimDate=lastTradeDay(), virtual=None) -> list[dataModel]:
-    mysql = database_api.Mysql()
+def queryData(stock, dateRange: int = 800, aimDate=lastTradeDay(), virtual=None) -> list[StockDataModel]:
+    mysql = db.Mysql()
     try:
         allData = mysql.selectOneAllData(stock=stock, dateRange=dateRange, aimDate=aimDate)
     except:
         allData = mysql.selectOneAllData(stock=stock, dateRange=None, aimDate=aimDate)
-    res = [dataModel(_) for _ in allData]
+    res = [StockDataModel(_) for _ in allData]
     if virtual is None:
         pass
     elif virtual == 's':
@@ -117,7 +117,7 @@ def queryData(stock, dateRange: int = 800, aimDate=lastTradeDay(), virtual=None)
                        modifyData.weight_avg,
                        modifyData.winner_rate,
                        modifyData.data[42]]
-        res.append(dataModel(virtualData))
+        res.append(StockDataModel(virtualData))
     elif virtual == 'f':
         modifyData = res[-1]
         nextDate = mysql.selectNextTradeDay(modifyData.date)
@@ -168,23 +168,23 @@ def queryData(stock, dateRange: int = 800, aimDate=lastTradeDay(), virtual=None)
                        modifyData.weight_avg,
                        modifyData.winner_rate,
                        modifyData.data[42]]
-        res.append(dataModel(virtualData))
+        res.append(StockDataModel(virtualData))
     return res
 
 
-def t_low_pct(data: list[dataModel], plus: int = 0) -> float:
+def t_low_pct(data: list[StockDataModel], plus: int = 0) -> float:
     return (data[-plus - 1].low / data[-plus - 2].close) - 1
 
 
-def t_high_pct(data: list[dataModel], plus: int = 0) -> float:
+def t_high_pct(data: list[StockDataModel], plus: int = 0) -> float:
     return (data[-plus - 1].high / data[-plus - 2].close) - 1
 
 
-def t_close_pct(data: list[dataModel], plus: int = 0) -> float:
+def t_close_pct(data: list[StockDataModel], plus: int = 0) -> float:
     return (data[-plus - 1].close / data[-plus - 2].close) - 1
 
 
-def t_open_pct(data: list[dataModel], plus: int = 0) -> float:
+def t_open_pct(data: list[StockDataModel], plus: int = 0) -> float:
     return (data[-plus - 1].open / data[-plus - 2].close) - 1
 
 
@@ -192,14 +192,14 @@ def limit(stock: str) -> float:
     return 19.6 if stock[0:2] in ['30', '68'] else 9.8
 
 
-def model_1(stock: str, data: list[dataModel], plus: int = 0) -> bool:
+def model_1(stock: str, data: list[StockDataModel], plus: int = 0) -> bool:
     d = data[-plus - 1]
     if (d.close == d.low) and (d.open == d.high) and (d.open == d.close):
         if d.pctChange > limit(stock):
             return True
 
 
-def model_t(stock: str, data: list[dataModel], plus: int = 0) -> bool:
+def model_t(stock: str, data: list[StockDataModel], plus: int = 0) -> bool:
     open_p = t_open_pct(data, plus)
     close_p = t_close_pct(data, plus)
     if open_p != close_p:
@@ -210,15 +210,15 @@ def model_t(stock: str, data: list[dataModel], plus: int = 0) -> bool:
         return True
 
 
-def t_limit(stock: str, data: list[dataModel], plus: int = 0) -> bool:
+def t_limit(stock: str, data: list[StockDataModel], plus: int = 0) -> bool:
     return data[-plus - 1].pctChange > limit(stock)
 
 
-def t_down_limit(stock: str, data: list[dataModel], plus: int = 0) -> bool:
+def t_down_limit(stock: str, data: list[StockDataModel], plus: int = 0) -> bool:
     return data[-plus - 1].pctChange < - limit(stock)
 
 
-def limit_height(stock: str, data: list[dataModel], plus: int = 0) -> int:
+def limit_height(stock: str, data: list[StockDataModel], plus: int = 0) -> int:
     height = 0
     for i in range(20):
         if t_limit(stock, data, i + plus):
@@ -228,7 +228,7 @@ def limit_height(stock: str, data: list[dataModel], plus: int = 0) -> int:
     return height
 
 
-def move_avg(data: list[dataModel], dateRange: int, plus: int = 0) -> float:
+def move_avg(data: list[StockDataModel], dateRange: int, plus: int = 0) -> float:
     """
     计算移动平均值
     :param data: list[dataModel]
@@ -244,7 +244,7 @@ class RankLimitStock(object):
     _instance = None
     resultsDict = {}
 
-    def __init__(self, dataDict: dict[str, list[limitDataModel]]):
+    def __init__(self, dataDict: dict[str, list[LimitDataModel]]):
         self.dataDict = dataDict.copy()
 
     def __new__(cls, *args, **kwargs):
@@ -285,12 +285,12 @@ class RankLimitStock(object):
                 else:
                     dictByIndustry[_.industry].append(_)
 
-            def rank(d: limitDataModel):
+            def rank(d: LimitDataModel):
                 return d.firstLimitTime
 
             res = {}
             for industry in dictByIndustry.keys():
-                industryStocks: list[limitDataModel] = dictByIndustry[industry]
+                industryStocks: list[LimitDataModel] = dictByIndustry[industry]
                 industryStocks.sort(key=rank)
                 res[industry] = [_.stock for _ in industryStocks]
         if keyword == 'open-industry':
@@ -301,12 +301,12 @@ class RankLimitStock(object):
                 else:
                     dictByIndustry[_.industry].append(_)
 
-            def rank(d: limitDataModel):
+            def rank(d: LimitDataModel):
                 return d.open / d.preClose
 
             res = {}
             for industry in dictByIndustry.keys():
-                industryStocks: list[limitDataModel] = dictByIndustry[industry]
+                industryStocks: list[LimitDataModel] = dictByIndustry[industry]
                 industryStocks.sort(key=rank, reverse=True)
                 res[industry] = [_.stock for _ in industryStocks]
         if keyword == 'open-height':
@@ -317,12 +317,12 @@ class RankLimitStock(object):
                 else:
                     dictByHeight[_.limitHeight].append(_)
 
-            def rank(d: limitDataModel):
+            def rank(d: LimitDataModel):
                 return d.open / d.preClose
 
             res = {}
             for height in dictByHeight.keys():
-                heightStocks: list[limitDataModel] = dictByHeight[height]
+                heightStocks: list[LimitDataModel] = dictByHeight[height]
                 heightStocks.sort(key=rank, reverse=True)
                 res[height] = [_.stock for _ in heightStocks]
         if keyword == 'limitTime-height':
@@ -333,12 +333,12 @@ class RankLimitStock(object):
                 else:
                     dictByHeight[_.limitHeight].append(_)
 
-            def rank(d: limitDataModel):
+            def rank(d: LimitDataModel):
                 return d.firstLimitTime
 
             res = {}
             for height in dictByHeight.keys():
-                heightStocks: list[limitDataModel] = dictByHeight[height]
+                heightStocks: list[LimitDataModel] = dictByHeight[height]
                 heightStocks.sort(key=rank)
                 res[height] = [_.stock for _ in heightStocks]
         if keyword == 'TF':

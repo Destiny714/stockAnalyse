@@ -3,7 +3,7 @@
 # @Author  : Destiny_
 # @File    : S.py
 # @Software: PyCharm
-from base.base_score_level_model import base_score_level
+from base_class.base_score_level_model import base_score_level
 from utils.stockdata_util import t_limit
 
 

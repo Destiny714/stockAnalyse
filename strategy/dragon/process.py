@@ -12,8 +12,9 @@ from common import tool_box
 from rule_level import A, B, S, F
 from utils.stockdata_util import *
 from common.prepare import Prepare
-from api import database_api, tushare_api
-from models.stockDetailModel import stockDetailModel
+from api import tushare_api
+from database import db
+from models.stock_detail_model import StockDetailModel
 from utils import concurrent_util, excel_util, log_util
 from rule_black import levelF1, levelF2, levelF3, levelF4, levelF5
 from rule_white import level1, level2, level3, level4, level5, level6, levelA1, levelA2, levelA3, levelA4
@@ -21,12 +22,12 @@ from rule_white import level1, level2, level3, level4, level5, level6, levelA1, 
 if __name__ == '__main__':
     runMode = RunMode.DEBUG
     log = log_util.log()
-    sqlClient = database_api.Mysql()  # 数据库查询client
+    sqlClient = db.Mysql()  # 数据库查询client
     warnings.filterwarnings('ignore')
     stocks = concurrent_util.initStock(needReload=False, extra=False)  # 经过筛选的所有股票
     tradeDays = sqlClient.selectTradeDate()  # 所有交易日
     stockDetails = sqlClient.selectAllStockDetail()  # 所有股票的detail 从stockList表查到
-    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 2)  # 要计算的日期范围
+    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 3)  # 要计算的日期范围
     Prepare(stocks, aimDates).do()
 
 
@@ -46,12 +47,12 @@ if __name__ == '__main__':
         gemIndexData = queryIndexData('GemIndex', aimDate=aimDate)
         shIndexData_virtual = virtualIndexData(shIndexData)
         gemIndexData_virtual = virtualIndexData(gemIndexData)
-        excelDict: dict = excel_util.readScoreFromExcel(database_api.Mysql().selectLastTradeDate(aimDate))
+        excelDict: dict = excel_util.readScoreFromExcel(db.Mysql().selectLastTradeDate(aimDate))
 
         def processOneStock(argMap: dict):
             stock = argMap['stock']
             virtual = argMap['virtual']
-            stockDetail = stockDetailModel(stockDetailDict[stock])
+            stockDetail = StockDetailModel(stockDetailDict[stock])
             industryLimitCount = 0 if stockDetail.industry not in industryLimitDict.keys() else len(industryLimitDict[stockDetail.industry])
             if virtual is not None:
                 shIndex = shIndexData_virtual
@@ -140,14 +141,14 @@ if __name__ == '__main__':
                         'details': details,
                     }
                     level = 'B'
-                    if A.ruleA(scoreLevelData).filter():
-                        level = 'A'
-                    if S.ruleS(scoreLevelData).filter():
-                        level = 'S'
                     if F.ruleF(scoreLevelData).filter():
                         level = 'F'
                     if B.ruleB(scoreLevelData).filter():
                         level = 'B'
+                    if A.ruleA(scoreLevelData).filter():
+                        level = 'A'
+                    if S.ruleS(scoreLevelData).filter():
+                        level = 'S'
                     result = {
                         'code': stock,
                         'name': stockDetail.name,
@@ -200,7 +201,7 @@ if __name__ == '__main__':
         excelDatas.sort(key=rankExcelData, reverse=True)
         errStocks = list(set([_[0] for _ in errors]))
         for errStock in errStocks:
-            errStockDetail = database_api.Mysql().selectStockDetail(errStock)
+            errStockDetail = db.Mysql().selectStockDetail(errStock)
             _industry = errStockDetail[3]
             _stockName = errStockDetail[2]
             _industryLimitCount = 0 if _industry not in industryLimitDict.keys() else len(industryLimitDict[_industry])

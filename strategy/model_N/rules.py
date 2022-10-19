@@ -4,12 +4,12 @@
 # @File    : rules.py
 # @Software: PyCharm
 
-from api import database_api
+from database import db
 from utils.date_util import today2str
 
 
 def twoDaySlideWindow(stock, aimDate=today2str()):
-    mysql = database_api.Mysql()
+    mysql = db.Mysql()
     data = mysql.selectOneAllData(stock, aimDate=aimDate, dateRange=2)
     day1 = data[0]
     day2 = data[1]
@@ -31,7 +31,7 @@ def twoDaySlideWindow(stock, aimDate=today2str()):
 
 
 def threeDaySlideWindow(stock, aimDate=today2str()):
-    mysql = database_api.Mysql()
+    mysql = db.Mysql()
     data = mysql.selectOneAllData(stock, aimDate=aimDate, dateRange=3)
     day1 = data[0]
     day2 = data[1]

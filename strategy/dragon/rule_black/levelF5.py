@@ -5,13 +5,13 @@
 # @Software: PyCharm
 
 from utils.stockdata_util import *
-from base.base_level_model import base_level
-from models.stockDetailModel import stockDetailModel
+from base_class.base_level_model import base_level
+from models.stock_detail_model import StockDetailModel
 
 
 class levelF5(base_level):
-    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], gemIndex: list[dataModel], shIndex: list[dataModel],
-                 limitData: dict[str, list[limitDataModel]]):
+    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel],
+                 limitData: dict[str, list[LimitDataModel]]):
         self.level = self.__class__.__name__.replace('level', '')
         super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 

@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/9/19 23:09
 # @Author  : Destiny_
-# @File    : stockDetailModel.py
+# @File    : stock_detail_model.py
 # @Software: PyCharm
 
 
-class stockDetailModel:
+class StockDetailModel:
+    """股票详情"""
+
     def __init__(self, data):
         self.data = data
 

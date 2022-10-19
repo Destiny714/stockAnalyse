@@ -5,13 +5,13 @@
 # @Software: PyCharm
 
 from utils.stockdata_util import *
-from base.base_level_model import base_level
-from models.stockDetailModel import stockDetailModel
+from base_class.base_level_model import base_level
+from models.stock_detail_model import StockDetailModel
 
 
 class level2(base_level):
-    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], gemIndex: list[dataModel], shIndex: list[dataModel],
-                 limitData: dict[str, list[limitDataModel]]):
+    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel],
+                 limitData: dict[str, list[LimitDataModel]]):
         self.level = self.__class__.__name__.replace('level', '')
         super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 
@@ -31,6 +31,10 @@ class level2(base_level):
                 return True
         except:
             return False
+
+    def rule3(self):
+        if self.stock[:3] in ['002', '000']:
+            return True
 
     def rule9(self):
         data = self.data

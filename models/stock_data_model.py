@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/9/18 00:07
 # @Author  : Destiny_
-# @File    : initDataModel.py
+# @File    : stock_data_model.py
 # @Software: PyCharm
 
 import json
 from utils import date_util
 
 
-class dataModel:
+class StockDataModel:
+    """单支股票单日数据模型"""
+
     def __init__(self, data):
         self.data = data
 

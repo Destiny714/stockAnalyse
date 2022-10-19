@@ -5,13 +5,13 @@
 # @Software: PyCharm
 
 from utils.stockdata_util import *
-from base.base_level_model import base_level
-from models.stockDetailModel import stockDetailModel
+from base_class.base_level_model import base_level
+from models.stock_detail_model import StockDetailModel
 
 
 class levelF1(base_level):
-    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], gemIndex: list[dataModel], shIndex: list[dataModel],
-                 limitData: dict[str, list[limitDataModel]]):
+    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel],
+                 limitData: dict[str, list[LimitDataModel]]):
         self.level = self.__class__.__name__.replace('level', '')
         super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 
@@ -134,10 +134,12 @@ class levelF1(base_level):
     def rule9(self):
         data = self.data
         stock = self.stock
-        if not t_limit(stock, data, 1):
-            return False
-        if not t_limit(stock, data, 2):
-            return False
+        for i in range(1, 3):
+            if not t_limit(stock, data, i):
+                return False
+        for i in range(2):
+            if model_1(stock, data, i):
+                return False
         for i in range(1, 3):
             if t_open_pct(data, i) < -0.04:
                 if t_low_pct(self.gemIndex, i) > -0.01:
@@ -243,12 +245,14 @@ class levelF1(base_level):
     def rule17(self):
         data = self.data
         stock = self.stock
-        changeRate = -1
+        turnover = -1
+        if (model_1(stock, data) and model_1(stock, data, 1)) is True:
+            return False
         for i in range(4):
             if not t_limit(stock, data, i):
                 return False
-            if changeRate < data[-i - 1].turnover:
-                changeRate = data[-i - 1].turnover
+            if turnover < data[-i - 1].turnover:
+                turnover = data[-i - 1].turnover
             else:
                 return False
         return True
@@ -274,12 +278,11 @@ class levelF1(base_level):
     def rule19(self):
         data = self.data
         stock = self.stock
-        if not t_limit(stock, data, 3):
-            return False
-        if not t_limit(stock, data, 2):
-            return False
-        if model_1(stock, data, 1):
-            return False
+        for i in range(1, 3):
+            if not t_limit(stock, data, i):
+                return False
+            if model_1(stock, data, i):
+                return False
         if not model_1(stock, data):
             return False
         if data[-1].turnover > (1 / 3) * data[-2].turnover:
@@ -340,6 +343,22 @@ class levelF1(base_level):
                             return True
         except:
             pass
+
+    def rule23(self):
+        data = self.data
+        stock = self.stock
+        if t_limit(stock, data, 3):
+            return False
+        if not t_limit(stock, data, 2):
+            return False
+        if model_1(stock, data, 2):
+            return False
+        for i in range(2):
+            if not model_1(stock, data, i):
+                return False
+        if data[-3].firstLimitTime < joinTimeToStamp(data[-3].date, '09:40:00'):
+            if data[-1].turnover > 1 / 3 * data[-3].turnover:
+                return data[-2].turnover > 1 / 3 * data[-3].turnover
 
     def rule24(self):
         data = self.data
@@ -565,3 +584,27 @@ class levelF1(base_level):
             return True
         except:
             pass
+
+    def rule39(self):
+        for i in range(3, 23):
+            if t_close_pct(self.data, i) > 0.06:
+                return False
+        return True
+
+    def rule40(self):
+        data = self.data
+        stock = self.stock
+        if not t_limit(stock, data):
+            return False
+        if t_limit(stock, data, 1):
+            return False
+        return t_low_pct(data) < -0.02 and data[-1].limitOpenTime > 3
+
+    def rule41(self):
+        data = self.data
+        stock = self.stock
+        if not t_limit(stock, data):
+            return False
+        if data[-1].high == max([_.high for _ in data[-20:]]):
+            return False
+        return data[-1].turnover > 15

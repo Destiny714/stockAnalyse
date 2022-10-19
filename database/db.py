@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/4/16 19:20
 # @Author  : Destiny_
-# @File    : database_api.py
+# @File    : db.py
 # @Software: PyCharm
 
 import pymysql
@@ -161,6 +161,13 @@ class Mysql:
         data = self.action(output=True)
         return data[0][0]
 
+    def selectNextXTradeDay(self, date, x: int = 1):
+        """选取下X个交易日"""
+        assert x >= 0, '下X个交易日 ==> X > 0'
+        self.word = f"SELECT date FROM tradeCalender WHERE id >= (SELECT id FROM tradeCalender WHERE date='{date}') LIMIT {x + 1}"
+        data = self.action(output=True)
+        return data[-1][0]
+
     def deleteTable(self, tableList: list):
         """删除给定的table列表"""
         tables = ''
@@ -175,6 +182,7 @@ class Mysql:
         self.action(output=False)
 
     def deleteStockFromList(self, stock):
+        """从股票详情表中删除给定股票详情"""
         self.word = f"DELETE FROM stockList WHERE symbol='{stock}'"
         self.action(output=False)
 

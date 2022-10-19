@@ -5,7 +5,7 @@
 # @Software: PyCharm
 
 
-class limitDataModel:
+class LimitDataModel:
     """stockLimit表 序列化"""
 
     def __init__(self, data):

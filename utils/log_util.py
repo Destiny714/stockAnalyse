@@ -23,7 +23,7 @@ class log:
         if self.firstStart:
             logger = logging.getLogger('stock-log')
             logger.setLevel(logging.INFO)
-            fh = logging.FileHandler(os.path.join(projectPath(), 'logs/dragon.log'))
+            fh = logging.FileHandler(os.path.join(projectPath(), '.logs/dragon.log'))
             ch = logging.StreamHandler()
             formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
             fh.setFormatter(formatter)

@@ -5,7 +5,7 @@
 # @Software: PyCharm
 
 from prefs.params import *
-from base.base_score_level_model import base_score_level
+from base_class.base_score_level_model import base_score_level
 
 
 class ruleB(base_score_level):

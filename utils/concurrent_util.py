@@ -8,10 +8,10 @@ from common import tool_box
 from utils.log_util import log
 from utils import stockdata_util
 from utils.stockdata_util import *
-from api.database_api import Mysql
+from database.db import Mysql
 from api.tushare_api import Tushare
-from middleWare.stockFilter import stockFilter
-from models.limitDataModel import limitDataModel
+from middleWare.stock_filter import stockFilter
+from models.limit_data_model import LimitDataModel
 
 _log = log()
 
@@ -256,9 +256,9 @@ def rankingLimitTime(aimDate=lastTradeDay()) -> list:
     return [_['stocks'] for _ in rankList]
 
 
-def getStockLimitDataByDate(date: str = lastTradeDay(), lead: int = 100) -> dict[str, list[limitDataModel]]:
+def getStockLimitDataByDate(date: str = lastTradeDay(), lead: int = 100) -> dict[str, list[LimitDataModel]]:
     """并发获取 stockLimit表 内容"""
-    res: dict[str, list[limitDataModel]] = {}
+    res: dict[str, list[LimitDataModel]] = {}
     tradeDates = Mysql().selectTradeDate()
     index = tradeDates.index(date)
     selectDates = tradeDates[index - lead + 1:index + 1]
@@ -267,9 +267,9 @@ def getStockLimitDataByDate(date: str = lastTradeDay(), lead: int = 100) -> dict
     def one(detail: tuple):
         _date = detail[1]
         if _date not in res.keys():
-            res[_date] = [limitDataModel(detail)]
+            res[_date] = [LimitDataModel(detail)]
         else:
-            res[_date].append(limitDataModel(detail))
+            res[_date].append(LimitDataModel(detail))
 
     tool_box.thread_pool_executor(one, stockLimitDetails)
     return res

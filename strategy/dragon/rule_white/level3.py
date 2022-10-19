@@ -5,13 +5,13 @@
 # @Software: PyCharm
 
 from utils.stockdata_util import *
-from base.base_level_model import base_level
-from models.stockDetailModel import stockDetailModel
+from base_class.base_level_model import base_level
+from models.stock_detail_model import StockDetailModel
 
 
 class level3(base_level):
-    def __init__(self, stockDetail: stockDetailModel, data: list[dataModel], gemIndex: list[dataModel], shIndex: list[dataModel],
-                 limitData: dict[str, list[limitDataModel]]):
+    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel],
+                 limitData: dict[str, list[LimitDataModel]]):
         self.level = self.__class__.__name__.replace('level', '')
         super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 
@@ -397,17 +397,20 @@ class level3(base_level):
     def rule30(self):
         data = self.data
         stock = self.stock
-        plus = []
-        minus = []
-        for i in range(1, 21):
-            if t_limit(stock, data, i):
-                return False
-            if t_close_pct(data, i) > 0:
-                plus.append(data[-i - 1].volume)
-            else:
-                minus.append(data[-i - 1].volume)
-        if sum(plus) / len(plus) > sum(minus) / len(minus):
-            return True
+        try:
+            plus = []
+            minus = []
+            for i in range(1, 21):
+                if t_limit(stock, data, i):
+                    return False
+                if t_close_pct(data, i) > 0:
+                    plus.append(data[-i - 1].volume)
+                else:
+                    minus.append(data[-i - 1].volume)
+            if sum(plus) / len(plus) > sum(minus) / len(minus):
+                return True
+        except:
+            pass
 
     def rule31(self):
         data = self.data

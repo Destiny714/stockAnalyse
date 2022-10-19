@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/9/14 21:45
 # @Author  : Destiny_
-# @File    : stockFilter.py
+# @File    : stock_filter.py
 # @Software: PyCharm
 from api import tushare_api
 

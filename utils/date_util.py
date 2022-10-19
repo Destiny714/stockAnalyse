@@ -6,7 +6,7 @@
 
 import time
 import datetime
-from api import database_api
+from database import db
 
 
 def str2date(date: str):
@@ -34,11 +34,11 @@ def today2str():
 
 def lastTradeDay(date=None):
     today = today2str() if date is None else date
-    tradeDays = database_api.Mysql().selectTradeDate()
+    tradeDays = db.Mysql().selectTradeDate()
     if today in tradeDays:
         matchTime = joinTimeToStamp(today, '15:30:00')
         if time.time() < matchTime:
-            return database_api.Mysql().selectLastTradeDate(today)
+            return db.Mysql().selectLastTradeDate(today)
         else:
             return today
     count = 0
@@ -49,11 +49,13 @@ def lastTradeDay(date=None):
 
 
 def lastXTradeDay(date=None, x: int = 1):
-    if date is None:
-        date = lastTradeDay()
-    else:
-        date = lastTradeDay(date)
-    return database_api.Mysql().selectTradeDateByDuration(date, x)
+    date = lastTradeDay(date)
+    return db.Mysql().selectTradeDateByDuration(date, x)
+
+
+def nextXTradeDay(date=None, x: int = 1):
+    date = lastTradeDay(date)
+    return db.Mysql().selectNextXTradeDay(date, x)
 
 
 def week_day(day: datetime.datetime):

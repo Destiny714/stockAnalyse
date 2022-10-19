@@ -6,14 +6,14 @@
 
 from prefs.params import *
 from utils.stockdata_util import *
-from models.initDataModel import dataModel
-from models.limitDataModel import limitDataModel
-from models.stockDetailModel import stockDetailModel
+from models.stock_data_model import StockDataModel
+from models.limit_data_model import LimitDataModel
+from models.stock_detail_model import StockDetailModel
 
 
 class base_level(object):
-    def __init__(self, level, stockDetail: stockDetailModel, data: list[dataModel], gemIndex: list[dataModel], shIndex: list[dataModel],
-                 limitData: dict[str, list[limitDataModel]]):
+    def __init__(self, level, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel],
+                 limitData: dict[str, list[LimitDataModel]]):
         self.data = data
         self.level = level
         self.shIndex = shIndex
