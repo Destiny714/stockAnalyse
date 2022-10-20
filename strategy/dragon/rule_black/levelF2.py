@@ -5,7 +5,7 @@
 # @Software: PyCharm
 
 from utils.stockdata_util import *
-from base_class.base_level_model import base_level
+from base.base_level_model import base_level
 from models.stock_detail_model import StockDetailModel
 
 
@@ -451,26 +451,29 @@ class levelF2(base_level):
     def rule28(self):
         data = self.data
         stock = self.stock
-        flag = False
-        for i in range(4, 13):
-            if t_limit(stock, data, i):
-                if t_limit(stock, data, i + 1):
-                    if t_limit(stock, data, i + 2):
-                        flag = True
-                        break
-        if not flag:
-            return False
-        if t_limit(stock, data, 3):
-            return False
-        for i in range(2):
-            if not t_limit(stock, data, i):
+        try:
+            flag = False
+            for i in range(4, 13):
+                if t_limit(stock, data, i):
+                    if t_limit(stock, data, i + 1):
+                        if t_limit(stock, data, i + 2):
+                            flag = True
+                            break
+            if not flag:
                 return False
-        if data[-2].turnover >= sum(_.turnover for _ in data[-6:-3]) / 3:
-            return False
-        if data[-1].turnover > data[-2].turnover:
-            matchTime = joinTimeToStamp(data[-1].date, '10:00:00')
-            if data[-1].firstLimitTime > matchTime:
-                return True
+            if t_limit(stock, data, 3):
+                return False
+            for i in range(2):
+                if not t_limit(stock, data, i):
+                    return False
+            if data[-2].turnover >= sum(_.turnover for _ in data[-6:-3]) / 3:
+                return False
+            if data[-1].turnover > data[-2].turnover:
+                matchTime = joinTimeToStamp(data[-1].date, '10:00:00')
+                if data[-1].firstLimitTime > matchTime:
+                    return True
+        except:
+            pass
 
     def rule29(self):
         data = self.data
@@ -610,11 +613,16 @@ class levelF2(base_level):
         return t_open_pct(data) > 0.09 and t_low_pct(data) < 0.055
 
     def rule41(self):
-        if model_1(self.stock, self.data):
-            return False
-        sumTurnover = 0
-        for i in range(2, 22):
-            if t_limit(self.stock, self.data, i):
+        try:
+            if self.data[-1].TP >= 60:
                 return False
-            sumTurnover += self.data[-i - 1].turnover
-        return (sumTurnover / 20) < 2
+            if model_1(self.stock, self.data):
+                return False
+            sumTurnover = 0
+            for i in range(2, 22):
+                if t_limit(self.stock, self.data, i):
+                    return False
+                sumTurnover += self.data[-i - 1].turnover
+            return (sumTurnover / 20) < 2
+        except:
+            pass

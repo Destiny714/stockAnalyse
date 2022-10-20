@@ -3,7 +3,7 @@
 # @Author  : Destiny_
 # @File    : A.py
 # @Software: PyCharm
-from base_class.base_score_level_model import base_score_level
+from base.base_score_level_model import base_score_level
 from utils.stockdata_util import t_limit
 
 
@@ -183,5 +183,5 @@ class ruleA(base_score_level):
     def rule22(self):
         if self.height == 0 and self.black == 0:
             if self.b1 < 2 and self.b2 < 3:
-                if self.white > 25:
+                if self.white > 20 and self.TF > 20:
                     return True

@@ -5,7 +5,7 @@
 # @Software: PyCharm
 
 from utils.stockdata_util import *
-from base_class.base_level_model import base_level
+from base.base_level_model import base_level
 from models.stock_detail_model import StockDetailModel
 
 
@@ -14,17 +14,6 @@ class levelF3(base_level):
                  limitData: dict[str, list[LimitDataModel]]):
         self.level = self.__class__.__name__.replace('level', '')
         super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
-
-    def rule1(self):
-        data = self.data
-        stock = self.stock
-        if not model_1(stock, data):
-            return False
-        if not model_1(stock, data, 1):
-            return False
-        if data[-1].turnover > 1.5 * data[-2].turnover:
-            if data[-1].turnover > 1:
-                return True
 
     def rule2(self):
         data = self.data
@@ -345,6 +334,8 @@ class levelF3(base_level):
     def rule22(self):
         data = self.data
         try:
+            if data[-1].TP >= 60:
+                return False
             for i in range(2):
                 if not t_limit(self.stock, data, i):
                     return False

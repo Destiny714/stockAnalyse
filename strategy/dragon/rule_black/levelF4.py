@@ -5,7 +5,7 @@
 # @Software: PyCharm
 
 from utils.stockdata_util import *
-from base_class.base_level_model import base_level
+from base.base_level_model import base_level
 from models.stock_detail_model import StockDetailModel
 
 
@@ -915,13 +915,13 @@ class levelF4(base_level):
             for i in range(3, 153):
                 if not t_limit(stock, data, i):
                     continue
-                if not t_limit(stock, data, i + 1):
-                    continue
                 if t_limit(stock, data, i - 1):
                     continue
-                if data[-i].high * 1.1 > data[-1].close:
-                    if data[-i].high < 1.1 * data[-1].close:
-                        count += 1
+                nxt = data[-i]
+                if nxt.high * 1.1 > data[-1].close:
+                    if nxt.high < 1.1 * data[-1].close:
+                        if nxt.turnover > 1.5 * data[-1].turnover:
+                            count += 1
                 if count >= 2:
                     return True
         except:
@@ -958,13 +958,51 @@ class levelF4(base_level):
 
     def rule51(self):
         data = self.data
-        count = 0
-        if t_limit(self.stock, data, 3):
-            return False
-        if sum([_.turnover for _ in data[-5:]]) / 5 >= 1.5 * sum([_.turnover for _ in data[-20:]]) / 20:
-            return False
-        for i in range(30):
-            if data[-i - 1].close < move_avg(data, 60, i):
-                count += 1
-                if count >= 15:
-                    return True
+        try:
+            count = 0
+            if t_limit(self.stock, data, 3):
+                return False
+            if sum([_.turnover for _ in data[-5:]]) / 5 >= 1.5 * sum([_.turnover for _ in data[-20:]]) / 20:
+                return False
+            for i in range(30):
+                if data[-i - 1].close < move_avg(data, 60, i):
+                    count += 1
+                    if count >= 15:
+                        return True
+        except:
+            pass
+
+    def rule52(self):
+        data = self.data
+        stock = self.stock
+        try:
+            for i in range(3, 153):
+                if not t_limit(stock, data, i):
+                    continue
+                if t_limit(stock, data, i - 1):
+                    continue
+                nxt = data[-i]
+                if nxt.turnover > 3 * data[-i - 1].turnover:
+                    if nxt.turnover > 2 * data[-1].turnover:
+                        if nxt.high > 1.1 * data[-1].close:
+                            return True
+        except:
+            pass
+
+    def rule53(self):
+        data = self.data
+        stock = self.stock
+        try:
+            for i in range(3, 153):
+                if not t_limit(stock, data, i):
+                    continue
+                if data[-i - 1].limitOpenTime <= 2:
+                    continue
+                if t_limit(stock, data, i - 1):
+                    continue
+                nxt = data[-i]
+                if nxt.turnover > 1.5 * data[-1].turnover:
+                    if nxt.high > data[-1].close:
+                        return True
+        except:
+            pass

@@ -34,7 +34,7 @@ class log:
                 logger.setLevel(logging.FATAL)
                 ch.setLevel(logging.FATAL)
                 fh.setLevel(logging.FATAL)
-            if runMode != RunMode.TEST:
+            if runMode != RunMode.TEST and not logger.handlers:
                 logger.addHandler(fh)
                 logger.addHandler(ch)
             self.logger = logger

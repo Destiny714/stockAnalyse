@@ -209,6 +209,9 @@ class StockDataModel:
 
     @property
     def TP(self):
+        """
+        buy_elg_vol / volume
+        """
         return 0 if self.volume == 0 else round((self.buy_elg_vol / self.volume) * 100, 1)
 
     def timeVol(self, timeStamp: int = None, minute: str = None):

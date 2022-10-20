@@ -5,7 +5,7 @@
 # @Software: PyCharm
 
 from utils.stockdata_util import *
-from base_class.base_level_model import base_level
+from base.base_level_model import base_level
 from models.stock_detail_model import StockDetailModel
 
 
@@ -38,7 +38,7 @@ class levelF1(base_level):
             return False
         if not model_1(stock, data, 1):
             return False
-        if data[-1].turnover > 2.5 * data[-2].turnover:
+        if data[-1].turnover > 2 * data[-2].turnover:
             if data[-1].turnover > 1:
                 return True
 
@@ -103,6 +103,8 @@ class levelF1(base_level):
     def rule7(self):
         data = self.data
         stock = self.stock
+        if data[-1].TP >= 60:
+            return False
         range50 = data[-52:-2]
         for d in range50:
             if d.pctChange >= limit(stock):
@@ -586,10 +588,13 @@ class levelF1(base_level):
             pass
 
     def rule39(self):
-        for i in range(3, 23):
-            if t_close_pct(self.data, i) > 0.06:
-                return False
-        return True
+        try:
+            for i in range(3, 43):
+                if t_close_pct(self.data, i) > 0.04:
+                    return False
+            return True
+        except:
+            pass
 
     def rule40(self):
         data = self.data

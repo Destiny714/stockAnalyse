@@ -4,7 +4,7 @@
 # @File    : levelS1-unUse.py
 # @Software: PyCharm
 from utils.stockdata_util import *
-from base_class.base_level_model import base_level
+from base.base_level_model import base_level
 from models.stock_detail_model import StockDetailModel
 
 
