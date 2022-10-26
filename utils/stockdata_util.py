@@ -240,27 +240,39 @@ def move_avg(data: list[StockDataModel], dateRange: int, plus: int = 0) -> float
     return sum([data[-_].close for _ in range(j, j + dateRange)]) / dateRange
 
 
+def weakenedIndex(indexData: list[StockDataModel], plus: int = 0):
+    return 1 + t_close_pct(indexData, plus) * 10
+
+
 class RankLimitStock(object):
     _instance = None
     resultsDict = {}
 
-    def __init__(self, dataDict: dict[str, list[LimitDataModel]]):
-        self.dataDict = dataDict.copy()
+    def __init__(self, limitData: dict[str, list[LimitDataModel]]):
+        self.limitData = limitData.copy()
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def by(self, keyword: str, date: str = lastTradeDay(), eliminateModel1=False):
+    def by(self, keyword: str, date: str = None, eliminateModel1=False):
         """
+        keywords :
+        ---limitTime-industry
+        ---open-industry
+        ---open-height
+        ---limitTime-height
+        ---TF
         根据关键词对某日涨停股票进行排序
-        :param keyword: 排序方法名称
+        :param keyword: 排序方法名称 "A-B":rank by A in limit stocks with same B || "A" rank by A in all limit stocks
         :param date: 指定日期
         :param eliminateModel1: 是否剔除一字板
         """
-        dataDict = self.dataDict
-        hashKey = hash(keyword + date + ''.join(self.dataDict.keys()))
+        if not date:
+            date = lastTradeDay()
+        dataDict = self.limitData
+        hashKey = hash(keyword + date + ''.join(self.limitData.keys()))
         if hashKey in self.resultsDict.keys():
             return self.resultsDict[hashKey]
         data = dataDict[date]

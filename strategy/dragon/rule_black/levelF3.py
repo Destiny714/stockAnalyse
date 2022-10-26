@@ -15,6 +15,17 @@ class levelF3(base_level):
         self.level = self.__class__.__name__.replace('level', '')
         super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 
+    def rule1(self):
+        try:
+            count = 0
+            for i in range(20):
+                if t_high_pct(self.data, i) > 0.07 and t_close_pct(self.data, i) < 0.045:
+                    count += 1
+                if count >= 2:
+                    return True
+        except:
+            ...
+
     def rule2(self):
         data = self.data
         stock = self.stock
@@ -221,6 +232,8 @@ class levelF3(base_level):
         data = self.data
         stock = self.stock
         try:
+            if data[-1].buy_elg_vol / data[-1].volume / weakenedIndex(self.shIndex) >= 0.6:
+                return False
             for i in range(1, 21):
                 if limit_height(stock, data, i) >= 3:
                     return False

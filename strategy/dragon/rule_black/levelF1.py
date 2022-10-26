@@ -103,12 +103,8 @@ class levelF1(base_level):
     def rule7(self):
         data = self.data
         stock = self.stock
-        if data[-1].TP >= 60:
+        if data[-1].TP / weakenedIndex(self.shIndex) >= 60:
             return False
-        range50 = data[-52:-2]
-        for d in range50:
-            if d.pctChange >= limit(stock):
-                return False
         if t_limit(stock, data, 1):
             return False
         if not t_limit(stock, data):
@@ -280,6 +276,8 @@ class levelF1(base_level):
     def rule19(self):
         data = self.data
         stock = self.stock
+        if t_low_pct(self.shIndex) <= -0.015:
+            return False
         for i in range(1, 3):
             if not t_limit(stock, data, i):
                 return False
@@ -366,7 +364,7 @@ class levelF1(base_level):
         data = self.data
         matchTime = joinTimeToStamp(data[-1].date, '09:40:00')
         if data[-1].firstLimitTime < matchTime:
-            if data[-1].limitOpenTime > 5:
+            if data[-1].limitOpenTime > 2:
                 return True
 
     def rule25(self):
@@ -443,6 +441,8 @@ class levelF1(base_level):
     def rule30(self):
         data = self.data
         stock = self.stock
+        if (data[-1].buy_elg_vol + data[-1].buy_lg_vol) / data[-1].volume / weakenedIndex(self.shIndex) <= 0.75:
+            return False
         if not t_limit(stock, data, 3):
             return False
         if not t_limit(stock, data):
@@ -486,7 +486,9 @@ class levelF1(base_level):
             return False
         if not t_limit(stock, data, 2):
             return False
-        matchTime = joinTimeToStamp(data[-3].date, '10:00:00')
+        if not t_limit(stock, data, 3):
+            return False
+        matchTime = joinTimeToStamp(data[-3].date, '10:30:00')
         if data[-3].firstLimitTime <= matchTime:
             return False
         for i in range(2):
@@ -589,6 +591,8 @@ class levelF1(base_level):
 
     def rule39(self):
         try:
+            if self.data[-1].TF > 75 and self.data[-1].TP > 40:
+                return False
             for i in range(3, 43):
                 if t_close_pct(self.data, i) > 0.04:
                     return False

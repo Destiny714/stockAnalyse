@@ -234,9 +234,9 @@ class levelF2(base_level):
         try:
             data = self.data
             d = data[-1]
-            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol >= 0.65:
+            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) >= 0.6:
                 return False
-            if d.buy_elg_vol / d.volume >= 0.5:
+            if d.buy_elg_vol / d.volume / weakenedIndex(self.shIndex) >= 0.6:
                 return False
             plus = []
             minus = []
@@ -257,8 +257,8 @@ class levelF2(base_level):
         data = self.data
         try:
             d = data[-1]
-            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.8:
-                if d.buy_elg_vol / d.volume < 0.5:
+            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) < 0.8:
+                if d.buy_elg_vol / d.volume / weakenedIndex(self.shIndex) < 0.6:
                     range25 = data[-25:]
                     range90 = data[-90:]
                     avg25 = sum([_.close for _ in range25]) / 25
@@ -317,8 +317,7 @@ class levelF2(base_level):
                 if data[-i - 1].firstLimitTime >= matchTime:
                     return False
                 d = data[-i - 1]
-                if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
-                        d.sell_elg_vol + d.sell_lg_vol) < 0.2:
+                if d.TF / weakenedIndex(self.shIndex, i) < 50:
                     count += 1
             return count >= 2
         except:
@@ -378,6 +377,9 @@ class levelF2(base_level):
         data = self.data
         stock = self.stock
         try:
+            rank = RankLimitStock(self.limitData).by('open-industry', data[-1].date)
+            if stock in rank[self.industry][:2]:
+                return False
             for i in range(3):
                 if t_limit(stock, data, i + 1):
                     return False
@@ -412,9 +414,9 @@ class levelF2(base_level):
         stock = self.stock
         try:
             d = data[-1]
-            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol >= 0.6:
+            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) >= 0.6:
                 return False
-            if d.buy_elg_vol / d.volume >= 0.4:
+            if d.buy_elg_vol / d.volume / weakenedIndex(self.shIndex) >= 0.5:
                 return False
             if t_open_pct(data) >= 0.07:
                 return False
@@ -577,7 +579,7 @@ class levelF2(base_level):
                 continue
             if t_limit(self.stock, self.data, i - 1):
                 continue
-            if self.data[-i - 1].CF < -40:
+            if self.data[-i - 1].CF / weakenedIndex(self.shIndex, i) < -40:
                 return True
 
     def rule38(self):
@@ -614,7 +616,7 @@ class levelF2(base_level):
 
     def rule41(self):
         try:
-            if self.data[-1].TP >= 60:
+            if self.data[-1].TP / weakenedIndex(self.shIndex) >= 60:
                 return False
             if model_1(self.stock, self.data):
                 return False

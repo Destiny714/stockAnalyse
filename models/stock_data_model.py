@@ -61,7 +61,7 @@ class StockDataModel:
         return self.data[10]
 
     @property
-    def firstLimitTime(self):
+    def firstLimitTime(self) -> int:
         return self.data[11]
 
     @property
@@ -203,6 +203,9 @@ class StockDataModel:
 
     @property
     def TF(self):
+        """
+        (buy_elg_vol - sell_elg_vol) /buy_elg_vol
+        """
         if self.buy_elg_vol == 0:
             return 0
         return round(((self.buy_elg_vol - self.sell_elg_vol) / self.buy_elg_vol) * 100, 1)

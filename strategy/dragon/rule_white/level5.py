@@ -225,6 +225,13 @@ class level5(base_level):
         except:
             pass
 
+    def rule11(self):
+        if t_low_pct(self.shIndex) < -0.015:
+            if self.data[-1].limitOpenTime < 2:
+                if model_1(self.stock, self.data):
+                    return False
+                return t_limit(self.stock, self.data)
+
     def rule13(self):
         data = self.data
         stock = self.stock
@@ -239,7 +246,7 @@ class level5(base_level):
             matchTime = joinTimeToStamp(data[-1].date, '09:50:00')
             if data[-1].lastLimitTime < matchTime:
                 d = data[-1]
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.3:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) > 0.4:
                     return True
         except:
             pass
@@ -265,7 +272,7 @@ class level5(base_level):
             matchTime = date_util.joinTimeToStamp(data[-1].date, '09:40:00')
             if data[-1].firstLimitTime < matchTime:
                 d = data[-1]
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.3:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) > 0.4:
                     return True
         except:
             pass

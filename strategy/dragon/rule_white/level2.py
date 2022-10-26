@@ -148,3 +148,17 @@ class level2(base_level):
             return True
         except:
             pass
+
+    def rule21(self):
+        data = self.data
+        stock = self.stock
+        try:
+            for i in range(40):
+                if not t_limit(stock, data, i):
+                    continue
+                if t_limit(stock, data, i + 1):
+                    continue
+                if data[-i - 1].turnover > 3 * sum([_.turnover for _ in data[-i - 6:-i - 1]]) / 5:
+                    return True
+        except:
+            pass

@@ -10,7 +10,6 @@ from utils import stockdata_util
 from utils.stockdata_util import *
 from database.db import Mysql
 from api.tushare_api import Tushare
-from middleWare.stock_filter import stockFilter
 from models.limit_data_model import LimitDataModel
 
 _log = log()
@@ -283,7 +282,7 @@ def initStock(needReload=True, extra=False):
         updateGemIndex()
         updateStockList()
         stocks = mysql.selectAllStock()
-        stocks = stockFilter(stocks).result()
+        # stocks = stockFilter(stocks).result()
         stockDetailVersion = mysql.selectDetailUpdateDate()
         createTableIfNotExist(stocks)
         mysql.stockListUpdateDate(lastTradeDay())
@@ -294,7 +293,7 @@ def initStock(needReload=True, extra=False):
             mysql.stockDetailUpdateDate(lastTradeDay())
     else:
         stocks = mysql.selectAllStock()
-        stocks = stockFilter(stocks).result()
+        # stocks = stockFilter(stocks).result()
     if extra:
         updateLimitDetailData()
         updateTurnover()

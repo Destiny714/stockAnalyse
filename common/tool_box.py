@@ -62,7 +62,10 @@ def cutList(full_list: list, piece_len: int) -> list[list]:
 
 
 def bark_pusher(title, content, _url=None):
-    url = f'https://api.day.app/y67CydURc8wR9CVemagkYL/{title}/{content}'
-    if _url is not None:
-        url += f'?url={_url}'
-    requests.get(url, verify=False)
+    try:
+        url = f'https://api.day.app/y67CydURc8wR9CVemagkYL/{title}/{content}'
+        if _url is not None:
+            url += f'?url={_url}'
+        requests.get(url, verify=False)
+    except:
+        pass

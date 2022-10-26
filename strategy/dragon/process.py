@@ -8,12 +8,11 @@
 import pymysql
 import warnings
 from prefs.params import *
+from api import tushare_api
 from common import tool_box
 from rule_level import A, B, S, F
 from utils.stockdata_util import *
 from common.prepare import Prepare
-from api import tushare_api
-from database import db
 from models.stock_detail_model import StockDetailModel
 from utils import concurrent_util, excel_util, log_util
 from rule_black import levelF1, levelF2, levelF3, levelF4, levelF5
@@ -27,7 +26,7 @@ if __name__ == '__main__':
     stocks = concurrent_util.initStock(needReload=False, extra=False)  # 经过筛选的所有股票
     tradeDays = sqlClient.selectTradeDate()  # 所有交易日
     stockDetails = sqlClient.selectAllStockDetail()  # 所有股票的detail 从stockList表查到
-    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 2)  # 要计算的日期范围
+    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 4)  # 要计算的日期范围
     Prepare(stocks, aimDates).do()
 
 
@@ -107,10 +106,10 @@ if __name__ == '__main__':
                 score += len(lA2['detail']) * 3
                 score += len(lA3['detail']) * 3
                 score += len(lA4['detail']) * 2
-                score -= len(lF1['detail']) * 7
-                score -= len(lF2['detail']) * 7
-                score -= len(lF3['detail']) * 7
-                score -= len(lF4['detail']) * 7
+                score -= len(lF1['detail']) * 5
+                score -= len(lF2['detail']) * 5
+                score -= len(lF3['detail']) * 5
+                score -= len(lF4['detail']) * 5
                 score -= len(lF5['detail']) * 7
                 if virtual is None:
                     T1S = virtualDict[stock]['s']
