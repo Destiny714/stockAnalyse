@@ -6,6 +6,7 @@
 
 import json
 import requests
+from utils.file_util import arg_yaml
 
 
 def bark_pusher(title, content, _url=None):
@@ -111,9 +112,10 @@ class DragonModelMarkDownTemplate(MarkDownTemplate):
 
 
 def dingtalk_push(model: BaseDingtalkTemplate, public=True):
-    webhook_url = 'https://oapi.dingtalk.com/robot/send?access_token=4811463c628b3235cc4307bd94f4bc1dbd6540846b3635240d822932e1e507c3'
+    config = arg_yaml()
+    webhook_url = config['productWebHook']
     if not public:
-        webhook_url = 'https://oapi.dingtalk.com/robot/send?access_token=5573a24c2791f2d379f2ac032afc562ecbd66cbdda81fcbe12cd608c6ad84b6a'
+        webhook_url = config['devWebHook']
     body = model.toJson()
     body = json.dumps(body)
     headers = {'content-type': 'application/json'}
