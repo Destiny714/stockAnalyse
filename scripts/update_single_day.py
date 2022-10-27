@@ -6,8 +6,10 @@
 import time
 import numpy
 import tushare
+
 from database import db
-from utils import concurrent_util
+from sequence.prepare import Prepare
+from utils.concurrent_util import initStock
 from utils.date_util import getMinute, lastTradeDay
 from common.tool_box import timeCount, cutList, thread_pool_executor, process_pool_executor, bark_pusher
 
@@ -65,7 +67,8 @@ def getData(stockNo: str, dateList: list[list]):
 
 
 if __name__ == '__main__':
-    concurrent_util.initStock(needReload=True, extra=True)
+    Prepare().do()
+    initStock(needReload=True, extra=True)
     sql = db.Mysql()
     dateSize = 30
     dateRange = 1

@@ -17,8 +17,17 @@ class Mysql:
         self.__DB = config['mysqlDatabase']
         self.host = config['mysqlHost']
         self.word = ''
-        self.db = pymysql.connect(host=self.host, port=3306, user=self.__account, password=self.__pswd, database=self.__DB, connect_timeout=5)
-        self.cursor = self.db.cursor()
+        self.conn = pymysql.connect(host=self.host, port=3306, user=self.__account, password=self.__pswd, database=self.__DB,
+                                    connect_timeout=30,
+                                    write_timeout=30,
+                                    read_timeout=30)
+        self.cursor = self.conn.cursor()
+
+    def close(self):
+        if self.conn.open:
+            self.conn.commit()
+            self.cursor.close()
+            self.conn.close()
 
     def action(self, output: bool):
         """mysql语句执行基础单元"""
@@ -27,7 +36,7 @@ class Mysql:
             callback = self.cursor.fetchall()
             return callback
         else:
-            self.db.commit()
+            self.conn.commit()
 
     def suffix(self, stock: str) -> str:
         """获取带后缀的stock"""
@@ -214,6 +223,12 @@ class Mysql:
     def selectIndustryByStock(self, stock: str):
         """获取某股票对应的行业"""
         self.word = f"SELECT industry FROM stockList WHERE symbol='{stock}'"
+        industry = self.action(output=True)
+        return industry[0][0]
+
+    def selectNameByStock(self, stock: str):
+        """获取某股票对应的名称"""
+        self.word = f"SELECT name FROM stockList WHERE symbol='{stock}'"
         industry = self.action(output=True)
         return industry[0][0]
 

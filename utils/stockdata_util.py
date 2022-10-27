@@ -13,6 +13,7 @@ def queryIndexData(index, dateRange: int = 500, aimDate=lastTradeDay()) -> list[
     mysql = db.Mysql()
     allData = mysql.selectOneAllData(stock=index, dateRange=dateRange, aimDate=aimDate)
     res = [StockDataModel(allData[i]) for i in range(len(allData))]
+    mysql.close()
     return res
 
 
@@ -169,6 +170,7 @@ def queryData(stock, dateRange: int = 800, aimDate=lastTradeDay(), virtual=None)
                        modifyData.winner_rate,
                        modifyData.data[42]]
         res.append(StockDataModel(virtualData))
+        mysql.close()
     return res
 
 

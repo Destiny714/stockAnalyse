@@ -14,10 +14,7 @@ from utils.date_util import lastTradeDay
 class Tushare:
     def __init__(self):
         self._token = config['tushareKey']
-        tushare.set_token(self._token)
-        self._tushare = tushare
-        self.bar = tushare.pro_bar()
-        self._instance = tushare.pro_api()
+        self._instance = tushare.pro_api(token=self._token)
 
     def tradeCalender(self):
         """获取交易日历"""
@@ -159,11 +156,13 @@ class Tushare:
             details.append(data.iloc[i])
         return details
 
-    def chipDetail(self, date=lastTradeDay()):
+    def chipDetail(self, stocks:str, date=None):
         """获取股票筹码详情"""
+        if not date:
+            date = lastTradeDay()
         details = []
         data = self._instance.cyq_perf(**{
-            "ts_code": "",
+            "ts_code": stocks,
             "trade_date": date,
             "start_date": "",
             "end_date": "",

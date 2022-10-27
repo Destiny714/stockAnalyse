@@ -13,9 +13,11 @@
 
 import rules
 import warnings
+from database import db
 from common import tool_box
 from utils import concurrent_util
 from utils.date_util import lastTradeDay
+from utils.push_util import N_ModelMarkDownTemplate, DingtalkTemplates, dingtalk_push
 
 warnings.filterwarnings('ignore')
 
@@ -25,21 +27,30 @@ if __name__ == '__main__':
     stocks = concurrent_util.initStock(needReload=False, extra=False)
     errors = []
     chosenStocks = [stock for stock in stocks if stock[:2] in ['00', '60']]
+    Ns = []
 
 
     def N(stock):
+        client = db.Mysql()
         try:
             day2 = rules.twoDaySlideWindow(stock, aimDate=aimDate)
             if day2:
                 print(f'{stock}-{day2}-二日')
-                tool_box.bark_pusher('二日', f'{stock}-{day2}')
+                Ns.append({'code': stock, 'name': client.selectNameByStock(stock), 'inCycle': '2'})
             day3 = rules.threeDaySlideWindow(stock, aimDate=aimDate)
             if day3:
                 print(f'{stock}-{day3}-三日')
-                tool_box.bark_pusher('三日', f'{stock}-{day3}')
+                Ns.append({'code': stock, 'name': client.selectNameByStock(stock), 'inCycle': '3'})
         except Exception as e:
             errors.append(f'{stock} : logic error : {e}')
             pass
+        finally:
+            client.close()
 
 
     tool_box.thread_pool_executor(N, chosenStocks, 20)
+    model = DingtalkTemplates.BarelyMarkDown(
+        title=f'{aimDate} N字模型',
+        markdown=N_ModelMarkDownTemplate(Ns)
+    )
+    dingtalk_push(model)

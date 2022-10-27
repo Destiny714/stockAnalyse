@@ -107,7 +107,7 @@ class ruleA(base_score_level):
 
     def rule13(self):
         if self.height > 0:
-            if self.black == 0 and self.white > 15:
+            if self.black == 0 and self.white > 18:
                 if 'A1' in self.details.keys():
                     if 2 in self.details['A1']:
                         if self.b1 == 0:

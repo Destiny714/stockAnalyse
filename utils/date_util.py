@@ -34,28 +34,36 @@ def today2str():
 
 def lastTradeDay(date=None):
     today = today2str() if date is None else date
-    tradeDays = db.Mysql().selectTradeDate()
+    client = db.Mysql()
+    tradeDays = client.selectTradeDate()
     if today in tradeDays:
         matchTime = joinTimeToStamp(today, '15:30:00')
         if time.time() < matchTime:
-            return db.Mysql().selectLastTradeDate(today)
+            return client.selectLastTradeDate(today)
         else:
             return today
     count = 0
     while (today not in tradeDays) and count < 10000:
         count += 1
         today = str(int(today) - 1)
+    client.close()
     return today
 
 
 def lastXTradeDay(date=None, x: int = 1):
+    client = db.Mysql()
     date = lastTradeDay(date)
-    return db.Mysql().selectTradeDateByDuration(date, x)
+    res = client.selectTradeDateByDuration(date, x)
+    client.close()
+    return res
 
 
 def nextXTradeDay(date=None, x: int = 1):
+    client = db.Mysql()
     date = lastTradeDay(date)
-    return db.Mysql().selectNextXTradeDay(date, x)
+    res = client.selectNextXTradeDay(date, x)
+    client.close()
+    return res
 
 
 def week_day(day: datetime.datetime):

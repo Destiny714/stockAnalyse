@@ -630,3 +630,6 @@ class level4(base_level):
             return True
         except:
             pass
+
+    def rule40(self):
+        pass

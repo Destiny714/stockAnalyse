@@ -232,6 +232,9 @@ class level5(base_level):
                     return False
                 return t_limit(self.stock, self.data)
 
+    def rule12(self):
+        pass
+
     def rule13(self):
         data = self.data
         stock = self.stock

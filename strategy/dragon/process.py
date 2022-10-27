@@ -11,8 +11,10 @@ from prefs.params import *
 from api import tushare_api
 from common import tool_box
 from rule_level import A, B, S, F
+from sequence.finish import Finish
 from utils.stockdata_util import *
-from common.prepare import Prepare
+from sequence.prepare import Prepare
+from utils.excel_util import ColumnModel
 from models.stock_detail_model import StockDetailModel
 from utils import concurrent_util, excel_util, log_util
 from rule_black import levelF1, levelF2, levelF3, levelF4, levelF5
@@ -26,8 +28,9 @@ if __name__ == '__main__':
     stocks = concurrent_util.initStock(needReload=False, extra=False)  # 经过筛选的所有股票
     tradeDays = sqlClient.selectTradeDate()  # 所有交易日
     stockDetails = sqlClient.selectAllStockDetail()  # 所有股票的detail 从stockList表查到
-    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 4)  # 要计算的日期范围
+    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 1)  # 要计算的日期范围
     Prepare(stocks, aimDates).do()
+    sqlClient.close()
 
 
     def process(aimDate):
@@ -40,7 +43,7 @@ if __name__ == '__main__':
         industryLimitDict = RankLimitStock(_limitData).by('limitTime-industry', aimDate)  # 通过行业分类生成行业涨停票列表 返回dict[行业，股票列表]
         limitUpCount = tushare_api.Tushare().dailyLimitCount(date=aimDate)
         errors = []
-        excelDatas = []
+        columnModels = []
         virtualDict = {f'{stock}': {} for stock in stocks}
         shIndexData = queryIndexData('ShIndex', aimDate=aimDate)
         gemIndexData = queryIndexData('GemIndex', aimDate=aimDate)
@@ -173,9 +176,8 @@ if __name__ == '__main__':
                         'T1S_detail': str(virtualDict[stock]['s_detail']),
                         'T1F_detail': str(virtualDict[stock]['f_detail']),
                     }
-                    excelData = [result[_] for _ in excel_util.cols]
                     log.info(f'{aimDate}-{stock} - {"NOW" if not virtual else virtual}')
-                    excelDatas.append(excelData)
+                    columnModels.append(ColumnModel(result))
                 else:
                     matchDict = {'s': 'b1', 'f': 'b2'}
                     virtualDict[stock][virtual] = score
@@ -191,27 +193,24 @@ if __name__ == '__main__':
         tool_box.thread_pool_executor(processOneStock, [{'stock': stock, 'virtual': 'f'} for stock in stocks], 10)
         tool_box.thread_pool_executor(processOneStock, [{'stock': stock, 'virtual': None} for stock in stocks], 10)
 
-        def rankExcelData(d):
-            _white = d[excel_util.cols.index('white')]
-            _height = d[excel_util.cols.index('height')]
-            _score = d[excel_util.cols.index('score')]
+        def rankExcelData(d: ColumnModel):
+            d = d.dict()
+            _white = d['white']
+            _height = d['height']
+            _score = d['score']
             return _height * 1000000 + _score * 1000 + _white * 1
 
-        excelDatas.sort(key=rankExcelData, reverse=True)
+        columnModels.sort(key=rankExcelData, reverse=True)
         errStocks = list(set([_[0] for _ in errors]))
         for errStock in errStocks:
             errStockDetail = db.Mysql().selectStockDetail(errStock)
-            _industry = errStockDetail[3]
             _stockName = errStockDetail[2]
-            _industryLimitCount = 0 if _industry not in industryLimitDict.keys() else len(industryLimitDict[_industry])
-            excelDatas.append(
-                [errStock, _stockName, _industry, f'{_industryLimitCount}/{limitUpCount}',
-                 'N/A', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '0%', aimDate, '', '', '']
-            )
+            res = {'code': errStock, 'name': _stockName, 'level': 'N/A', }
+            columnModels.append(ColumnModel(res))
 
-        excel_util.write(aimDate, excelDatas)
+        excel_util.write(aimDate, columnModels)
 
 
     for date in aimDates:
         process(date)
-        tool_box.bark_pusher(f'{date}的Excel生成完毕', '请查看', _url='https://file.geekshop.space')
+        Finish(date).all()
