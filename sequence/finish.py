@@ -4,9 +4,8 @@
 # @File    : finish.py
 # @Software: PyCharm
 from utils.file_util import projectPath
-from utils.excel_util import readExcel_AS
 from utils.oss_util import oss_push_object
-from utils.push_util import DingtalkTemplates, DragonModelMarkDownTemplate, dingtalk_push
+from utils.push_util import DingtalkPush, WechatPush
 
 
 class Finish(object):
@@ -15,12 +14,8 @@ class Finish(object):
 
     def finPush(self):
         url = oss_push_object(f'{projectPath()}/strategy/dragon/result/{self.date}.xls')
-        model = DingtalkTemplates.ActionCard(
-            markdown=DragonModelMarkDownTemplate(readExcel_AS(self.date)),
-            url=url,
-            title=f'{self.date}模型结果',
-            singleTitle='点击查看')
-        dingtalk_push(model)
+        WechatPush().pushDragon(self.date, url=url)
+        DingtalkPush().pushDragon(self.date, url=url)
 
     def all(self):
         rules = [_ for _ in self.__class__.__dict__.keys() if 'fin' in _]

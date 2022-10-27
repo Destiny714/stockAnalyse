@@ -17,7 +17,7 @@ from database import db
 from common import tool_box
 from utils import concurrent_util
 from utils.date_util import lastTradeDay
-from utils.push_util import N_ModelMarkDownTemplate, DingtalkTemplates, dingtalk_push
+from utils.push_util import WechatPush, DingtalkPush, Mode
 
 warnings.filterwarnings('ignore')
 
@@ -49,8 +49,5 @@ if __name__ == '__main__':
 
 
     tool_box.thread_pool_executor(N, chosenStocks, 20)
-    model = DingtalkTemplates.BarelyMarkDown(
-        title=f'{aimDate} N字模型',
-        markdown=N_ModelMarkDownTemplate(Ns)
-    )
-    dingtalk_push(model)
+    WechatPush(Mode.Dev).pushN('20221021', Ns)
+    DingtalkPush(Mode.Dev).pushN('20221021', Ns)
