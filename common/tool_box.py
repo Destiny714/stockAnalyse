@@ -6,7 +6,7 @@
 
 import os
 import time
-import requests
+from typing import Iterable, Callable
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 
 
@@ -20,15 +20,31 @@ def timeCount(func):
     return wrapper
 
 
-def thread_pool_executor(func, iterable, thread_num=20, *args, **kwargs):
-    """多线程"""
+def thread_pool_executor(func: Callable, iterable: Iterable, thread_num=20, *args, **kwargs):
+    """
+    多线程入口函数
+    :param func: 多线程运行的函数
+    :param iterable: 线程启动器，可迭代对象
+    :param thread_num: 同时运行最大线程数
+    :param args: *
+    :param kwargs: **
+    :return: list -> 每个线程的返回值
+    """
     executor = ThreadPoolExecutor(max_workers=thread_num)
     tasks = [executor.submit(func, _, *args, **kwargs) for _ in iterable]
     return [task.result() for task in as_completed(tasks)]
 
 
-def process_pool_executor(func, iterable, process_num=10, *args, **kwargs):
-    """多进程"""
+def process_pool_executor(func: Callable, iterable: Iterable, process_num=10, *args, **kwargs):
+    """
+    多进程入口函数
+    :param func: 多进程运行的函数
+    :param iterable: 进程启动器，可迭代对象
+    :param process_num: 同时运行最大进程数，不超过核心数量两倍
+    :param args: *
+    :param kwargs: **
+    :return: list -> 每个进程的返回值
+    """
     assert process_num <= os.cpu_count() * 2, '进程数超出'
     executor = ProcessPoolExecutor(max_workers=process_num)
     tasks = [executor.submit(func, _, *args, **kwargs) for _ in iterable]
@@ -59,13 +75,3 @@ def cutList(full_list: list, piece_len: int) -> list[list]:
     if extra:
         cut_list.append(extra)
     return cut_list
-
-
-def bark_pusher(title, content, _url=None):
-    try:
-        url = f'https://api.day.app/y67CydURc8wR9CVemagkYL/{title}/{content}'
-        if _url is not None:
-            url += f'?url={_url}'
-        requests.get(url, verify=False)
-    except:
-        pass

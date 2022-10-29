@@ -11,7 +11,8 @@ from database import db
 from sequence.prepare import Prepare
 from utils.concurrent_util import initStock
 from utils.date_util import getMinute, lastTradeDay
-from common.tool_box import timeCount, cutList, thread_pool_executor, process_pool_executor, bark_pusher
+from common.tool_box import timeCount, cutList, thread_pool_executor, process_pool_executor
+from utils.push_util import bark_pusher
 
 
 def minuteData(stockWithSuffix: str, start: str, end: str):
@@ -94,12 +95,12 @@ if __name__ == '__main__':
         thread_pool_executor(writeSQL, datas, 25)
 
 
-    start_time = time.time()
+    startTime = time.time()
     for _stocks in cut_stocks:
         res = multiProcess(_stocks)
         writeData(res)
-        surplus = 60 - (time.time() - start_time)
+        surplus = 60 - (time.time() - startTime)
         if surplus >= 0 and _stocks != cut_stocks[-1]:
-            print(f'睡{surplus + 5}秒')
+            print(f'等待 {surplus + 5}秒')
             time.sleep(surplus + 5)
-            start_time = time.time()
+            startTime = time.time()

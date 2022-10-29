@@ -12,12 +12,12 @@ from utils import date_util
 
 class Mysql:
     def __init__(self):
-        self.__account = config['mysqlAccount']
-        self.__pswd = config['mysqlPassword']
-        self.__DB = config['mysqlDatabase']
+        self.__account__ = config['mysqlAccount']
+        self.__pswd__ = config['mysqlPassword']
+        self.__DB__ = config['mysqlDatabase']
         self.host = config['mysqlHost']
         self.word = ''
-        self.conn = pymysql.connect(host=self.host, port=3306, user=self.__account, password=self.__pswd, database=self.__DB,
+        self.conn = pymysql.connect(host=self.host, port=3306, user=self.__account__, password=self.__pswd__, database=self.__DB__,
                                     connect_timeout=30,
                                     write_timeout=30,
                                     read_timeout=30)
@@ -146,6 +146,7 @@ class Mysql:
         return [_[0] for _ in data]
 
     def selectTradeDateRange(self, start, end):
+        """返回start to end 的一段日期list"""
         self.word = f'SELECT date FROM tradeCalender WHERE (date <= {end} AND date >= {start})'
         data = self.action(output=True)
         return [_[0] for _ in data]
