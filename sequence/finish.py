@@ -5,17 +5,18 @@
 # @Software: PyCharm
 from utils.file_util import projectPath
 from utils.oss_util import oss_push_object
-from utils.push_util import DingtalkPush, WechatPush
+from utils.push_util import DingtalkPush
 
 
 class Finish(object):
-    def __init__(self, date):
+    def __init__(self, date, push=True):
         self.date = date
+        self.push = push
 
     def finPush(self):
-        url = oss_push_object(f'{projectPath()}/strategy/dragon/result/{self.date}.xls')
-        WechatPush().pushDragon(self.date, url=url)
-        DingtalkPush().pushDragon(self.date, url=url)
+        if self.push:
+            url = oss_push_object(f'{projectPath()}/strategy/dragon/result/{self.date}.xls')
+            DingtalkPush().pushDragon(self.date, url=url)
 
     def all(self):
         rules = [_ for _ in self.__class__.__dict__.keys() if 'fin' in _]

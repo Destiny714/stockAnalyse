@@ -35,7 +35,7 @@ class level5(base_level):
                     count3 += 1
             if count1 >= 3 and count2 >= 2 and count3 >= 3:
                 d = data[-1]
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.3:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.5:
                     return True
         except:
             pass
@@ -68,6 +68,8 @@ class level5(base_level):
     def rule3(self):
         data = self.data
         try:
+            if model_1(self.stock, data):
+                return False
             d = data[-1]
             if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.8:
                 if d.buy_elg_vol / d.volume > 0.5:
@@ -119,7 +121,7 @@ class level5(base_level):
                     if t_low_pct(data) > 0.05:
                         if data[-2].turnover < 0.7 * data[-3].turnover:
                             d = data[-1]
-                            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.3:
+                            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.5:
                                 return True
         except:
             pass
@@ -133,7 +135,7 @@ class level5(base_level):
             if data[-2].turnover < data[-3].turnover / 3:
                 if model_t(stock, data) and t_low_pct(data) > 0.07:
                     d = data[-1]
-                    if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.4:
+                    if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.5:
                         return True
         except:
             pass
@@ -220,7 +222,7 @@ class level5(base_level):
             range7 = data[-9:-2]
             if data[-2].turnover > max([_.turnover for _ in range7]):
                 d = data[-1]
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.3:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.5:
                     return True
         except:
             pass
@@ -233,7 +235,18 @@ class level5(base_level):
                 return t_limit(self.stock, self.data)
 
     def rule12(self):
-        pass
+        data = self.data
+        stock = self.stock
+        try:
+            if not t_limit(stock, data):
+                return False
+            d = data[-1]
+            if d.close >= d.his_high / 3:
+                return False
+            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) > 0.7:
+                return d.CP / weakenedIndex(self.shIndex) > 70
+        except:
+            pass
 
     def rule13(self):
         data = self.data
@@ -275,7 +288,7 @@ class level5(base_level):
             matchTime = date_util.joinTimeToStamp(data[-1].date, '09:40:00')
             if data[-1].firstLimitTime < matchTime:
                 d = data[-1]
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) > 0.4:
-                    return True
+                if d.TF / weakenedIndex(self.shIndex) > 50:
+                    return d.CP / weakenedIndex(self.shIndex) > 70
         except:
             pass

@@ -4,8 +4,6 @@
 # @File    : params.py
 # @Software: PyCharm
 
-from enum import Enum
-
 
 class Params(object):
     levelRuleDict = {}
@@ -13,10 +11,25 @@ class Params(object):
     stockDataModelDict = {}  # 所有指定日期的股票详情dict
 
 
-class RunMode(Enum):
+class RunMode(object):
     TEST = -1
     DEBUG = 0
     RELEASE = 1
 
 
 runMode = 0
+
+
+class g:
+    g_dict = {}
+
+    @classmethod
+    def save(cls, obj, key: str):
+        cls.g_dict[key] = obj
+
+    @classmethod
+    def get(cls, key: str):
+        try:
+            return cls.g_dict[key]
+        except:
+            return None

@@ -47,14 +47,13 @@ class level3(base_level):
     def rule3(self):
         data = self.data
         stock = self.stock
-        if data[-1].pctChange <= limit(stock):
-            return False
-        if data[-2].pctChange <= limit(stock):
-            return False
+        for i in range(2):
+            if not t_limit(stock, data, i):
+                return False
         if data[-1].turnover >= data[-2].turnover:
             return False
         if t_open_pct(data) > 0.035:
-            return True
+            return t_open_pct(data) > t_open_pct(data, 1)
 
     def rule4(self):
         data = self.data
@@ -73,15 +72,15 @@ class level3(base_level):
     def rule5(self):
         data = self.data
         stock = self.stock
-        if data[-1].pctChange <= limit(stock):
-            return False
-        if data[-2].pctChange <= limit(stock):
-            return False
+        for i in range(2):
+            if not t_limit(stock, data, i):
+                return False
         if data[-1].turnover >= data[-2].turnover:
             return False
         matchTime = joinTimeToStamp(data[-1].date, '09:45:00')
         if data[-1].firstLimitTime < matchTime:
-            return True
+            matchTime = joinTimeToStamp(data[-2].date, '09:40:00')
+            return data[-2].firstLimitTime > matchTime
 
     def rule6(self):
         data = self.data
@@ -353,7 +352,11 @@ class level3(base_level):
     def rule27(self):
         data = self.data
         stock = self.stock
+        if model_1(stock, data):
+            return False
         if t_limit(stock, data, 2):
+            return False
+        if t_open_pct(data) <= 0.05:
             return False
         for i in range(2):
             if not t_limit(stock, data, i):
@@ -521,6 +524,8 @@ class level3(base_level):
         data = self.data
         stock = self.stock
         try:
+            if model_1(stock, data):
+                return False
             for i in range(2):
                 if not t_limit(stock, data, i):
                     return False
@@ -534,6 +539,8 @@ class level3(base_level):
     def rule39(self):
         data = self.data
         try:
+            if model_1(self.stock, data):
+                return False
             v1 = data[-1].timeVol(minute='0930')
             v2 = data[-2].timeVol(minute='0930')
             v3 = data[-3].timeVol(minute='0930')
@@ -626,6 +633,7 @@ class level3(base_level):
             pass
 
     def rule46(self):
+        # TODO
         data = self.data
         stock = self.stock
         if not model_1(stock, data):
@@ -636,4 +644,6 @@ class level3(base_level):
 
     def rule47(self):
         data = self.data
+        if model_1(self.stock, data):
+            return False
         return t_open_pct(data) > 0.05 and t_low_pct(data) > 0.035

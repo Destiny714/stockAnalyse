@@ -10,13 +10,16 @@ from models.stock_detail_model import StockDetailModel
 
 
 class levelF3(base_level):
-    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel],
+    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel],
+                 shIndex: list[StockDataModel],
                  limitData: dict[str, list[LimitDataModel]]):
         self.level = self.__class__.__name__.replace('level', '')
         super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 
     def rule1(self):
         try:
+            if self.data[-1].TP >= 40:
+                return False
             count = 0
             for i in range(20):
                 if t_high_pct(self.data, i) > 0.07 and t_close_pct(self.data, i) < 0.045:
@@ -116,6 +119,8 @@ class levelF3(base_level):
     def rule7(self):
         data = self.data
         stock = self.stock
+        if data[-2].TP >= 35:
+            return False
         if data[-4].pctChange > limit(stock):
             return False
         if not model_1(stock, data, 2):
@@ -163,7 +168,7 @@ class levelF3(base_level):
         for i in range(1, 4):
             if data[-i].pctChange <= limit(stock):
                 return False
-            if t_open_pct(data, i - 1) < 0.025:
+            if t_open_pct(data, i - 1) < 0.035:
                 count += 1
         if count >= 2 and data[-1].turnover > data[-2].turnover:
             if data[-1].limitOpenTime > 0:
@@ -487,7 +492,7 @@ class levelF3(base_level):
                 return False
             d = data[-1]
             if d.buy_elg_vol / d.volume < 0.3:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.35:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.45:
                     return True
         except:
             pass
@@ -674,3 +679,86 @@ class levelF3(base_level):
             return plus < minus
         except:
             pass
+
+    def rule39(self):
+        data = self.data
+        try:
+            if (data[-1].close - data[-101].close) / data[-101].close <= 0.7:
+                return False
+            for i in range(100):
+                if limit_height(self.stock, self.data, i) >= 3:
+                    return False
+            return True
+        except:
+            pass
+
+    def rule40(self):
+        data = self.data
+        stock = self.stock
+        try:
+            if not t_limit(stock, data):
+                return False
+            d = data[-1]
+            if d.firstLimitTime < joinTimeToStamp(d.date, '09:37:00'):
+                return d.TP / weakenedIndex(self.shIndex) < 80
+        except:
+            pass
+
+    def rule41(self):
+        data = self.data
+        stock = self.stock
+        try:
+            if (data[-11].close - data[-101].close) / data[-101].close <= 0.5:
+                return False
+            for i in range(10, 101):
+                if limit_height(stock, data, i) >= 2:
+                    return False
+            return True
+        except:
+            pass
+
+    def rule42(self):
+        data = self.data
+        stock = self.stock
+        for i in range(2):
+            if not model_1(stock, data, i):
+                return False
+        if data[-1].turnover <= 1.3 * data[-2].turnover:
+            return False
+        return data[-1].turnover > sum([data[-i - 1].turnover for i in range(3, 13)]) / 10 / 3
+
+    def rule43(self):
+        data = self.data
+        stock = self.stock
+        for i in range(2):
+            if not t_limit(stock, data, i):
+                return False
+        if model_1(stock, data, 1):
+            return False
+        if not model_1(stock, data):
+            return False
+        return getMinute(stamp=data[-2].firstLimitTime) < '0940'
+
+    def rule44(self):
+        data = self.data
+        stock = self.stock
+        if t_limit(stock, data, 2):
+            return False
+        for i in range(2):
+            if not model_1(stock, data, i):
+                return False
+        if data[-1].turnover <= data[-1].turnover:
+            return False
+        return data[-2].turnover > data[-3].turnover / 3
+
+    def rule45(self):
+        data = self.data
+        try:
+            count = 0
+            for i in range(2, 42):
+                if data[-i - 1].close < move_avg(data, 30, i):
+                    count += 1
+                    if count >= 35:
+                        return True
+        except:
+            ...

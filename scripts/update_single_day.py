@@ -76,7 +76,7 @@ if __name__ == '__main__':
     dates = sql.selectTradeDateByDuration(lastTradeDay(), dateRange)
     datesList = cutList(dates, dateSize)
     stocks = sql.selectAllStockWithSuffix()
-    cut_stocks = cutList(stocks, 500)
+    cut_stocks = cutList(stocks, 450)
 
 
     @timeCount

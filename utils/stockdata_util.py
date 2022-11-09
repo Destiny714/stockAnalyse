@@ -3,10 +3,11 @@
 # @Author  : Destiny_
 # @File    : stockdata_util.py
 # @Software: PyCharm
-
+from prefs.params import g
 from utils.date_util import *
 from models.stock_data_model import *
 from models.limit_data_model import *
+from common.tool_box import thread_pool_executor
 
 
 def queryIndexData(index, dateRange: int = 500, aimDate=lastTradeDay()) -> list[StockDataModel]:
@@ -242,8 +243,8 @@ def move_avg(data: list[StockDataModel], dateRange: int, plus: int = 0) -> float
     return sum([data[-_].close for _ in range(j, j + dateRange)]) / dateRange
 
 
-def weakenedIndex(indexData: list[StockDataModel], plus: int = 0):
-    return 1 + t_close_pct(indexData, plus) * 10
+def weakenedIndex(indexData: list[StockDataModel], plus: int = 0, weak_degree: int = 10):
+    return 1 + t_close_pct(indexData, plus) * weak_degree
 
 
 class RankLimitStock(object):
@@ -261,13 +262,16 @@ class RankLimitStock(object):
     def by(self, keyword: str, date: str = None, eliminateModel1=False):
         """
         keywords :
-        ---limitTime-industry
-        ---open-industry
-        ---open-height
-        ---limitTime-height
-        ---TF
+         - limitTime-industry
+         - open-industry
+         - open-height
+         - limitTime-height
+         - TF
+         - weakenedTF-height
+         - weakenedHP-height
+         - limitTime-industry+height>1
         根据关键词对某日涨停股票进行排序
-        :param keyword: 排序方法名称 "A-B":rank by A in limit stocks with same B || "A" rank by A in all limit stocks
+        :param keyword: 排序方法名称 "A-B+C":rank by A in limit stocks with same B constrained by C || "A": rank by A in all limit stocks
         :param date: 指定日期
         :param eliminateModel1: 是否剔除一字板
         """
@@ -307,6 +311,22 @@ class RankLimitStock(object):
                 industryStocks: list[LimitDataModel] = dictByIndustry[industry]
                 industryStocks.sort(key=rank)
                 res[industry] = [_.stock for _ in industryStocks]
+        if keyword == 'limitTime-industry+height>1':
+            dictByIndustry = {}
+            for _ in data:
+                if _.industry not in dictByIndustry.keys():
+                    dictByIndustry[_.industry] = [_]
+                else:
+                    dictByIndustry[_.industry].append(_)
+
+            def rank(d: LimitDataModel):
+                return d.firstLimitTime
+
+            res = {}
+            for industry in dictByIndustry.keys():
+                industryStocks: list[LimitDataModel] = dictByIndustry[industry]
+                industryStocks.sort(key=rank)
+                res[industry] = [_.stock for _ in industryStocks if _.limitHeight > 1]
         if keyword == 'open-industry':
             dictByIndustry = {}
             for _ in data:
@@ -363,6 +383,60 @@ class RankLimitStock(object):
 
             needRankData.sort(key=rank, reverse=True)
             res = [_['stock'] for _ in needRankData]
+        if keyword == 'weakenedTF-height':
+            res = {}
+            dictByHeight = {}
+            virtual = g.get('virtual')
+
+            def query(stock: str):
+                tmpData = queryData(stock, 2, date, virtual)
+                tmpIndex = queryIndexData('ShIndex', 2, date) if not virtual else virtualIndexData(queryIndexData('ShIndex'))
+                d = tmpData[-1]
+                return {'stock': stock, 'factor': d.TF / weakenedIndex(tmpIndex)}
+
+            def fastQuery(_stocks: list[str]):
+                return thread_pool_executor(query, _stocks, 10)
+
+            def rank(d: dict):
+                return d['factor']
+
+            for _ in data:
+                if _.limitHeight not in dictByHeight.keys():
+                    dictByHeight[_.limitHeight] = [_]
+                else:
+                    dictByHeight[_.limitHeight].append(_)
+            for height in dictByHeight.keys():
+                stocks = [_.stock for _ in dictByHeight[height]]
+                result = fastQuery(stocks)
+                result.sort(key=rank, reverse=True)
+                res[height] = [_['stock'] for _ in result]
+        if keyword == 'weakenedHP-height':
+            res = {}
+            dictByHeight = {}
+            virtual = g.get('virtual')
+
+            def query(stock: str):
+                tmpData = queryData(stock, 2, date, virtual)
+                tmpIndex = queryIndexData('ShIndex', 2, date) if not virtual else virtualIndexData(queryIndexData('ShIndex'))
+                d = tmpData[-1]
+                return {'stock': stock, 'factor': d.CP / weakenedIndex(tmpIndex)}
+
+            def fastQuery(_stocks: list[str]):
+                return thread_pool_executor(query, _stocks, 10)
+
+            def rank(d: dict):
+                return d['factor']
+
+            for _ in data:
+                if _.limitHeight not in dictByHeight.keys():
+                    dictByHeight[_.limitHeight] = [_]
+                else:
+                    dictByHeight[_.limitHeight].append(_)
+            for height in dictByHeight.keys():
+                stocks = [_.stock for _ in dictByHeight[height]]
+                result = fastQuery(stocks)
+                result.sort(key=rank, reverse=True)
+                res[height] = [_['stock'] for _ in result]
         if res is None:
             raise Exception('排序出现错误')
         self.resultsDict[hashKey] = res

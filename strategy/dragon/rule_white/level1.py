@@ -33,6 +33,8 @@ class level1(base_level):
 
     def rule2(self):
         data = self.data
+        if t_limit(self.stock, data):
+            return False
         for i in range(3):
             if t_low_pct(data, i) / (1 + t_close_pct(self.shIndex, i) * 10) <= -0.03:
                 return False
@@ -50,9 +52,7 @@ class level1(base_level):
         data = self.data
         stock = self.stock
         try:
-            if not t_limit(stock, data):
-                return False
-            if t_limit(stock, data, 1):
+            if t_limit(stock, data, 2):
                 return False
             for i in range(60):
                 if t_limit(stock, data, i):
@@ -62,6 +62,9 @@ class level1(base_level):
 
     def rule5(self):
         data = self.data
+        for i in range(2):
+            if t_limit(self.stock, data, i):
+                return False
         if t_limit(self.stock, data, 1):
             return False
         if data[-1].low <= data[-2].low:
@@ -106,9 +109,9 @@ class level1(base_level):
     def rule10(self):
         data = self.data
         try:
-            range3month = data[-90:]
-            range3year = data[-660:]
-            if sum([_.volume for _ in range3month]) / 90 > sum([_.volume for _ in range3year]) / 660:
+            range3month = data[-60:]
+            range1year = data[-220:]
+            if sum([_.volume for _ in range3month]) / len(range3month) > sum([_.volume for _ in range1year]) / len(range1year):
                 return True
         except:
             return False

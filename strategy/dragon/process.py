@@ -18,7 +18,7 @@ from utils.excel_util import ColumnModel
 from models.stock_detail_model import StockDetailModel
 from utils import concurrent_util, excel_util, log_util
 from rule_black import levelF1, levelF2, levelF3, levelF4, levelF5
-from rule_white import level1, level2, level3, level4, level5, level6, levelA1, levelA2, levelA3, levelA4
+from rule_white import level1, level2, level3, level4, level5, level6, levelA1, levelA2, levelA3, levelA4, levelA5
 
 if __name__ == '__main__':
     runMode = RunMode.DEBUG
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     stocks = concurrent_util.initStock(needReload=False, extra=False)  # 经过筛选的所有股票
     tradeDays = sqlClient.selectTradeDate()  # 所有交易日
     stockDetails = sqlClient.selectAllStockDetail()  # 所有股票的detail 从stockList表查到
-    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 1)  # 要计算的日期范围
+    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 3)  # 要计算的日期范围
     Prepare(stocks, aimDates).do()
     sqlClient.close()
 
@@ -54,6 +54,7 @@ if __name__ == '__main__':
         def processOneStock(argMap: dict):
             stock = argMap['stock']
             virtual = argMap['virtual']
+            g.save(virtual, 'virtual')
             stockDetail = StockDetailModel(stockDetailDict[stock])
             industryLimitCount = 0 if stockDetail.industry not in industryLimitDict.keys() else len(industryLimitDict[stockDetail.industry])
             if virtual is not None:
@@ -76,6 +77,7 @@ if __name__ == '__main__':
                 lA2 = levelA2.levelA2(stockDetail, data, gemIndex, shIndex, limitData).filter()
                 lA3 = levelA3.levelA3(stockDetail, data, gemIndex, shIndex, limitData).filter()
                 lA4 = levelA4.levelA4(stockDetail, data, gemIndex, shIndex, limitData).filter()
+                lA5 = levelA5.levelA5(stockDetail, data, gemIndex, shIndex, limitData).filter()
                 lF1 = levelF1.levelF1(stockDetail, data, gemIndex, shIndex, limitData).filter()
                 lF2 = levelF2.levelF2(stockDetail, data, gemIndex, shIndex, limitData).filter()
                 lF3 = levelF3.levelF3(stockDetail, data, gemIndex, shIndex, limitData).filter()
@@ -87,7 +89,7 @@ if __name__ == '__main__':
                 l4 = level4.level4(stockDetail, data, gemIndex, shIndex, limitData).filter()
                 l5 = level5.level5(stockDetail, data, gemIndex, shIndex, limitData).filter()
                 l6 = level6.level6(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                for white in [lA1, lA2, lA3, lA4]:
+                for white in [lA1, lA2, lA3, lA4, lA5]:
                     white_sum += len(white['detail'])
                     if white['result']:
                         details[white['level']] = white['detail']
@@ -109,6 +111,7 @@ if __name__ == '__main__':
                 score += len(lA2['detail']) * 3
                 score += len(lA3['detail']) * 3
                 score += len(lA4['detail']) * 2
+                score += len(lA5['detail']) * 2
                 score -= len(lF1['detail']) * 5
                 score -= len(lF2['detail']) * 5
                 score -= len(lF3['detail']) * 5
@@ -122,6 +125,8 @@ if __name__ == '__main__':
                     CF = t0Day.CF
                     TF = t0Day.TF
                     TP = t0Day.TP
+                    CP = t0Day.CP
+                    limitOpenTime = t0Day.limitOpenTime
                     b1 = virtualDict[stock]['b1']
                     b2 = virtualDict[stock]['b2']
                     scoreLevelData = {
@@ -142,7 +147,7 @@ if __name__ == '__main__':
                         'stock': stock,
                         'details': details,
                     }
-                    level = 'B'
+                    level = 'F'
                     if F.ruleF(scoreLevelData).filter():
                         level = 'F'
                     if B.ruleB(scoreLevelData).filter():
@@ -160,6 +165,8 @@ if __name__ == '__main__':
                         'CF': CF,
                         'TF': TF,
                         'TP': TP,
+                        'CP': CP,
+                        'limitOpenTime': limitOpenTime,
                         'level': level,
                         'height': height,
                         'white': white_sum,

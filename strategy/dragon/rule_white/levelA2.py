@@ -25,9 +25,9 @@ class levelA2(base_level):
                 if not t_limit(stock, data, i):
                     return False
             d = data[-1]
-            if d.buy_elg_vol / d.volume <= 0.4:
+            if d.buy_elg_vol / d.volume <= 0.55:
                 return False
-            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.6:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.7:
                 return False
             if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                     d.buy_elg_vol + d.buy_lg_vol) <= 0.4:
@@ -50,9 +50,9 @@ class levelA2(base_level):
                 if not t_limit(stock, data, i):
                     return False
             d = data[-1]
-            if d.buy_elg_vol / d.volume <= 0.35:
+            if d.buy_elg_vol / d.volume <= 0.45:
                 return False
-            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.55:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.65:
                 return False
             if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                     d.buy_elg_vol + d.buy_lg_vol) <= 0.35:
@@ -75,9 +75,9 @@ class levelA2(base_level):
                 if not t_limit(stock, data, i):
                     return False
             d = data[-1]
-            if d.buy_elg_vol / d.volume <= 0.35:
+            if d.buy_elg_vol / d.volume <= 0.4:
                 return False
-            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.5:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.6:
                 return False
             if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                     d.buy_elg_vol + d.buy_lg_vol) <= 0.3:
@@ -102,7 +102,7 @@ class levelA2(base_level):
             d = data[-1]
             if d.buy_elg_vol / d.volume <= 0.35:
                 return False
-            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.45:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.5:
                 return False
             if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                     d.buy_elg_vol + d.buy_lg_vol) <= 0.2:
@@ -127,7 +127,7 @@ class levelA2(base_level):
             d = data[-1]
             if d.buy_elg_vol / d.volume <= 0.35:
                 return False
-            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.4:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume <= 0.45:
                 return False
             if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                     d.buy_elg_vol + d.buy_lg_vol) <= 0.15:

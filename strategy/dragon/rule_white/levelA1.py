@@ -19,8 +19,8 @@ class levelA1(base_level):
         data = self.data
         try:
             d = data[-1]
-            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume / weakenedIndex(self.shIndex) > 0.75:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) > 0.7:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume / weakenedIndex(self.shIndex) > 0.8:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) > 0.8:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                             d.buy_elg_vol + d.buy_lg_vol) / weakenedIndex(self.shIndex) > 0.4:
                         return True
@@ -31,8 +31,8 @@ class levelA1(base_level):
         data = self.data
         try:
             d = data[-1]
-            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume / weakenedIndex(self.shIndex) > 0.65:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) > 0.6:
+            if d.CP / weakenedIndex(self.shIndex) > 65:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) > 0.7:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                             d.buy_elg_vol + d.buy_lg_vol) / weakenedIndex(self.shIndex) > 0.3:
                         return True
@@ -43,8 +43,8 @@ class levelA1(base_level):
         data = self.data
         try:
             d = data[-1]
-            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume / weakenedIndex(self.shIndex) > 0.55:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) > 0.5:
+            if d.CP / weakenedIndex(self.shIndex) > 50:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) > 0.55:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                             d.buy_elg_vol + d.buy_lg_vol) / weakenedIndex(self.shIndex) > 0.2:
                         return True
@@ -55,10 +55,10 @@ class levelA1(base_level):
         data = self.data
         try:
             d = data[-1]
-            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume / weakenedIndex(self.shIndex) > 0.45:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) > 0.4:
+            if d.CP / weakenedIndex(self.shIndex) > 40:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) > 0.45:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
-                            d.buy_elg_vol + d.buy_lg_vol) / weakenedIndex(self.shIndex) > 0.05:
+                            d.buy_elg_vol + d.buy_lg_vol) / weakenedIndex(self.shIndex) > 0.1:
                         return True
         except:
             pass
@@ -67,8 +67,8 @@ class levelA1(base_level):
         data = self.data
         try:
             d = data[-2]
-            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume / weakenedIndex(self.shIndex, 1) > 0.6:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex, 1) > 0.5:
+            if d.CP / weakenedIndex(self.shIndex, 1) > 70:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex, 1) > 0.6:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                             d.buy_elg_vol + d.buy_lg_vol) / weakenedIndex(self.shIndex, 1) > 0.3:
                         d0 = data[-1]
@@ -81,8 +81,8 @@ class levelA1(base_level):
         data = self.data
         try:
             d = data[-2]
-            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume / weakenedIndex(self.shIndex, 1) > 0.5:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex, 1) > 0.4:
+            if (d.buy_elg_vol + d.buy_lg_vol) / d.volume / weakenedIndex(self.shIndex, 1) > 0.6:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex, 1) > 0.5:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                             d.buy_elg_vol + d.buy_lg_vol) / weakenedIndex(self.shIndex, 1) > 0.2:
                         d0 = data[-1]
@@ -96,7 +96,7 @@ class levelA1(base_level):
         try:
             for i in range(2):
                 d = data[-i - 1]
-                if (d.buy_elg_vol + d.buy_lg_vol) / d.volume / weakenedIndex(self.shIndex, i) <= 0.5:
+                if (d.buy_elg_vol + d.buy_lg_vol) / d.volume / weakenedIndex(self.shIndex, i) <= 0.6:
                     return False
                 if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex, i) <= 0.5:
                     return False
@@ -109,7 +109,7 @@ class levelA1(base_level):
         try:
             for i in range(3):
                 d = data[-i - 1]
-                if (d.buy_elg_vol + d.buy_lg_vol) / d.volume / weakenedIndex(self.shIndex, i) <= 0.5:
+                if (d.buy_elg_vol + d.buy_lg_vol) / d.volume / weakenedIndex(self.shIndex, i) <= 0.6:
                     return False
                 if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex, i) <= 0.5:
                     return False
@@ -118,9 +118,20 @@ class levelA1(base_level):
             pass
 
     def rule9(self):
+        if model_1(self.stock, self.data):
+            return False
         d = self.data[-1]
         return d.CF > 55 and d.TF > 80 and d.TP > 35
 
     def rule10(self):
         if t_down_limit(self.stock, self.data):
             return self.data[-1].TF > 60
+
+    def rule11(self):
+        data = self.data
+        stock = self.stock
+        if not model_1(stock, data):
+            return False
+        d = data[-2]
+        if (d.buy_elg_vol + d.buy_lg_vol) / d.volume / weakenedIndex(self.shIndex, weak_degree=5) > 0.7:
+            return d.TF / weakenedIndex(self.shIndex, weak_degree=5) > 50

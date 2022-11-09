@@ -22,9 +22,8 @@ class levelF5(base_level):
             if not t_limit(stock, data, 1):
                 return False
             d = data[-2]
-            if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
-                    d.buy_elg_vol + d.buy_lg_vol) < 0.2:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.2:
+            if d.CF < 40:
+                if d.TF < 50:
                     matchTime = joinTimeToStamp(d.date, '10:00:00')
                     if d.firstLimitTime > matchTime:
                         return True
@@ -42,9 +41,8 @@ class levelF5(base_level):
             if data[-1].firstLimitTime <= matchTime:
                 return False
             d = data[-2]
-            if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
-                    d.buy_elg_vol + d.buy_lg_vol) < 0.2:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.2:
+            if d.CF < 40:
+                if d.TF < 50:
                     return True
         except:
             pass
@@ -56,10 +54,9 @@ class levelF5(base_level):
                 if t_close_pct(data, i) <= 0.06:
                     return False
                 d = data[-i - 1]
-                if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
-                        d.buy_elg_vol + d.buy_lg_vol) >= 0.2:
+                if d.CF >= 40:
                     return False
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol >= 0.3:
+                if d.TF >= 50:
                     return False
             return True
         except:
@@ -69,15 +66,14 @@ class levelF5(base_level):
         data = self.data
         stock = self.stock
         try:
-            if (data[-1].buy_elg_vol - data[-1].sell_elg_vol) / data[-1].buy_elg_vol >= 0.2:
+            if data[-1].TF >= 50:
                 return False
             for i in range(5):
                 d = data[-i - 1]
                 if d.turnover <= 4:
                     continue
                 if model_1(stock, data, i):
-                    if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.2:
-                        return True
+                    return True
         except:
             pass
 
@@ -89,8 +85,8 @@ class levelF5(base_level):
             if t_low_pct(data) >= 0.05:
                 return False
             d = data[-1]
-            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < -0.1:
-                if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (d.buy_elg_vol + d.buy_lg_vol) < -0.1:
+            if d.TF < -10:
+                if d.CF < -10:
                     return True
         except:
             pass
@@ -103,9 +99,8 @@ class levelF5(base_level):
                 if not t_limit(stock, data, i):
                     return False
             d = data[-2]
-            if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
-                    d.buy_elg_vol + d.buy_lg_vol) < 0.2:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.2:
+            if d.CF < 40:
+                if d.TF < 50:
                     if d.buy_lg_vol < d.sell_lg_vol:
                         matchTime = joinTimeToStamp(data[-1].date, '09:45:00')
                         if data[-1].firstLimitTime > matchTime:
@@ -123,9 +118,8 @@ class levelF5(base_level):
                 if t_limit(stock, data, i):
                     limitCount += 1
                 d = data[-i - 1]
-                if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
-                        d.buy_elg_vol + d.buy_lg_vol) < 0.2:
-                    if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.2:
+                if d.CF < 40:
+                    if d.TF < 50:
                         count += 1
                 if count >= 3 and limitCount >= 4:
                     return True
@@ -140,13 +134,25 @@ class levelF5(base_level):
                 if not t_limit(stock, data, i):
                     return False
                 d = data[-i - 1]
-                if ((d.buy_elg_vol + d.buy_lg_vol) / d.volume) >= 0.45:
+                if ((d.buy_elg_vol + d.buy_lg_vol) / d.volume) >= 0.5:
                     return False
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol >= 0.3:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol >= 0.5:
                     return False
             return True
         except:
             pass
+
+    def rule9(self):
+        data = self.data
+        try:
+            for i in range(2):
+                if t_high_pct(data, i) <= 0.05:
+                    return False
+            d0 = data[-1]
+            d1 = data[-2]
+            return (d1.buy_elg_vol + d0.buy_lg_vol - d1.sell_elg_vol - d0.sell_lg_vol) / (d1.buy_elg_vol + d0.buy_lg_vol) < 0.5
+        except:
+            ...
 
     def rule10(self):
         data = self.data
@@ -162,7 +168,7 @@ class levelF5(base_level):
                 d = data[-1]
                 d1 = data[-2]
                 if (d.buy_elg_vol + d1.buy_elg_vol - d.sell_elg_vol - d1.sell_elg_vol) / (
-                        d.buy_elg_vol + d1.buy_elg_vol) < 0.3:
+                        d.buy_elg_vol + d1.buy_elg_vol) < 0.4:
                     if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.4:
                         matchTime = joinTimeToStamp(data[-1].date, '09:50:00')
                         if data[-1].lastLimitTime > matchTime:
@@ -219,7 +225,7 @@ class levelF5(base_level):
             if t_high_pct(data) <= 0.06:
                 return False
             if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.7:
-                if d.buy_elg_vol / d.volume < 0.3:
+                if d.buy_elg_vol / d.volume < 0.4:
                     matchTime = date_util.joinTimeToStamp(data[-1].date, '10:00:00')
                     if data[-1].firstLimitTime > matchTime:
                         return True
@@ -234,11 +240,7 @@ class levelF5(base_level):
             for i in range(2):
                 if t_high_pct(data, i) <= 0.05:
                     return False
-            d = data[-2]
-            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.5:
-                if d.buy_elg_vol / d.volume < 0.3:
-                    matchTime = joinTimeToStamp(data[-1].date, '10:00:00')
-                    if data[-1].firstLimitTime > matchTime:
-                        return True
+            if data[-2].TF < 30:
+                return data[-1].TP < 40
         except:
             pass

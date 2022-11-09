@@ -282,7 +282,7 @@ class level4(base_level):
         data = self.data
         stock = self.stock
         if model_1(stock, data):
-            return True
+            return False
         for i in range(3):
             if not t_limit(stock, data, i):
                 return False
@@ -316,7 +316,7 @@ class level4(base_level):
                         if t_low_pct(data, i - 1) > -0.01:
                             count1 += 1
                 d = data[-i]
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.4:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.5:
                     count3 += 1
                 if count1 >= 3 and count2 >= 2 and count3 >= 2:
                     return True
@@ -363,7 +363,7 @@ class level4(base_level):
             count = 0
             for i in range(3):
                 d = data[-i - 1]
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.4:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.5:
                     count += 1
             if count < 2:
                 return False
@@ -372,9 +372,8 @@ class level4(base_level):
             if not t_limit(stock, data, 1):
                 return False
             if data[-3].turnover > data[-2].turnover > data[-1].turnover:
-                if data[-1].lastLimitTime < data[-2].lastLimitTime + timeDelta(data[-2].date, data[-1].date):
-                    if data[-2].lastLimitTime < data[-3].lastLimitTime + timeDelta(data[-3].date, data[-2].date):
-                        return True
+                if getMinute(stamp=data[-1].lastLimitTime) < getMinute(stamp=data[-2].lastLimitTime) < getMinute(stamp=data[-3].lastLimitTime):
+                    return True
         except:
             pass
 
@@ -401,7 +400,7 @@ class level4(base_level):
                 if t_open_pct(data, i - 1) > 0.045:
                     count += 1
                 d = data[-i]
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.4:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.5:
                     count1 += 1
                 if count >= 2 and count1 >= 3:
                     return True
@@ -424,13 +423,13 @@ class level4(base_level):
     def rule26(self):
         data = self.data
         try:
-            if data[-1].close >= data[-1].his_high / 3:
+            d = data[-1]
+            if d.close >= d.his_high / 3:
+                return False
+            if d.buy_elg_vol / d.volume <= 0.5:
                 return False
             for i in range(20):
-                j = i + 1
-                ma = [data[-_] for _ in range(j, j + 30)]
-                avg = sum(_.close for _ in ma) / len(ma)
-                if data[-i - 1].close <= avg:
+                if data[-i - 1].close <= move_avg(data, 30, i):
                     return False
             return True
         except:
@@ -445,7 +444,7 @@ class level4(base_level):
                 if t_open_pct(data, i - 1) > 0:
                     if t_open_pct(self.gemIndex, i - 1) < -0.02:
                         d = data[-1]
-                        if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.3:
+                        if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.5:
                             return True
         except:
             pass
@@ -461,7 +460,7 @@ class level4(base_level):
                 if data[-i].limitOpenTime < 2:
                     count += 1
             d = data[-1]
-            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol <= 0.3:
+            if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol <= 0.5:
                 return False
             return count >= 3
         except:
@@ -477,7 +476,7 @@ class level4(base_level):
                 return False
             if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) > 120000:
                 d = data[-1]
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.4:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.5:
                     return True
         except:
             pass
@@ -539,7 +538,7 @@ class level4(base_level):
         if not t_limit(stock, data):
             return False
         if model_1(stock, data):
-            return True
+            return False
         rank = RankLimitStock(self.limitData).by('limitTime-industry', data[-1].date, eliminateModel1=True)[self.industry]
         if stock in rank[:2]:
             return True
@@ -558,7 +557,7 @@ class level4(base_level):
             matchTime1 = joinTimeToStamp(data[-2].date, '09:45:00')
             if data[-1].firstLimitTime < matchTime0 and data[-2].firstLimitTime > matchTime1:
                 d = data[-1]
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.3:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.5:
                     return True
         except:
             pass
@@ -588,9 +587,13 @@ class level4(base_level):
             pass
 
     def rule35(self):
+        data = self.data
         if not t_limit(self.stock, self.data):
             return False
-        rankList = RankLimitStock(self.limitData).by('TF', self.data[-1].date)
+        d = data[-1]
+        if d.TF / weakenedIndex(self.shIndex) <= 50:
+            return False
+        rankList = RankLimitStock(self.limitData).by('weakenedTF-height', d.date)[limit_height(self.stock, data)]
         return self.stock in rankList[:3]
 
     def rule36(self):
@@ -611,6 +614,8 @@ class level4(base_level):
     def rule38(self):
         data = self.data
         stock = self.stock
+        if model_1(stock, data):
+            return False
         for i in range(2):
             if not t_limit(stock, data, i):
                 return False
@@ -632,4 +637,13 @@ class level4(base_level):
             pass
 
     def rule40(self):
-        pass
+        data = self.data
+        if model_1(self.stock, data):
+            return False
+        if not t_limit(self.stock, data):
+            return False
+        d = data[-1]
+        if d.CP / weakenedIndex(self.shIndex) <= 40:
+            return False
+        rankList = RankLimitStock(self.limitData).by('weakenedHP-height', d.date)[limit_height(self.stock, data)]
+        return self.stock in rankList[:3]

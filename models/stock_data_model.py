@@ -196,19 +196,31 @@ class StockDataModel:
         return (self.cost_95pct - self.cost_5pct) / _sum
 
     @property
-    def CF(self):
+    def CF(self) -> float:
+        """
+        (.buy_elg_vol + buy_lg_vol - sell_elg_vol - sell_lg_vol) / (buy_elg_vol + buy_lg_vol)
+        """
         if (self.buy_elg_vol + self.buy_lg_vol) == 0:
             return 0
         return round(((self.buy_elg_vol + self.buy_lg_vol - self.sell_elg_vol - self.sell_lg_vol) / (self.buy_elg_vol + self.buy_lg_vol)) * 100, 1)
 
     @property
-    def TF(self):
+    def TF(self) -> float:
         """
-        (buy_elg_vol - sell_elg_vol) /buy_elg_vol
+        (buy_elg_vol - sell_elg_vol) / buy_elg_vol
         """
         if self.buy_elg_vol == 0:
             return 0
         return round(((self.buy_elg_vol - self.sell_elg_vol) / self.buy_elg_vol) * 100, 1)
+
+    @property
+    def CP(self) -> float:
+        """
+        (buy_elg_vol + buy_lg_vol) / volume
+        """
+        if self.volume == 0:
+            return 0
+        return round(((self.buy_elg_vol + self.buy_lg_vol) / self.volume) * 100, 1)
 
     @property
     def TP(self):

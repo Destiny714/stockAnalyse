@@ -12,9 +12,10 @@ from models.stock_detail_model import StockDetailModel
 
 
 class base_level(object):
-    def __init__(self, level, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel],
+    def __init__(self, level, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel],
+                 shIndex: list[StockDataModel],
                  limitData: dict[str, list[LimitDataModel]]):
-        self.data = data
+        self.data: list[StockDataModel] = data
         self.level = level
         self.shIndex = shIndex
         self.gemIndex = gemIndex

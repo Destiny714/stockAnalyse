@@ -23,7 +23,7 @@ class levelA3(base_level):
                     return False
             d = data[-1]
             if d.buy_elg_vol / d.volume > 0.65:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.7:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.8:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                             d.buy_elg_vol + d.buy_lg_vol) > 0.4:
                         return True
@@ -39,7 +39,7 @@ class levelA3(base_level):
                     return False
             d = data[-1]
             if d.buy_elg_vol / d.volume > 0.55:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.6:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.7:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                             d.buy_elg_vol + d.buy_lg_vol) > 0.3:
                         return True
@@ -55,7 +55,7 @@ class levelA3(base_level):
                     return False
             d = data[-1]
             if d.buy_elg_vol / d.volume > 0.4:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.5:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.6:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                             d.buy_elg_vol + d.buy_lg_vol) > 0.2:
                         return True

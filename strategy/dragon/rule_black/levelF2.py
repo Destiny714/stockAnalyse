@@ -10,7 +10,8 @@ from models.stock_detail_model import StockDetailModel
 
 
 class levelF2(base_level):
-    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel],
+    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel],
+                 shIndex: list[StockDataModel],
                  limitData: dict[str, list[LimitDataModel]]):
         self.level = self.__class__.__name__.replace('level', '')
         super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
@@ -236,7 +237,7 @@ class levelF2(base_level):
             d = data[-1]
             if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) >= 0.6:
                 return False
-            if d.buy_elg_vol / d.volume / weakenedIndex(self.shIndex) >= 0.6:
+            if d.CP / weakenedIndex(self.shIndex) >= 60:
                 return False
             plus = []
             minus = []
@@ -258,13 +259,17 @@ class levelF2(base_level):
         try:
             d = data[-1]
             if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) < 0.8:
-                if d.buy_elg_vol / d.volume / weakenedIndex(self.shIndex) < 0.6:
-                    range25 = data[-25:]
-                    range90 = data[-90:]
-                    avg25 = sum([_.close for _ in range25]) / 25
-                    avg90 = sum([_.close for _ in range90]) / 90
-                    if avg25 < avg90:
-                        return True
+                if d.CP / weakenedIndex(self.shIndex) < 60:
+                    plus = 0
+                    minus = 0
+                    for i in range(15):
+                        if t_low_pct(self.gemIndex, i) < -0.01:
+                            continue
+                        if data[-i - 1].close > data[-i - 1].open:
+                            plus += 1
+                        else:
+                            minus += 1
+                        return plus < minus
         except:
             pass
 
@@ -416,7 +421,7 @@ class levelF2(base_level):
             d = data[-1]
             if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) >= 0.6:
                 return False
-            if d.buy_elg_vol / d.volume / weakenedIndex(self.shIndex) >= 0.5:
+            if d.buy_elg_vol / d.volume / weakenedIndex(self.shIndex) >= 0.6:
                 return False
             if t_open_pct(data) >= 0.07:
                 return False
@@ -436,7 +441,7 @@ class levelF2(base_level):
         try:
             for i in range(2):
                 d = data[-i - 1]
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol >= 0.6:
+                if d.buy_elg_vol / d.volume / weakenedIndex(self.shIndex) >= 0.6:
                     return False
             if t_open_pct(data, 1) >= 0.07:
                 return False
@@ -522,7 +527,7 @@ class levelF2(base_level):
         for i in range(2):
             if not model_1(stock, data, i):
                 return False
-        if data[-1].turnover > 1.1 * data[-2].turnover:
+        if data[-1].turnover > 1.5 * data[-2].turnover:
             return True
 
     def rule32(self):
@@ -608,15 +613,15 @@ class levelF2(base_level):
     def rule40(self):
         data = self.data
         stock = self.stock
-        if t_limit(stock, data, 2):
+        if t_limit(stock, data, 1):
             return False
-        if not t_limit(stock, data):
-            return False
-        return t_open_pct(data) > 0.09 and t_low_pct(data) < 0.055
+        d = data[-1]
+        if getMinute(stamp=d.firstLimitTime) < '0940':
+            return d.CP / weakenedIndex(self.shIndex) < 60
 
     def rule41(self):
         try:
-            if self.data[-1].TP / weakenedIndex(self.shIndex) >= 60:
+            if self.data[-1].TP / weakenedIndex(self.shIndex, weak_degree=5) >= 60:
                 return False
             if model_1(self.stock, self.data):
                 return False
@@ -628,3 +633,23 @@ class levelF2(base_level):
             return (sumTurnover / 20) < 2
         except:
             pass
+
+    def rule42(self):
+        data = self.data
+        if t_open_pct(data) - t_low_pct(data) > 0.02:
+            return data[-1].limitOpenTime > 2
+
+    def rule43(self):
+        data = self.data
+        if t_open_pct(data, 1) - t_low_pct(data, 1) > 0.02:
+            return data[-2].limitOpenTime > 2
+
+    def rule44(self):
+        data = self.data
+        stock = self.stock
+        for i in [1, 2]:
+            if t_limit(stock, data, i):
+                return False
+        if not t_limit(stock, data):
+            return False
+        return data[-1].turnover > 15 and data[-2].limitOpenTime > 2

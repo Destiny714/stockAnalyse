@@ -10,7 +10,7 @@ from typing import Iterable, Callable
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 
 
-def timeCount(func):
+def timeCount(func: Callable):
     def wrapper(*args, **kwargs):
         start = time.time()
         res = func(*args, **kwargs)
@@ -26,8 +26,6 @@ def thread_pool_executor(func: Callable, iterable: Iterable, thread_num=20, *arg
     :param func: 多线程运行的函数
     :param iterable: 线程启动器，可迭代对象
     :param thread_num: 同时运行最大线程数
-    :param args: *
-    :param kwargs: **
     :return: list -> 每个线程的返回值
     """
     executor = ThreadPoolExecutor(max_workers=thread_num)
@@ -41,8 +39,6 @@ def process_pool_executor(func: Callable, iterable: Iterable, process_num=10, *a
     :param func: 多进程运行的函数
     :param iterable: 进程启动器，可迭代对象
     :param process_num: 同时运行最大进程数，不超过核心数量两倍
-    :param args: *
-    :param kwargs: **
     :return: list -> 每个进程的返回值
     """
     assert process_num <= os.cpu_count() * 2, '进程数超出'
@@ -52,6 +48,11 @@ def process_pool_executor(func: Callable, iterable: Iterable, process_num=10, *a
 
 
 def errorHandler(e: Exception) -> str:
+    """
+    Exception格式转换 --> 控制台输出
+    :param e: Exception
+    :return: errors str
+    """
     errMsg = ''
     tb = e.__traceback__
     while tb is not None:
@@ -61,7 +62,12 @@ def errorHandler(e: Exception) -> str:
 
 
 def cutList(full_list: list, piece_len: int) -> list[list]:
-    """切割大列表 --> list[小列表]"""
+    """
+    切割大列表 --> list[小列表]
+    :param full_list: 大列表
+    :param piece_len: 切割后每个小列表的长度
+    :return: list[小列表]
+    """
     cut_list = []
     extra_num = len(full_list) % piece_len
     extra = []
