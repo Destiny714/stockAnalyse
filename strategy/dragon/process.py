@@ -5,7 +5,6 @@
 # @Software: PyCharm
 
 
-import pymysql
 import warnings
 from prefs.params import *
 from api import tushare_api
@@ -15,32 +14,33 @@ from sequence.finish import Finish
 from utils.stockdata_util import *
 from sequence.prepare import Prepare
 from utils.excel_util import ColumnModel
+from utils.concurrent_util import initStock
 from models.stock_detail_model import StockDetailModel
 from utils import concurrent_util, excel_util, log_util
 from rule_black import levelF1, levelF2, levelF3, levelF4, levelF5
 from rule_white import level1, level2, level3, level4, level5, level6, levelA1, levelA2, levelA3, levelA4, levelA5
 
 if __name__ == '__main__':
-    runMode = RunMode.DEBUG
+    RunMode.Status = RunMode.DEBUG
     log = log_util.log()
     sqlClient = db.Mysql()  # 数据库查询client
     warnings.filterwarnings('ignore')
-    stocks = concurrent_util.initStock(needReload=False, extra=False)  # 经过筛选的所有股票
+    stocks = initStock(False, False)  # 经过筛选的所有股票
     tradeDays = sqlClient.selectTradeDate()  # 所有交易日
     stockDetails = sqlClient.selectAllStockDetail()  # 所有股票的detail 从stockList表查到
-    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 3)  # 要计算的日期范围
+    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 2)  # 要计算的日期范围
     Prepare(stocks, aimDates).do()
     sqlClient.close()
 
 
     def process(aimDate):
         stockDetailDict = concurrent_util.createStockDetailMap(stockDetails)  # 利用stockDetails生成stock为key的dict
-        _limitData = concurrent_util.getStockLimitDataByDate(date=aimDate)  # 从stockLimit表读取当日所有涨停票详情 返回 dict[str, list[limitDataModel]]
+        _limitData = Params.dailyLimitData[aimDate]  # 从stockLimit表读取当日所有涨停票详情 返回 dict[str, list[limitDataModel]]
         limitData_virtualDict = {  # 生成下一天虚拟数据的涨停票详情
             's': virtualLimitData(_limitData, 's'),
             'f': virtualLimitData(_limitData, 'f'),
         }
-        industryLimitDict = RankLimitStock(_limitData).by('limitTime-industry', aimDate)  # 通过行业分类生成行业涨停票列表 返回dict[行业，股票列表]
+        industryLimitDict = Params.dailyIndustryLimitDict[aimDate]  # 通过行业分类生成行业涨停票列表 返回dict[行业，股票列表]
         limitUpCount = tushare_api.Tushare().dailyLimitCount(date=aimDate)
         errors = []
         columnModels = []
@@ -49,7 +49,7 @@ if __name__ == '__main__':
         gemIndexData = queryIndexData('GemIndex', aimDate=aimDate)
         shIndexData_virtual = virtualIndexData(shIndexData)
         gemIndexData_virtual = virtualIndexData(gemIndexData)
-        excelDict: dict = excel_util.readScoreFromExcel(db.Mysql().selectLastTradeDate(aimDate))
+        excelDict: dict = excel_util.readScoreFromExcel(db.Mysql().selectPrevTradeDate(aimDate))
 
         def processOneStock(argMap: dict):
             stock = argMap['stock']
@@ -191,7 +191,7 @@ if __name__ == '__main__':
                     virtualDict[stock][matchDict[virtual]] = black_sum
                     virtualDict[stock][f'{virtual}_detail'] = details
                     log.info(f'{aimDate} - {stock} - T1{str(virtual).upper()}')
-            except (IndexError, ValueError, KeyError, TypeError, pymysql.Error) as e:
+            except (IndexError, ValueError, KeyError, TypeError) as e:
                 errors.append([stock, e])
                 log.warning(
                     f'{aimDate} - {stock} - {"NOW" if not virtual else "".join(["T1", str(virtual).upper()])} - {e} - {tool_box.errorHandler(e)}')
@@ -212,7 +212,7 @@ if __name__ == '__main__':
         for errStock in errStocks:
             errStockDetail = db.Mysql().selectStockDetail(errStock)
             _stockName = errStockDetail[2]
-            res = {'code': errStock, 'name': _stockName, 'level': 'N/A', }
+            res = {'code': errStock, 'name': _stockName, 'level': 'N/A'}
             columnModels.append(ColumnModel(res))
 
         excel_util.write(aimDate, columnModels)

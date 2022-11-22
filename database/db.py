@@ -159,7 +159,7 @@ class Mysql:
         result = self.action(output=True)
         return [_[1] for _ in result]
 
-    def selectLastTradeDate(self, date):
+    def selectPrevTradeDate(self, date):
         """选取上一个交易日"""
         self.word = f"SELECT lastDate FROM tradeCalender where date='{date}'"
         data = self.action(output=True)

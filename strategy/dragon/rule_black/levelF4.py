@@ -50,14 +50,16 @@ class levelF4(base_level):
     def rule3(self):
         data = self.data
         count = 0
-        for i in range(1, 6):
-            if t_open_pct(data, i - 1) <= 0.08:
+        for i in range(5):
+            d = data[-i - 1]
+            if t_open_pct(data, i) <= 0.08:
                 continue
-            matchTime = joinTimeToStamp(data[-i].date, '10:00:00')
-            if data[-i].lastLimitTime > matchTime:
+            if getMinute(stamp=d.lastLimitTime) <= '1000':
+                continue
+            if d.TP < 50:
                 count += 1
-            if count >= 2:
-                return True
+                if count >= 2:
+                    return True
 
     def rule4(self):
         data = self.data
@@ -158,6 +160,8 @@ class levelF4(base_level):
 
     def rule10(self):
         data = self.data
+        if data[-1].CP / weakenedIndex(self.shIndex, weak_degree=5) >= 65:
+            return False
         if data[-1].turnover <= 10:
             return False
         try:
@@ -182,6 +186,8 @@ class levelF4(base_level):
     def rule12(self):
         data = self.data
         stock = self.stock
+        if data[-1].CP / weakenedIndex(self.shIndex) >= 60:
+            return False
         if t_limit(stock, data, 1):
             return False
         if not t_limit(stock, data):
@@ -224,7 +230,7 @@ class levelF4(base_level):
         data = self.data
         stock = self.stock
         try:
-            if data[-1].TF > 75 and data[-1].TP > 40:
+            if data[-1].TF > 65 and data[-1].TP > 40:
                 return False
             if t_limit(stock, data, 1):
                 return False
@@ -425,9 +431,9 @@ class levelF4(base_level):
         stock = self.stock
         try:
             d = data[-1]
-            if d.buy_elg_vol / d.volume / (1 + t_close_pct(self.shIndex) * 10) >= 0.4:
+            if d.TP / (1 + t_close_pct(self.shIndex) * 10) >= 35:
                 return False
-            if data[-1].TF >= 80:
+            if data[-1].TF >= 70:
                 return False
             for i in range(3, 153):
                 if not t_limit(stock, data, i):
@@ -651,9 +657,9 @@ class levelF4(base_level):
             if model_1(self.stock, data):
                 return False
             d = data[-1]
-            if d.TF / weakenedIndex(self.shIndex) >= 50:
+            if d.TF / weakenedIndex(self.shIndex) >= 60:
                 return False
-            if d.CP / weakenedIndex(self.shIndex) >= 60:
+            if d.CP / weakenedIndex(self.shIndex, weak_degree=5) >= 65:
                 return False
             badCount = 0
             for i in range(50):
@@ -678,12 +684,12 @@ class levelF4(base_level):
                 return False
             limitTime = data[-1].firstLimitTime
             limitMinute = getMinute(stamp=limitTime)
-            limitMinuteLast = prevMinute(limitMinute)
-            if data[-1].timeVol(minute=limitMinute) < data[-1].timeVol(minute=limitMinuteLast) * 3:
+            limitMinutePrev = prevMinute(limitMinute)
+            if data[-1].timeVol(minute=limitMinute) < data[-1].timeVol(minute=limitMinutePrev) * 3:
                 d = data[-1]
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) < 0.5:
+                if d.TF / weakenedIndex(self.shIndex) < 70:
                     if t_low_pct(data) < t_open_pct(data):
-                        return True
+                        return d.CP / weakenedIndex(self.shIndex, weak_degree=5) < 55
         except:
             return False
 
@@ -691,7 +697,7 @@ class levelF4(base_level):
         data = self.data
         try:
             d = data[-1]
-            if d.CP / weakenedIndex(self.shIndex) >= 60:
+            if d.CP / weakenedIndex(self.shIndex, weak_degree=5) >= 65:
                 return False
             flag = False
             for i in range(20):
@@ -718,7 +724,7 @@ class levelF4(base_level):
             if model_1(stock, data):
                 return False
             d = data[-1]
-            if d.CP / weakenedIndex(self.shIndex) >= 60:
+            if d.CP / weakenedIndex(self.shIndex) >= 70:
                 return False
             for i in range(10, 101):
                 if limit_height(stock, data, i) >= 2:
@@ -729,7 +735,7 @@ class levelF4(base_level):
                     continue
                 if data[-i - 1].close < move_avg(data, 20, i):
                     badCount10 += 1
-                    if badCount10 >= 2:
+                    if badCount10 >= 3:
                         return True
         except:
             return False
@@ -740,7 +746,7 @@ class levelF4(base_level):
             if model_1(self.stock, data):
                 return False
             d = data[-1]
-            if d.CP / weakenedIndex(self.shIndex) >= 60:
+            if d.CP / weakenedIndex(self.shIndex) >= 70:
                 return False
             if data[-1].TF >= 80:
                 return False
@@ -792,7 +798,7 @@ class levelF4(base_level):
             if model_1(stock, data):
                 return False
             d = data[-1]
-            if d.CP / weakenedIndex(self.shIndex) >= 65:
+            if d.CP / weakenedIndex(self.shIndex) >= 60:
                 return False
             for i in range(10, 101):
                 if limit_height(stock, data, i) >= 3:
@@ -868,7 +874,7 @@ class levelF4(base_level):
             d = data[-1]
             if d.buy_elg_vol / d.volume >= 0.45:
                 return False
-            for i in range(3, 153):
+            for i in range(3, 123):
                 if limit_height(stock, data, i) >= 6:
                     return False
                 if not flag:
@@ -879,7 +885,7 @@ class levelF4(base_level):
                     nxt = data[-i]
                     if nxt.turnover > 1.5 * data[-1].turnover:
                         if nxt.high * 1.03 > data[-1].close:
-                            if nxt.high > max([_.close for _ in data[-5:]]):
+                            if nxt.high > max([_.close for _ in data[-6:-1]]):
                                 flag = True
             return flag
         except:
@@ -888,15 +894,15 @@ class levelF4(base_level):
     def rule47(self):
         data = self.data
         stock = self.stock
-        if data[-1].TF > 60 and data[-1].TP > 40:
+        if data[-1].TF > 65 and data[-1].TP > 35:
             return False
         if not t_limit(stock, data):
             return False
         if data[-1].turnover <= 3 * sum([_.turnover for _ in data[-11:-1]]) / 10:
             return False
-        if data[-1].turnover <= 2 * sum([_.turnover for _ in data[-6:-1]]) / 5:
+        if data[-1].turnover <= 2.5 * sum([_.turnover for _ in data[-6:-1]]) / 5:
             return False
-        for i in range(3, 153):
+        for i in range(3, 123):
             if not t_limit(stock, data, i):
                 continue
             if t_limit(stock, data, i - 1):
@@ -922,8 +928,10 @@ class levelF4(base_level):
         data = self.data
         stock = self.stock
         try:
+            if model_1(stock, data):
+                return False
             count = 0
-            for i in range(3, 153):
+            for i in range(3, 103):
                 if not t_limit(stock, data, i):
                     continue
                 if t_limit(stock, data, i - 1):
@@ -931,10 +939,9 @@ class levelF4(base_level):
                 nxt = data[-i]
                 if nxt.high * 1.1 > data[-1].close:
                     if nxt.high < 1.1 * data[-1].close:
-                        if nxt.turnover > 1.3 * data[-1].turnover:
+                        if nxt.turnover > 2.5 * data[-1].turnover:
                             count += 1
-                if count >= 2:
-                    return True
+            return count == 1
         except:
             pass
 
@@ -943,7 +950,7 @@ class levelF4(base_level):
         stock = self.stock
         try:
             d = data[-1]
-            if d.CP / weakenedIndex(self.shIndex) >= 60:
+            if d.CP / weakenedIndex(self.shIndex) >= 55:
                 return False
             flag = False
             for i in range(3):
@@ -970,7 +977,7 @@ class levelF4(base_level):
     def rule51(self):
         data = self.data
         try:
-            if data[-1].TF / weakenedIndex(self.shIndex) > 50 and data[-1].TP / weakenedIndex(self.shIndex) > 50:
+            if data[-1].TF / weakenedIndex(self.shIndex) > 55 and data[-1].TP / weakenedIndex(self.shIndex) > 40:
                 return False
             count = 0
             if t_limit(self.stock, data, 3):
@@ -1006,7 +1013,7 @@ class levelF4(base_level):
         data = self.data
         stock = self.stock
         try:
-            if data[-1].TF / weakenedIndex(self.shIndex) > 50 and data[-1].TP / weakenedIndex(self.shIndex) > 50:
+            if data[-1].TF / weakenedIndex(self.shIndex) > 50 and data[-1].TP / weakenedIndex(self.shIndex) > 35:
                 return False
             for i in range(3, 153):
                 if not t_limit(stock, data, i):
@@ -1016,31 +1023,11 @@ class levelF4(base_level):
                 if t_limit(stock, data, i - 1):
                     continue
                 nxt = data[-i]
-                if nxt.turnover > 1.5 * data[-1].turnover:
+                if nxt.turnover > 1.8 * data[-1].turnover:
                     if nxt.high > data[-1].close:
                         return True
         except:
             pass
-
-    def rule54(self):
-        data = self.data
-        stock = self.stock
-        try:
-            for i in range(3, 153):
-                d = data[-i - 1]
-                if not t_limit(stock, data, i):
-                    continue
-                if t_limit(stock, data, i - 1):
-                    continue
-                nxt = data[-i]
-                if nxt.turnover <= d.turnover:
-                    continue
-                if nxt.turnover <= 3 * data[-1].turnover:
-                    continue
-                if data[-1].close < nxt.high * 1.1 and nxt.high < data[-1].close * 1.2:
-                    return True
-        except:
-            ...
 
     def rule55(self):
         data = self.data

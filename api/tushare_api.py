@@ -16,6 +16,12 @@ class Tushare:
         self._token = config['tushareKey']
         self._instance = tushare.pro_api(token=self._token)
 
+    @classmethod
+    def init(cls):
+        token = config['tushareKey']
+        tushare.set_token(token)
+        print('tushare registered')
+
     def tradeCalender(self):
         """获取交易日历"""
         data = self._instance.query('trade_cal', start_date='20190101')
@@ -80,7 +86,7 @@ class Tushare:
         """获取部分涨停详情(时间、开板次数等)"""
         details = []
         data = self._instance.limit_list_d(**{
-            "trade_date": date,
+            "trade_date": int(date),
             "ts_code": "",
             "limit_type": "U",
             "exchange": "",
@@ -156,7 +162,7 @@ class Tushare:
             details.append(data.iloc[i])
         return details
 
-    def chipDetail(self, stocks:str, date=None):
+    def chipDetail(self, stocks: str, date=None):
         """获取股票筹码详情"""
         if not date:
             date = lastTradeDay()
@@ -239,12 +245,14 @@ class Tushare:
             details.append(data.iloc[i])
         return details
 
-    def qfqDailyData(self, date=lastTradeDay()):
+    def qfqDailyData(self, date=None):
         """
         每日基础数据前复权版
         :param date: 查询日期
         :return: list[pd.df]
         """
+        if not date:
+            date = lastTradeDay()
         print(f'request {date}')
         details = []
         data = None

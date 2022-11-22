@@ -15,7 +15,7 @@ class ruleB(base_score_level):
         super().__init__(self.level, scoreLevelData)
 
     def rule1(self):
-        if self.height > 2:
+        if self.height > 0:
             if self.black - self.b1 > 4:
                 return self.b1 < 2
 

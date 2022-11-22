@@ -3,6 +3,7 @@
 # @Author  : Destiny_
 # @File    : stockdata_util.py
 # @Software: PyCharm
+from copy import deepcopy
 from prefs.params import g
 from utils.date_util import *
 from models.stock_data_model import *
@@ -10,7 +11,9 @@ from models.limit_data_model import *
 from common.tool_box import thread_pool_executor
 
 
-def queryIndexData(index, dateRange: int = 500, aimDate=lastTradeDay()) -> list[StockDataModel]:
+def queryIndexData(index, dateRange: int = 500, aimDate=None) -> list[StockDataModel]:
+    if not aimDate:
+        aimDate = lastTradeDay()
     mysql = db.Mysql()
     allData = mysql.selectOneAllData(stock=index, dateRange=dateRange, aimDate=aimDate)
     res = [StockDataModel(allData[i]) for i in range(len(allData))]
@@ -19,28 +22,28 @@ def queryIndexData(index, dateRange: int = 500, aimDate=lastTradeDay()) -> list[
 
 
 def virtualIndexData(data: list[StockDataModel]) -> list[StockDataModel]:
-    res = data.copy()
-    modifyData = list(res[-1])
+    res = deepcopy(data)
+    modifyData = list(res[-1].data)
     modifyData[0] = 8888
-    modifyData[1] = db.Mysql().selectNextTradeDay(modifyData[1])
+    modifyData[1] = nextTradeDay(modifyData[1])
     res.append(StockDataModel(modifyData))
     return res
 
 
 def virtualLimitData(data: dict[str, list[LimitDataModel]], virtual=None) -> dict[str, list[LimitDataModel]]:
-    d = data.copy()
+    d = deepcopy(data)
     today = str(max(int(_) for _ in data.keys()))
-    nextDay = db.Mysql().selectNextTradeDay(today)
-    modifyDatas = d[today].copy()
+    nextDay = nextTradeDay(today)
+    modifyDatas = deepcopy(d[today])
 
     def one(a: LimitDataModel):
-        b = list(a)
+        b = list(a.data)
         b[1] = nextDay
         b[6] = a.close
         if virtual == 's':
             b[4] = a.close * 1.07
             b[5] = a.close * (1 + (limit(a.stock) / 100)),
-            b[8] = a.amount() * 0.6
+            b[8] = a.amount * 0.6
             b[9] = a.turnover * 0.6
             b[11] = joinTimeToStamp(nextDay, '09:36:00')
             b[12] = joinTimeToStamp(nextDay, '09:36:00')
@@ -48,7 +51,7 @@ def virtualLimitData(data: dict[str, list[LimitDataModel]], virtual=None) -> dic
         if virtual == 'f':
             b[4] = a.close * 1.03
             b[5] = a.close * (1 + (limit(a.stock) / 100)),
-            b[8] = a.amount() * 1.4
+            b[8] = a.amount * 1.4
             b[9] = a.turnover * 1.4
             b[11] = joinTimeToStamp(nextDay, '09:50:00')
             b[12] = joinTimeToStamp(nextDay, '14:00:00')
@@ -60,7 +63,9 @@ def virtualLimitData(data: dict[str, list[LimitDataModel]], virtual=None) -> dic
     return d
 
 
-def queryData(stock, dateRange: int = 800, aimDate=lastTradeDay(), virtual=None) -> list[StockDataModel]:
+def queryData(stock, dateRange: int = 800, aimDate=None, virtual=None) -> list[StockDataModel]:
+    if not aimDate:
+        aimDate = lastTradeDay()
     mysql = db.Mysql()
     try:
         allData = mysql.selectOneAllData(stock=stock, dateRange=dateRange, aimDate=aimDate)
@@ -71,7 +76,7 @@ def queryData(stock, dateRange: int = 800, aimDate=lastTradeDay(), virtual=None)
         pass
     elif virtual == 's':
         modifyData = res[-1]
-        nextDate = mysql.selectNextTradeDay(modifyData.date)
+        nextDate = nextTradeDay(modifyData.date)
         largePct = 1.3
         smallPct = 0.7
         virtualData = [8888,
@@ -252,7 +257,7 @@ class RankLimitStock(object):
     resultsDict = {}
 
     def __init__(self, limitData: dict[str, list[LimitDataModel]]):
-        self.limitData = limitData.copy()
+        self.limitData = limitData
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -277,10 +282,10 @@ class RankLimitStock(object):
         """
         if not date:
             date = lastTradeDay()
-        dataDict = self.limitData
         hashKey = hash(keyword + date + ''.join(self.limitData.keys()))
         if hashKey in self.resultsDict.keys():
             return self.resultsDict[hashKey]
+        dataDict = deepcopy(self.limitData)
         data = dataDict[date]
         res = None
         rubbish = []

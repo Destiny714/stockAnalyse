@@ -4,8 +4,10 @@
 # @File    : update_basic.py
 # @Software: PyCharm
 
+from api.tushare_api import Tushare
 from utils import concurrent_util
-from sequence.prepare import Prepare
+from utils.concurrent_util import updateLimitDetailData
 
-Prepare().do()
-concurrent_util.initStock(needReload=True, extra=True)
+Tushare.init()
+updateLimitDetailData()
+# concurrent_util.initStock(needReload=True, extra=True)

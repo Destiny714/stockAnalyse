@@ -39,7 +39,7 @@ def lastTradeDay(date=None):
     if today in tradeDays:
         matchTime = joinTimeToStamp(today, '15:30:00')
         if time.time() < matchTime:
-            return client.selectLastTradeDate(today)
+            return client.selectPrevTradeDate(today)
         else:
             return today
     count = 0
@@ -48,6 +48,20 @@ def lastTradeDay(date=None):
         today = str(int(today) - 1)
     client.close()
     return today
+
+
+def prevTradeDay(date: str):
+    client = db.Mysql()
+    prev = client.selectPrevTradeDate(date)
+    client.close()
+    return prev
+
+
+def nextTradeDay(date: str):
+    client = db.Mysql()
+    nxt = client.selectNextTradeDay(date)
+    client.close()
+    return nxt
 
 
 def lastXTradeDay(date=None, x: int = 1):

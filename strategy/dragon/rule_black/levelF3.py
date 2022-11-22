@@ -4,6 +4,7 @@
 # @File    : levelF3.py
 # @Software: PyCharm
 
+from prefs.params import Params
 from utils.stockdata_util import *
 from base.base_level_model import base_level
 from models.stock_detail_model import StockDetailModel
@@ -18,10 +19,10 @@ class levelF3(base_level):
 
     def rule1(self):
         try:
-            if self.data[-1].TP >= 40:
+            if self.data[-1].TP / weakenedIndex(self.shIndex) >= 35:
                 return False
             count = 0
-            for i in range(20):
+            for i in range(6):
                 if t_high_pct(self.data, i) > 0.07 and t_close_pct(self.data, i) < 0.045:
                     count += 1
                 if count >= 2:
@@ -119,6 +120,8 @@ class levelF3(base_level):
     def rule7(self):
         data = self.data
         stock = self.stock
+        if data[-1].TP >= 50:
+            return False
         if data[-2].TP >= 35:
             return False
         if data[-4].pctChange > limit(stock):
@@ -237,7 +240,7 @@ class levelF3(base_level):
         data = self.data
         stock = self.stock
         try:
-            if data[-1].buy_elg_vol / data[-1].volume / weakenedIndex(self.shIndex) >= 0.6:
+            if data[-1].CP / weakenedIndex(self.shIndex) >= 65:
                 return False
             for i in range(1, 21):
                 if limit_height(stock, data, i) >= 3:
@@ -563,7 +566,7 @@ class levelF3(base_level):
         stock = self.stock
         try:
             d = data[-1]
-            if d.buy_elg_vol / d.volume / (1 + t_close_pct(self.shIndex) * 10) >= 0.4:
+            if d.CP / weakenedIndex(self.shIndex, weak_degree=5) >= 65:
                 return False
             if t_limit(stock, data, 1):
                 return False
@@ -699,8 +702,8 @@ class levelF3(base_level):
             if not t_limit(stock, data):
                 return False
             d = data[-1]
-            if d.firstLimitTime < joinTimeToStamp(d.date, '09:37:00'):
-                return d.TP / weakenedIndex(self.shIndex) < 80
+            if d.lastLimitTime < joinTimeToStamp(d.date, '09:40:00'):
+                return d.CP / weakenedIndex(self.shIndex, weak_degree=5) < 65
         except:
             pass
 
@@ -730,6 +733,8 @@ class levelF3(base_level):
     def rule43(self):
         data = self.data
         stock = self.stock
+        if data[-2].TP >= 60:
+            return False
         for i in range(2):
             if not t_limit(stock, data, i):
                 return False
@@ -754,11 +759,98 @@ class levelF3(base_level):
     def rule45(self):
         data = self.data
         try:
+            if data[-1].CP / weakenedIndex(self.shIndex, weak_degree=5) >= 65:
+                return False
             count = 0
             for i in range(2, 42):
                 if data[-i - 1].close < move_avg(data, 30, i):
                     count += 1
                     if count >= 35:
                         return True
+        except:
+            ...
+
+    def rule46(self):
+        data = self.data
+        stock = self.stock
+        if model_1(stock, data, 1):
+            return False
+        for i in range(2):
+            d = data[-i - 1]
+            if not t_limit(stock, data, i):
+                return False
+            if getMinute(stamp=d.firstLimitTime) >= '0940':
+                return False
+            if len(Params.dailyIndustryLimitDict[d.date][self.industry]) <= 3:
+                return False
+        return True
+
+    def rule47(self):
+        data = self.data
+        stock = self.stock
+        for i in range(2):
+            if not t_limit(stock, data, i):
+                return False
+            if getMinute(stamp=data[-i - 1].firstLimitTime) >= '0940':
+                return False
+        return data[-1].limitOpenTime > 0
+
+    def rule48(self):
+        data = self.data
+        stock = self.stock
+        if t_limit(stock, data, 2):
+            return False
+        for i in range(2):
+            if not t_limit(stock, data, i):
+                return False
+            if getMinute(stamp=data[-i - 1].firstLimitTime) >= '0940':
+                return False
+        return data[-1].turnover > data[-2].turnover * 0.7 and data[-1].turnover > data[-3].turnover * 0.7
+
+    def rule49(self):
+        data = self.data
+        stock = self.stock
+        if not t_limit(stock, data):
+            return False
+        close = 1000000
+        turnover = 1000000
+        for i in range(1, 5):
+            d = data[-i - 1]
+            if t_limit(stock, data, i):
+                return False
+            if d.close >= close:
+                return False
+            if d.turnover >= turnover:
+                return False
+            close = d.close
+            turnover = d.turnover
+        return True
+
+    def rule50(self):
+        data = self.data
+        stock = self.stock
+        count = 0
+        try:
+            for i in range(1, 42):
+                if i in range(1, 21):
+                    if t_close_pct(data, i) > 0.045:
+                        return False
+                else:
+                    if count >= 15:
+                        return True
+                if i in range(2, 42):
+                    if data[-i - 1].close < move_avg(data, 20, i):
+                        count += 1
+        except:
+            ...
+
+    def rule51(self):
+        data = self.data
+        stock = self.stock
+        try:
+            for i in range(15, 75):
+                d = data[-i - 1]
+                if (d.high - d.low) / d.high > 0.3:
+                    return True
         except:
             ...

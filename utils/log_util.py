@@ -30,11 +30,11 @@ class log:
             fh.setLevel(logging.WARNING)
             ch.setFormatter(formatter)
             ch.setLevel(logging.WARNING)
-            if runMode == RunMode.TEST:
+            if RunMode.Status == RunMode.TEST:
                 logger.setLevel(logging.FATAL)
                 ch.setLevel(logging.FATAL)
                 fh.setLevel(logging.FATAL)
-            if runMode != RunMode.TEST and not logger.handlers:
+            if RunMode.Status != RunMode.TEST and not logger.handlers:
                 logger.addHandler(fh)
                 logger.addHandler(ch)
             self.logger = logger

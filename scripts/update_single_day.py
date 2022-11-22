@@ -8,11 +8,11 @@ import numpy
 import tushare
 
 from database import db
-from sequence.prepare import Prepare
+from api.tushare_api import Tushare
+from utils.push_util import bark_pusher
 from utils.concurrent_util import initStock
 from utils.date_util import getMinute, lastTradeDay
 from common.tool_box import timeCount, cutList, thread_pool_executor, process_pool_executor
-from utils.push_util import bark_pusher
 
 
 def minuteData(stockWithSuffix: str, start: str, end: str):
@@ -68,7 +68,7 @@ def getData(stockNo: str, dateList: list[list]):
 
 
 if __name__ == '__main__':
-    Prepare().do()
+    Tushare.init()
     initStock(needReload=True, extra=True)
     sql = db.Mysql()
     dateSize = 30
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     dates = sql.selectTradeDateByDuration(lastTradeDay(), dateRange)
     datesList = cutList(dates, dateSize)
     stocks = sql.selectAllStockWithSuffix()
-    cut_stocks = cutList(stocks, 450)
+    cut_stocks = cutList(stocks, 440)
 
 
     @timeCount

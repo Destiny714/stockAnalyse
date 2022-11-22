@@ -45,6 +45,7 @@ class LimitDataModel:
     def pctChange(self):
         return self.data[7]
 
+    @property
     def amount(self):
         return self.data[8]
 

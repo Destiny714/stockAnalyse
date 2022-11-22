@@ -198,7 +198,7 @@ class StockDataModel:
     @property
     def CF(self) -> float:
         """
-        (.buy_elg_vol + buy_lg_vol - sell_elg_vol - sell_lg_vol) / (buy_elg_vol + buy_lg_vol)
+        (buy_elg_vol + buy_lg_vol - sell_elg_vol - sell_lg_vol) / (buy_elg_vol + buy_lg_vol)
         """
         if (self.buy_elg_vol + self.buy_lg_vol) == 0:
             return 0

@@ -3,9 +3,10 @@
 # @Author  : Destiny_
 # @File    : finish.py
 # @Software: PyCharm
+from prefs.params import RunMode
 from utils.file_util import projectPath
-from utils.oss_util import oss_push_object
 from utils.push_util import DingtalkPush
+from utils.oss_util import oss_push_object
 
 
 class Finish(object):
@@ -14,7 +15,7 @@ class Finish(object):
         self.push = push
 
     def finPush(self):
-        if self.push:
+        if self.push and RunMode.Status != RunMode.TEST:
             url = oss_push_object(f'{projectPath()}/strategy/dragon/result/{self.date}.xls')
             DingtalkPush().pushDragon(self.date, url=url)
 

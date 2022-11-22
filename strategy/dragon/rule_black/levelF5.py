@@ -118,9 +118,8 @@ class levelF5(base_level):
                 if t_limit(stock, data, i):
                     limitCount += 1
                 d = data[-i - 1]
-                if d.CF < 40:
-                    if d.TF < 50:
-                        count += 1
+                if d.CF < 40 and d.TF < 50:
+                    count += 1
                 if count >= 3 and limitCount >= 4:
                     return True
         except:
@@ -146,11 +145,12 @@ class levelF5(base_level):
         data = self.data
         try:
             for i in range(2):
-                if t_high_pct(data, i) <= 0.05:
+                if t_close_pct(data, i) <= 0.05:
                     return False
             d0 = data[-1]
             d1 = data[-2]
-            return (d1.buy_elg_vol + d0.buy_lg_vol - d1.sell_elg_vol - d0.sell_lg_vol) / (d1.buy_elg_vol + d0.buy_lg_vol) < 0.5
+            return (d1.buy_elg_vol + d0.buy_elg_vol - d1.sell_elg_vol - d0.sell_elg_vol) / (d1.buy_elg_vol + d0.buy_elg_vol) < 0.5 and (
+                    d1.buy_elg_vol + d0.buy_elg_vol) / (d1.volume + d0.volume) < 0.4
         except:
             ...
 
@@ -238,9 +238,9 @@ class levelF5(base_level):
             if not t_limit(self.stock, data):
                 return False
             for i in range(2):
-                if t_high_pct(data, i) <= 0.05:
+                if t_close_pct(data, i) <= 0.05:
                     return False
             if data[-2].TF < 30:
-                return data[-1].TP < 40
+                return data[-1].CP / weakenedIndex(self.shIndex, weak_degree=5) < 65
         except:
             pass

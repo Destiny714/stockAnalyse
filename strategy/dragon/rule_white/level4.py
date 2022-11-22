@@ -281,16 +281,19 @@ class level4(base_level):
     def rule17(self):
         data = self.data
         stock = self.stock
-        if model_1(stock, data):
-            return False
-        for i in range(3):
-            if not t_limit(stock, data, i):
+        try:
+            if model_1(stock, data):
                 return False
-        rank = RankLimitStock(self.limitData).by('limitTime-height', data[-1].date, eliminateModel1=True)
-        if 3 not in rank.keys():
-            return False
-        if rank[3][0] == stock:
-            return True
+            for i in range(3):
+                if not t_limit(stock, data, i):
+                    return False
+            rank = RankLimitStock(self.limitData).by('limitTime-height', data[-1].date, eliminateModel1=True)
+            if 3 not in rank.keys():
+                return False
+            if rank[3][0] == stock:
+                return True
+        except:
+            ...
 
     def rule18(self):
         data = self.data
@@ -588,13 +591,16 @@ class level4(base_level):
 
     def rule35(self):
         data = self.data
-        if not t_limit(self.stock, self.data):
-            return False
-        d = data[-1]
-        if d.TF / weakenedIndex(self.shIndex) <= 50:
-            return False
-        rankList = RankLimitStock(self.limitData).by('weakenedTF-height', d.date)[limit_height(self.stock, data)]
-        return self.stock in rankList[:3]
+        try:
+            if not t_limit(self.stock, self.data):
+                return False
+            d = data[-1]
+            if d.TF / weakenedIndex(self.shIndex) <= 50:
+                return False
+            rankList = RankLimitStock(self.limitData).by('weakenedTF-height', d.date)[limit_height(self.stock, data)]
+            return self.stock in rankList[:3]
+        except:
+            ...
 
     def rule36(self):
         data = self.data
@@ -638,12 +644,15 @@ class level4(base_level):
 
     def rule40(self):
         data = self.data
-        if model_1(self.stock, data):
-            return False
-        if not t_limit(self.stock, data):
-            return False
-        d = data[-1]
-        if d.CP / weakenedIndex(self.shIndex) <= 40:
-            return False
-        rankList = RankLimitStock(self.limitData).by('weakenedHP-height', d.date)[limit_height(self.stock, data)]
-        return self.stock in rankList[:3]
+        try:
+            if model_1(self.stock, data):
+                return False
+            if not t_limit(self.stock, data):
+                return False
+            d = data[-1]
+            if d.CP / weakenedIndex(self.shIndex) <= 40:
+                return False
+            rankList = RankLimitStock(self.limitData).by('weakenedHP-height', d.date)[limit_height(self.stock, data)]
+            return self.stock in rankList[:3]
+        except:
+            ...

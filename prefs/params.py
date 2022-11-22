@@ -9,6 +9,8 @@ class Params(object):
     levelRuleDict = {}
     scoreRuleDict = {}
     stockDataModelDict = {}  # 所有指定日期的股票详情dict
+    dailyIndustryLimitDict = {}
+    dailyLimitData = {}
 
 
 class RunMode(object):
@@ -16,11 +18,16 @@ class RunMode(object):
     DEBUG = 0
     RELEASE = 1
 
+    Status = 0
 
-runMode = 0
+
+runMode:int
 
 
 class g:
+    """
+    global variables
+    """
     g_dict = {}
 
     @classmethod

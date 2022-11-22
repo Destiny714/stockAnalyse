@@ -173,3 +173,34 @@ class level6(base_level):
             return True
         except:
             pass
+
+    def rule6(self):
+        data = self.data
+        stock = self.stock
+        try:
+            shot = False
+            for i in range(1, 31):
+                if not t_limit(stock, data, i):
+                    continue
+                d = data[-i - 1]
+                if d.close <= max([_.close for _ in data[-i - 21:-i - 1]]):
+                    continue
+                after = [data[-_ - 1] for _ in range(1, i)]
+                flag = True
+                for index, t in enumerate(after):
+                    No = index + 1
+                    if t.close <= move_avg(data, 20, No):
+                        flag = False
+                        break
+                if not flag:
+                    continue
+                if min([_.low for _ in after]) > d.close * 0.96:
+                    shot = True
+                    break
+            if shot:
+                for i in range(200):
+                    if limit_height(stock, data, i) >= 4:
+                        return False
+                return True
+        except:
+            ...
