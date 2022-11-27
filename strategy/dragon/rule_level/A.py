@@ -129,12 +129,11 @@ class ruleA(base_score_level):
 
     def rule16(self):
         if self.height > 0 and self.black < 2:
-            if self.b1 < 2 and self.b2 < 3:
+            if self.b1 < 2:
                 if self.white > 20:
                     if 'A1' in self.details.keys():
                         if 4 in self.details['A1']:
-                            if self.b1 < 2:
-                                return True
+                            return True
 
     def rul17(self):
         if self.stock[:2] in ['30', '68']:

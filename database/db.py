@@ -29,6 +29,10 @@ class Mysql:
             self.cursor.close()
             self.conn.close()
 
+    def refreshConn(self):
+        if not self.conn.open:
+            self.__init__()
+
     def action(self, output: bool):
         """mysql语句执行基础单元"""
         self.cursor.execute(self.word)

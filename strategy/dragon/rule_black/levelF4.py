@@ -146,17 +146,20 @@ class levelF4(base_level):
     def rule9(self):
         data = self.data
         stock = self.stock
-        for i in range(20):
-            if not model_1(stock, data, i):
-                continue
-            if model_1(stock, data, i + 1):
-                continue
-            if t_low_pct(self.shIndex, i) <= -0.015:
-                continue
-            d = data[-i - 1]
-            if d.turnover > 1:
-                if d.turnover > max([_.turnover for _ in data[-i - 21:-i - 1]]) / 3:
-                    return d.TP < 80
+        try:
+            for i in range(20):
+                if not model_1(stock, data, i):
+                    continue
+                if model_1(stock, data, i + 1):
+                    continue
+                if t_low_pct(self.shIndex, i) <= -0.015:
+                    continue
+                d = data[-i - 1]
+                if d.turnover > 1:
+                    if d.turnover > max([_.turnover for _ in data[-i - 21:-i - 1]]) / 3:
+                        return d.TP < 80
+        except:
+            ...
 
     def rule10(self):
         data = self.data
@@ -431,7 +434,7 @@ class levelF4(base_level):
         stock = self.stock
         try:
             d = data[-1]
-            if d.TP / (1 + t_close_pct(self.shIndex) * 10) >= 35:
+            if d.TP / (1 + t_close_pct(self.shIndex) * 10) >= 30:
                 return False
             if data[-1].TF >= 70:
                 return False
@@ -447,9 +450,7 @@ class levelF4(base_level):
                     continue
                 if nxt.high * 1.03 <= data[-1].close:
                     continue
-                matchTime = joinTimeToStamp(data[-i - 1].date, '10:00:00')
-                if data[-i - 1].firstLimitTime > matchTime:
-                    return True
+                return True
         except:
             pass
 
@@ -625,8 +626,6 @@ class levelF4(base_level):
         data = self.data
         stock = self.stock
         try:
-            if t_open_pct(data) >= t_open_pct(data, 1):
-                return False
             if t_low_pct(data) >= 0.05:
                 return False
             flag = False
@@ -913,16 +912,19 @@ class levelF4(base_level):
     def rule48(self):
         data = self.data
         stock = self.stock
-        if not t_limit(stock, data):
-            return False
-        for i in range(3, 153):
-            if not t_limit(stock, data, i):
-                continue
-            if t_limit(stock, data, i - 1):
-                continue
-            if data[-i].high * 1.03 > data[-1].close:
-                if t_down_limit(stock, data, i):
-                    return True
+        try:
+            if not t_limit(stock, data):
+                return False
+            for i in range(3, 153):
+                if not t_limit(stock, data, i):
+                    continue
+                if t_limit(stock, data, i - 1):
+                    continue
+                if data[-i].high * 1.03 > data[-1].close:
+                    if t_down_limit(stock, data, i):
+                        return True
+        except:
+            ...
 
     def rule49(self):
         data = self.data
@@ -937,7 +939,7 @@ class levelF4(base_level):
                 if t_limit(stock, data, i - 1):
                     continue
                 nxt = data[-i]
-                if nxt.high * 1.1 > data[-1].close:
+                if data[-i - 1].high * 1.05 > data[-1].close:
                     if nxt.high < 1.1 * data[-1].close:
                         if nxt.turnover > 2.5 * data[-1].turnover:
                             count += 1
@@ -1054,5 +1056,27 @@ class levelF4(base_level):
                         flag = True
                 if flag and count >= 5:
                     return True
+        except:
+            ...
+
+    def rule56(self):
+        data = self.data
+        stock = self.stock
+        try:
+            for i in range(2):
+                if getMinute(stamp=data[-i - 1].firstLimitTime) >= '0940':
+                    return False
+            for i in range(3, 153):
+                if not t_limit(stock, data, i):
+                    continue
+                if not t_limit(stock, data, i + 1):
+                    continue
+                if t_limit(stock, data, i - 1):
+                    continue
+                nxt = data[-i]
+                if nxt.high > data[-2].close:
+                    if nxt.turnover > data[-1].turnover * 2.5:
+                        if nxt.turnover > data[-2].turnover * 2.5:
+                            return True
         except:
             ...

@@ -30,7 +30,7 @@ def thread_pool_executor(func: Callable, iterable: Iterable, thread_num=20, *arg
     """
     executor = ThreadPoolExecutor(max_workers=thread_num)
     tasks = [executor.submit(func, _, *args, **kwargs) for _ in iterable]
-    return [task.result() for task in as_completed(tasks)]
+    return [task.result(timeout=10) for task in as_completed(tasks)]
 
 
 def process_pool_executor(func: Callable, iterable: Iterable, process_num=10, *args, **kwargs):

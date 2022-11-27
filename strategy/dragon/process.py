@@ -28,17 +28,18 @@ if __name__ == '__main__':
     stocks = initStock(False, False)  # 经过筛选的所有股票
     tradeDays = sqlClient.selectTradeDate()  # 所有交易日
     stockDetails = sqlClient.selectAllStockDetail()  # 所有股票的detail 从stockList表查到
-    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 2)  # 要计算的日期范围
+    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 1)  # 要计算的日期范围
     Prepare(stocks, aimDates).do()
-    sqlClient.close()
 
 
     def process(aimDate):
         stockDetailDict = concurrent_util.createStockDetailMap(stockDetails)  # 利用stockDetails生成stock为key的dict
         _limitData = Params.dailyLimitData[aimDate]  # 从stockLimit表读取当日所有涨停票详情 返回 dict[str, list[limitDataModel]]
+        limitData_virtual_s = virtualLimitData(_limitData, 's')
+        limitData_virtual_f = virtualLimitData(_limitData, 'f')
         limitData_virtualDict = {  # 生成下一天虚拟数据的涨停票详情
-            's': virtualLimitData(_limitData, 's'),
-            'f': virtualLimitData(_limitData, 'f'),
+            's': limitData_virtual_s,
+            'f': limitData_virtual_f,
         }
         industryLimitDict = Params.dailyIndustryLimitDict[aimDate]  # 通过行业分类生成行业涨停票列表 返回dict[行业，股票列表]
         limitUpCount = tushare_api.Tushare().dailyLimitCount(date=aimDate)

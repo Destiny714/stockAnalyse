@@ -79,19 +79,21 @@ def queryData(stock, dateRange: int = 800, aimDate=None, virtual=None) -> list[S
         nextDate = nextTradeDay(modifyData.date)
         largePct = 1.3
         smallPct = 0.7
+        isModel1 = model_1(stock, res)
+        limitPrice = modifyData.close * (1 + (limit(stock) / 100))
         virtualData = [8888,
                        nextDate,
-                       modifyData.close * 1.07,
-                       modifyData.close * (1 + (limit(stock) / 100)),
+                       modifyData.close * 1.07 if not isModel1 else limitPrice,
+                       limitPrice,
                        modifyData.close,
-                       modifyData.close * (1 + (limit(stock) / 100)),
-                       modifyData.close * 1.06,
+                       limitPrice,
+                       modifyData.close * 1.06 if not isModel1 else limitPrice,
                        limit(stock),
                        modifyData.volume * 0.6,
                        modifyData.amount * 0.6,
                        modifyData.turnover * 0.6,
-                       joinTimeToStamp(nextDate, '09:36:00'),
-                       joinTimeToStamp(nextDate, '09:36:00'),
+                       joinTimeToStamp(nextDate, '09:36:00') if not isModel1 else joinTimeToStamp(nextDate, '09:30:00'),
+                       joinTimeToStamp(nextDate, '09:36:00') if not isModel1 else joinTimeToStamp(nextDate, '09:30:00'),
                        0,
                        modifyData.buy_sm_vol * smallPct,
                        modifyData.buy_sm_amount * smallPct,
@@ -219,7 +221,7 @@ def model_t(stock: str, data: list[StockDataModel], plus: int = 0) -> bool:
 
 
 def t_limit(stock: str, data: list[StockDataModel], plus: int = 0) -> bool:
-    return data[-plus - 1].pctChange > limit(stock)
+    return data[-plus - 1].pctChange >= limit(stock)
 
 
 def t_down_limit(stock: str, data: list[StockDataModel], plus: int = 0) -> bool:
