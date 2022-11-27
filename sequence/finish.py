@@ -7,10 +7,11 @@ from prefs.params import RunMode
 from utils.file_util import projectPath
 from utils.push_util import DingtalkPush
 from utils.oss_util import oss_push_object
+from utils.excel_util import write, ColumnModel
 
 
 class Finish(object):
-    def __init__(self, date, push=True):
+    def __init__(self, date, push=True, ):
         self.date = date
         self.push = push
 
@@ -20,8 +21,8 @@ class Finish(object):
             DingtalkPush().pushDragon(self.date, url=url)
 
     def all(self):
-        rules = [_ for _ in self.__class__.__dict__.keys() if 'fin' in _]
-        for rule in rules:
-            func = getattr(self, rule)
+        steps = [_ for _ in self.__class__.__dict__.keys() if 'fin' in _]
+        for step in steps:
+            func = getattr(self, step)
             if func():
                 return True

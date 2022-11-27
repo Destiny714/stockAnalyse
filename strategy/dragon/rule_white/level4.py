@@ -542,8 +542,10 @@ class level4(base_level):
             return False
         if model_1(stock, data):
             return False
-        rank = RankLimitStock(self.limitData).by('limitTime-industry', data[-1].date, eliminateModel1=True)[self.industry]
-        if stock in rank[:2]:
+        rankDict = RankLimitStock(self.limitData).by('limitTime-industry', data[-1].date, eliminateModel1=True)
+        if self.industry not in rankDict.keys():
+            return False
+        if stock in rankDict[self.industry][:2]:
             return True
 
     def rule33(self):
@@ -654,5 +656,49 @@ class level4(base_level):
                 return False
             rankList = RankLimitStock(self.limitData).by('weakenedHP-height', d.date)[limit_height(self.stock, data)]
             return self.stock in rankList[:3]
+        except:
+            ...
+
+    def rule41(self):
+        data = self.data
+        stock = self.stock
+        try:
+            flag = False
+            turnover = 0
+            for i in range(1, 31):
+                turnover = max(turnover, data[-i - 1].turnover)
+                if t_limit(stock, data, i):
+                    return False
+                if flag is False and t_high_pct(data, i) > 0.06:
+                    flag = True
+            return flag is True and data[-1].turnover > turnover
+        except:
+            ...
+
+    def rule42(self):
+        data = self.data
+        stock = self.stock
+        try:
+            d = data[-1]
+            if not t_limit(stock, data):
+                return False
+            for i in range(1, 11):
+                if t_limit(stock, data, i):
+                    return False
+            return getMinute(stamp=d.firstLimitTime) > '1030' and d.TP > 50 and d.amount * 1000 > 5e8
+        except:
+            ...
+
+    def rule43(self):
+        data = self.data
+        stock = self.stock
+        try:
+            d = data[-1]
+            if not t_limit(stock, data):
+                return False
+            for i in range(1, 11):
+                if t_limit(stock, data, i):
+                    return False
+            return getMinute(stamp=d.firstLimitTime) > '1030' and d.CP > 70 and d.limitOpenTime == 0
         except:
             ...

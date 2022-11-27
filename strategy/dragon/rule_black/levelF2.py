@@ -322,7 +322,7 @@ class levelF2(base_level):
                 if data[-i - 1].firstLimitTime >= matchTime:
                     return False
                 d = data[-i - 1]
-                if d.TF / weakenedIndex(self.shIndex, i) < 50:
+                if d.TF / weakenedIndex(self.shIndex, i) < 50 and t_open_pct(data, i) < 0.08:
                     count += 1
             return count >= 2
         except:
@@ -370,6 +370,8 @@ class levelF2(base_level):
     def rule23(self):
         data = self.data
         stock = self.stock
+        if t_low_pct(data) >= 0.075:
+            return False
         if model_1(stock, data):
             return False
         for i in range(2):
@@ -445,19 +447,19 @@ class levelF2(base_level):
         data = self.data
         stock = self.stock
         try:
-            for i in range(2):
-                d = data[-i - 1]
-                if d.buy_elg_vol / d.volume / weakenedIndex(self.shIndex) >= 0.6:
-                    return False
-            if t_open_pct(data, 1) >= 0.07:
+            if t_limit(stock, data, 2):
+                return False
+            if not t_limit(stock, data, 1):
                 return False
             if model_1(stock, data, 1):
                 return False
-            if not t_limit(stock, data, 2):
-                if t_limit(stock, data, 1):
-                    matchTime = joinTimeToStamp(data[-2].date, '09:45:00')
-                    if data[-2].firstLimitTime < matchTime:
-                        return True
+            for i in range(2):
+                d = data[-i - 1]
+                if d.TP / weakenedIndex(self.shIndex) >= 60:
+                    return False
+            if t_open_pct(data, 1) >= 0.07:
+                return False
+            return getMinute(stamp=data[-2].firstLimitTime) < '0945'
         except:
             pass
 
@@ -533,7 +535,7 @@ class levelF2(base_level):
         for i in range(2):
             if not model_1(stock, data, i):
                 return False
-        if data[-1].turnover > 1.5 * data[-2].turnover:
+        if data[-1].turnover > 1.5 * data[-2].turnover and data[-1].turnover > max([data[-i - 1].turnover for i in range(1, 11)]) / 5:
             return True
 
     def rule32(self):
@@ -606,15 +608,18 @@ class levelF2(base_level):
             return True
 
     def rule39(self):
-        flag = 0
+        data = self.data
+        stock = self.stock
+        if data[-1].turnover >= data[-2].turnover * 3:
+            return False
         for i in range(2):
-            if not t_limit(self.stock, self.data, i):
+            if not t_limit(stock, data, i):
                 return False
-            if self.data[-i - 1].turnover >= 2:
+            if model_1(stock, data, i):
                 return False
-            if model_1(self.stock, self.data, i):
-                flag += 1
-        return flag < 2
+            if data[-i - 1].turnover >= 2:
+                return False
+        return True
 
     def rule40(self):
         data = self.data
@@ -646,7 +651,7 @@ class levelF2(base_level):
         if data[-1].CP >= 55:
             return False
         if t_open_pct(data) - t_low_pct(data) > 0.03:
-            return data[-1].limitOpenTime > 0
+            return data[-1].limitOpenTime > 1
 
     def rule43(self):
         data = self.data

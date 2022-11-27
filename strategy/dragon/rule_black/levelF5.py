@@ -21,12 +21,13 @@ class levelF5(base_level):
         try:
             if not t_limit(stock, data, 1):
                 return False
+            for i in range(2):
+                if getMinute(stamp=data[-i - 1].firstLimitTime) <= '1000':
+                    return False
             d = data[-2]
             if d.CF < 40:
                 if d.TF < 50:
-                    matchTime = joinTimeToStamp(d.date, '10:00:00')
-                    if d.firstLimitTime > matchTime:
-                        return True
+                    return True
         except:
             pass
 
@@ -57,6 +58,8 @@ class levelF5(base_level):
                 if d.CF >= 40:
                     return False
                 if d.TF >= 50:
+                    return False
+                if d.CF >= 55:
                     return False
             return True
         except:
@@ -114,6 +117,8 @@ class levelF5(base_level):
         try:
             count = 0
             limitCount = 0
+            if getMinute(stamp=data[-1].lastLimitTime) <= '1000':
+                return False
             for i in range(5):
                 if t_limit(stock, data, i):
                     limitCount += 1
@@ -150,7 +155,7 @@ class levelF5(base_level):
             d0 = data[-1]
             d1 = data[-2]
             return (d1.buy_elg_vol + d0.buy_elg_vol - d1.sell_elg_vol - d0.sell_elg_vol) / (d1.buy_elg_vol + d0.buy_elg_vol) < 0.5 and (
-                    d1.buy_elg_vol + d0.buy_elg_vol) / (d1.volume + d0.volume) < 0.4
+                    d1.buy_elg_vol + d0.buy_elg_vol + d1.buy_lg_vol + d0.buy_lg_vol) / (d1.volume + d0.volume) < 0.6
         except:
             ...
 
@@ -220,6 +225,8 @@ class levelF5(base_level):
         data = self.data
         try:
             if not t_limit(self.stock, data):
+                return False
+            if not t_limit(self.stock, data, 1):
                 return False
             d = data[-1]
             if t_high_pct(data) <= 0.06:

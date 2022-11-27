@@ -422,6 +422,8 @@ class levelF3(base_level):
             return False
         if data[-3].turnover <= data[-4].turnover:
             return False
+        if getMinute(stamp=data[-2].lastLimitTime) <= '11:00':
+            return False
         if t_low_pct(self.gemIndex, 1) > -0.01:
             return True
 
@@ -781,7 +783,10 @@ class levelF3(base_level):
                 return False
             if getMinute(stamp=d.firstLimitTime) >= '0940':
                 return False
-            if len(Params.dailyIndustryLimitDict[d.date][self.industry]) <= 3:
+            _industryLimitDict = Params.dailyIndustryLimitDict[d.date]
+            if self.industry not in _industryLimitDict.keys():
+                return False
+            if len(_industryLimitDict[self.industry]) <= 3:
                 return False
         return True
 
@@ -828,12 +833,11 @@ class levelF3(base_level):
 
     def rule50(self):
         data = self.data
-        stock = self.stock
         count = 0
         try:
             for i in range(1, 42):
-                if i in range(1, 21):
-                    if t_close_pct(data, i) > 0.045:
+                if i in range(1, 31):
+                    if t_close_pct(data, i) > 0.04:
                         return False
                 else:
                     if count >= 15:
@@ -846,7 +850,6 @@ class levelF3(base_level):
 
     def rule51(self):
         data = self.data
-        stock = self.stock
         try:
             for i in range(15, 75):
                 d = data[-i - 1]
