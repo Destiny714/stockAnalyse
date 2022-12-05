@@ -1,0 +1,6 @@
+# Test your FastAPI endpoints
+
+GET http://api.geekshop.space/queryRank/20221130
+Accept: application/json
+
+
