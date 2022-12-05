@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/9/19 22:43
+# @Time    : 2022/12/5 22:52
 # @Author  : Destiny_
-# @File    : file_util.py
+# @File    : utils.py
 # @Software: PyCharm
+
 import os
 import yaml
 from functools import lru_cache
@@ -17,7 +18,7 @@ def projectPath() -> str:
 @lru_cache()
 def config_yaml():
     """读取config.yaml"""
-    yaml_path = os.path.join(projectPath(), "prefs/config.yaml")
+    yaml_path = os.path.join(projectPath(), "config.yaml")
     try:
         with open(yaml_path, "r", encoding="utf-8") as f:
             data = yaml.load(f, Loader=yaml.FullLoader)

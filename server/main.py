@@ -11,7 +11,6 @@ app = FastAPI()
 metadata.create_all(bind=engine)
 
 
-# Dependency
 def get_db():
     db = SessionMaker()
     try:
@@ -28,6 +27,14 @@ def getRanDetail(date: str, page: Union[int, None] = None, db: Session = Depends
     if rank_details is None:
         return HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
     return rank_details
+
+
+# TODO:
+"""
+backtrace api
+version control api
+
+"""
 
 
 if __name__ == '__main__':

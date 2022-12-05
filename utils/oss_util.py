@@ -22,7 +22,7 @@ class OssMange(object):
     def __init__(self):
         if not self._first:
             return
-        config = file_util.arg_yaml()
+        config = file_util.config_yaml()
         self.AccessKeyId = config['AccessKeyId']
         self.AccessKeySecret = config['AccessKeySecret']
         self.EndpointWithoutHTTPS = config['Endpoint']
