@@ -5,13 +5,16 @@
 # @Software: PyCharm
 import os
 import yaml
+from functools import lru_cache
 
 
+@lru_cache()
 def projectPath() -> str:
     """获取项目根目录"""
     return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
+@lru_cache()
 def arg_yaml():
     """读取args.yaml"""
     yaml_path = os.path.join(projectPath(), "prefs/args.yaml")

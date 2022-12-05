@@ -4,17 +4,17 @@
 # @File    : stockdata_util.py
 # @Software: PyCharm
 from copy import deepcopy
-from prefs.params import g
 from utils.date_util import *
+from functools import lru_cache
 from models.stock_data_model import *
 from models.limit_data_model import *
-from common.tool_box import thread_pool_executor
+from common.tool_box import timeCount
 
 
 def queryIndexData(index, dateRange: int = 500, aimDate=None) -> list[StockDataModel]:
     if not aimDate:
         aimDate = lastTradeDay()
-    mysql = db.Mysql()
+    mysql = db.Stock_Database()
     allData = mysql.selectOneAllData(stock=index, dateRange=dateRange, aimDate=aimDate)
     res = [StockDataModel(allData[i]) for i in range(len(allData))]
     mysql.close()
@@ -63,24 +63,23 @@ def virtualLimitData(data: dict[str, list[LimitDataModel]], virtual=None) -> dic
     return d
 
 
-def queryData(stock, dateRange: int = 800, aimDate=None, virtual=None) -> list[StockDataModel]:
-    if not aimDate:
+@timeCount
+@lru_cache(maxsize=None)
+def queryData(stock, dateRange: int = 800, aimDate='', virtual=None) -> list[StockDataModel]:
+    if aimDate == '':
         aimDate = lastTradeDay()
-    mysql = db.Mysql()
-    try:
-        allData = mysql.selectOneAllData(stock=stock, dateRange=dateRange, aimDate=aimDate)
-    except:
-        allData = mysql.selectOneAllData(stock=stock, dateRange=None, aimDate=aimDate)
+    mysql = db.Stock_Database()
+    allData = mysql.selectOneAllData(stock=stock, dateRange=dateRange, aimDate=aimDate)
     res = [StockDataModel(_) for _ in allData]
+    modifyData = res[-1]
+    nextDate = nextTradeDay(modifyData.date)
+    limitPrice = modifyData.close * (1 + limit(stock) / 100)
     if virtual is None:
         pass
     elif virtual == 's':
-        modifyData = res[-1]
-        nextDate = nextTradeDay(modifyData.date)
         largePct = 1.3
         smallPct = 0.7
         isModel1 = model_1(stock, res)
-        limitPrice = modifyData.close * (1 + (limit(stock) / 100))
         virtualData = [8888,
                        nextDate,
                        modifyData.close * 1.07 if not isModel1 else limitPrice,
@@ -128,16 +127,14 @@ def queryData(stock, dateRange: int = 800, aimDate=None, virtual=None) -> list[S
                        modifyData.data[42]]
         res.append(StockDataModel(virtualData))
     elif virtual == 'f':
-        modifyData = res[-1]
-        nextDate = mysql.selectNextTradeDay(modifyData.date)
         largePct = 0.7
         smallPct = 1.3
         virtualData = [8888,
                        nextDate,
                        modifyData.close * 1.03,
-                       modifyData.close * (1 + (limit(stock) / 100)),
+                       limitPrice,
                        modifyData.close,
-                       modifyData.close * (1 + (limit(stock) / 100)),
+                       limitPrice,
                        modifyData.close,
                        limit(stock),
                        modifyData.volume * 1.4,
@@ -178,7 +175,7 @@ def queryData(stock, dateRange: int = 800, aimDate=None, virtual=None) -> list[S
                        modifyData.winner_rate,
                        modifyData.data[42]]
         res.append(StockDataModel(virtualData))
-        mysql.close()
+    mysql.close()
     return res
 
 
@@ -198,6 +195,7 @@ def t_open_pct(data: list[StockDataModel], plus: int = 0) -> float:
     return (data[-plus - 1].open / data[-plus - 2].close) - 1
 
 
+@lru_cache(maxsize=None)
 def limit(stock: str) -> float:
     return 19.6 if stock[0:2] in ['30', '68'] else 9.8
 
@@ -260,6 +258,9 @@ class RankLimitStock(object):
 
     def __init__(self, limitData: dict[str, list[LimitDataModel]]):
         self.limitData = limitData
+        sortedKeys = list(self.limitData.keys())
+        sortedKeys.sort()
+        self.limitDataKey = ''.join(sortedKeys)
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
@@ -281,14 +282,14 @@ class RankLimitStock(object):
         :param keyword: 排序方法名称 "A-B+C":rank by A in limit stocks with same B constrained by C || "A": rank by A in all limit stocks
         :param date: 指定日期
         :param eliminateModel1: 是否剔除一字板
+        :return -whatever you need
         """
         if not date:
             date = lastTradeDay()
-        hashKey = hash(keyword + date + ''.join(self.limitData.keys()))
+        hashKey = hash(keyword + date + self.limitDataKey)
         if hashKey in self.resultsDict.keys():
             return self.resultsDict[hashKey]
-        dataDict = deepcopy(self.limitData)
-        data = dataDict[date]
+        data = deepcopy(self.limitData[date])
         res = None
         rubbish = []
         for _ in data:
@@ -318,6 +319,7 @@ class RankLimitStock(object):
                 industryStocks: list[LimitDataModel] = dictByIndustry[industry]
                 industryStocks.sort(key=rank)
                 res[industry] = [_.stock for _ in industryStocks]
+        """
         if keyword == 'limitTime-industry+height>1':
             dictByIndustry = {}
             for _ in data:
@@ -396,7 +398,7 @@ class RankLimitStock(object):
             virtual = g.get('virtual')
 
             def query(stock: str):
-                tmpData = queryData(stock, 2, date, virtual)
+                tmpData = queryData(stock, 2, aimDate=date, virtual=virtual)
                 tmpIndex = queryIndexData('ShIndex', 2, date) if not virtual else virtualIndexData(queryIndexData('ShIndex'))
                 d = tmpData[-1]
                 return {'stock': stock, 'factor': d.TF / weakenedIndex(tmpIndex)}
@@ -423,7 +425,7 @@ class RankLimitStock(object):
             virtual = g.get('virtual')
 
             def query(stock: str):
-                tmpData = queryData(stock, 2, date, virtual)
+                tmpData = queryData(stock, 2, aimDate=date, virtual=virtual)
                 tmpIndex = queryIndexData('ShIndex', 2, date) if not virtual else virtualIndexData(queryIndexData('ShIndex'))
                 d = tmpData[-1]
                 return {'stock': stock, 'factor': d.CP / weakenedIndex(tmpIndex)}
@@ -444,7 +446,8 @@ class RankLimitStock(object):
                 result = fastQuery(stocks)
                 result.sort(key=rank, reverse=True)
                 res[height] = [_['stock'] for _ in result]
+        """
         if res is None:
-            raise Exception('排序出现错误')
+            return []
         self.resultsDict[hashKey] = res
         return res

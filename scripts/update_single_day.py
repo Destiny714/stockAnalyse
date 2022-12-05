@@ -70,7 +70,7 @@ def getData(stockNo: str, dateList: list[list]):
 if __name__ == '__main__':
     Tushare.init()
     initStock(needReload=True, extra=True)
-    sql = db.Mysql()
+    sql = db.Stock_Database()
     dateSize = 30
     dateRange = 1
     dates = sql.selectTradeDateByDuration(lastTradeDay(), dateRange)
@@ -85,7 +85,7 @@ if __name__ == '__main__':
 
 
     def writeSQL(_):
-        db.Mysql().updateTimeData(_)
+        db.Stock_Database().updateTimeData(_)
 
 
     def writeData(r: list):

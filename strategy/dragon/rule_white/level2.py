@@ -36,6 +36,13 @@ class level2(base_level):
         if self.stock[:3] in ['002', '000']:
             return True
 
+    def rule4(self):
+        data = self.data
+        stock = self.stock
+        if not model_1(stock, data):
+            return False
+        return data[-1].turnover < data[-2].turnover / 10
+
     def rule9(self):
         data = self.data
         for i in range(1, 50):

@@ -55,6 +55,8 @@ class levelF3(base_level):
                     continue
                 if t_low_pct(data, i - 1) >= 0.06:
                     continue
+                if data[-i - 1].CP >= 55:
+                    continue
                 range10 = data[-10 - i:-i]
                 if data[-i].volume > 3 * max([_.volume for _ in range10]):
                     d = data[-i]
@@ -240,7 +242,7 @@ class levelF3(base_level):
         data = self.data
         stock = self.stock
         try:
-            if data[-1].CP / weakenedIndex(self.shIndex) >= 65:
+            if data[-1].CP / weakenedIndex(self.shIndex, weak_degree=5) >= 60:
                 return False
             for i in range(1, 21):
                 if limit_height(stock, data, i) >= 3:
@@ -360,7 +362,7 @@ class levelF3(base_level):
             for i in range(2):
                 if not t_limit(self.stock, data, i):
                     return False
-            for i in range(-301, -120):
+            for i in range(-201, -30):
                 range10 = data[i:i + 10]
                 if range10[-1].close / range10[0].close > 1.8:
                     return True
@@ -509,7 +511,7 @@ class levelF3(base_level):
             return False
         if not t_limit(stock, data):
             return False
-        if data[-1].concentration - data[-2].concentration > 2:
+        if data[-1].concentration - data[-2].concentration > 0.02:
             return True
 
     def rule31(self):
@@ -520,7 +522,7 @@ class levelF3(base_level):
         for i in range(2):
             if not t_limit(stock, data, i):
                 return False
-        if data[-1].concentration - data[-2].concentration > 3.5:
+        if data[-1].concentration - data[-2].concentration > 0.035:
             return True
 
     def rule32(self):
@@ -687,12 +689,16 @@ class levelF3(base_level):
 
     def rule39(self):
         data = self.data
+        stock = self.stock
         try:
             if (data[-1].close - data[-101].close) / data[-101].close <= 0.7:
                 return False
+            count = 0
             for i in range(100):
-                if limit_height(self.stock, self.data, i) >= 3:
-                    return False
+                if t_limit(stock, data, i):
+                    count += 1
+                    if count >= 3:
+                        return False
             return True
         except:
             pass
@@ -730,12 +736,14 @@ class levelF3(base_level):
                 return False
         if data[-1].turnover <= 1.3 * data[-2].turnover:
             return False
-        return data[-1].turnover > sum([data[-i - 1].turnover for i in range(3, 13)]) / 10 / 3
+        return data[-1].turnover > sum([data[-i - 1].turnover for i in range(3, 23)]) / 20 / 3
 
     def rule43(self):
         data = self.data
         stock = self.stock
-        if data[-2].TP >= 60:
+        if data[-1].turnover <= data[-2].turnover / 4:
+            return False
+        if data[-2].TP >= 80:
             return False
         for i in range(2):
             if not t_limit(stock, data, i):
@@ -777,6 +785,8 @@ class levelF3(base_level):
         stock = self.stock
         if model_1(stock, data, 1):
             return False
+        if (data[-1].TF > 50 and data[-1].TP > 55) is True:
+            return False
         for i in range(2):
             d = data[-i - 1]
             if not t_limit(stock, data, i):
@@ -793,6 +803,8 @@ class levelF3(base_level):
     def rule47(self):
         data = self.data
         stock = self.stock
+        if (data[-1].TF > 50 and data[-1].TP > 55) is True:
+            return False
         for i in range(2):
             if not t_limit(stock, data, i):
                 return False
@@ -837,7 +849,7 @@ class levelF3(base_level):
         try:
             for i in range(1, 42):
                 if i in range(1, 31):
-                    if t_close_pct(data, i) > 0.04:
+                    if t_high_pct(data, i) > 0.06:
                         return False
                 else:
                     if count >= 15:

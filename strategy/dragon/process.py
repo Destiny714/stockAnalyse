@@ -4,6 +4,9 @@
 # @File    : process.py
 # @Software: PyCharm
 
+# import sys
+# from utils.file_util import projectPath
+# sys.path.append(projectPath())
 
 import warnings
 from prefs.params import *
@@ -23,12 +26,12 @@ from rule_white import level1, level2, level3, level4, level5, level6, levelA1, 
 if __name__ == '__main__':
     RunMode.Status = RunMode.DEBUG
     log = log_util.log()
-    sqlClient = db.Mysql()  # 数据库查询client
+    sqlClient = db.Stock_Database()  # 数据库查询client
     warnings.filterwarnings('ignore')
     stocks = initStock(False, False)  # 经过筛选的所有股票
     tradeDays = sqlClient.selectTradeDate()  # 所有交易日
     stockDetails = sqlClient.selectAllStockDetail()  # 所有股票的detail 从stockList表查到
-    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 1)  # 要计算的日期范围
+    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 2)  # 要计算的日期范围
     Prepare(stocks, aimDates).do()
 
 
@@ -50,7 +53,7 @@ if __name__ == '__main__':
         gemIndexData = queryIndexData('GemIndex', aimDate=aimDate)
         shIndexData_virtual = virtualIndexData(shIndexData)
         gemIndexData_virtual = virtualIndexData(gemIndexData)
-        excelDict: dict = excel_util.readScoreFromExcel(db.Mysql().selectPrevTradeDate(aimDate))
+        excelDict: dict = excel_util.readScoreFromExcel(db.Stock_Database().selectPrevTradeDate(aimDate))
 
         def processOneStock(argMap: dict):
             stock = argMap['stock']
@@ -211,12 +214,12 @@ if __name__ == '__main__':
         columnModels.sort(key=rankExcelData, reverse=True)
         errStocks = list(set([_[0] for _ in errors]))
         for errStock in errStocks:
-            errStockDetail = db.Mysql().selectStockDetail(errStock)
+            errStockDetail = db.Stock_Database().selectStockDetail(errStock)
             _stockName = errStockDetail[2]
             res = {'code': errStock, 'name': _stockName, 'level': 'N/A'}
             columnModels.append(ColumnModel(res))
-
         excel_util.write(aimDate, columnModels)
+        concurrent_util.updateRankDetail(aimDate)
 
 
     for date in aimDates:

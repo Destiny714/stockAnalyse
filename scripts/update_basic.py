@@ -5,7 +5,6 @@
 # @Software: PyCharm
 
 from api.tushare_api import Tushare
-from utils import concurrent_util
 from utils.concurrent_util import updateLimitDetailData
 
 Tushare.init()

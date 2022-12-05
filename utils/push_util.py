@@ -23,7 +23,7 @@ def bark_pusher(title, content, _url=None):
         pass
 
 
-class Mode(Enum):
+class PushMode(Enum):
     Dev = 'dev'
     Release = 'release'
 
@@ -141,6 +141,7 @@ class DragonModelMarkDownTemplate(MarkDownTemplate):
 
 ##### *S and A*
 >    代码         名称   	         连板高度       等级
+
 {insert}
 """
         if wechat and (url is not None):
@@ -153,7 +154,7 @@ class BasePush(object):
     scope: str
     headers = {'content-type': 'application/json'}
 
-    def __init__(self, mode: Mode = Mode.Dev):
+    def __init__(self, mode: PushMode = PushMode.Dev):
         self.config = arg_yaml()['webhook'][self.scope]
         self.webhook = self.config[mode.value]
 
@@ -172,7 +173,7 @@ class BasePush(object):
 class DingtalkPush(BasePush):
     scope = 'Dingtalk'
 
-    def __init__(self, mode: Mode = Mode.Release):
+    def __init__(self, mode: PushMode = PushMode.Release):
         super().__init__(mode)
 
     def pushDragon(self, date: str, url: str = None):
@@ -197,7 +198,7 @@ class DingtalkPush(BasePush):
 class WechatPush(BasePush):
     scope = 'Wechat'
 
-    def __init__(self, mode: Mode = Mode.Release):
+    def __init__(self, mode: PushMode = PushMode.Release):
         super().__init__(mode)
 
     def pushDragon(self, date: str, url: str = None):

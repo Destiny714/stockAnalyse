@@ -51,17 +51,14 @@ class levelF5(base_level):
     def rule3(self):
         data = self.data
         try:
+            count = 0
             for i in range(3):
                 if t_close_pct(data, i) <= 0.06:
                     return False
                 d = data[-i - 1]
-                if d.CF >= 40:
-                    return False
-                if d.TF >= 50:
-                    return False
-                if d.CF >= 55:
-                    return False
-            return True
+                if d.CF < 40 and d.TF < 50 and d.CP < 55:
+                    count += 1
+            return count >= 2
         except:
             pass
 
@@ -155,7 +152,7 @@ class levelF5(base_level):
             d0 = data[-1]
             d1 = data[-2]
             return (d1.buy_elg_vol + d0.buy_elg_vol - d1.sell_elg_vol - d0.sell_elg_vol) / (d1.buy_elg_vol + d0.buy_elg_vol) < 0.5 and (
-                    d1.buy_elg_vol + d0.buy_elg_vol + d1.buy_lg_vol + d0.buy_lg_vol) / (d1.volume + d0.volume) < 0.6
+                    d1.buy_elg_vol + d0.buy_elg_vol + d1.buy_lg_vol + d0.buy_lg_vol) / (d1.volume + d0.volume) < 0.6 and d0.CP < 60
         except:
             ...
 

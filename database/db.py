@@ -10,11 +10,11 @@ from json import dumps
 from utils import date_util
 
 
-class Mysql:
-    def __init__(self):
+class MysqlConnection:
+    def __init__(self, database: str):
         self.__account__ = config['mysqlAccount']
         self.__pswd__ = config['mysqlPassword']
-        self.__DB__ = config['mysqlDatabase']
+        self.__DB__ = database
         self.host = config['mysqlHost']
         self.word = ''
         self.conn = pymysql.connect(host=self.host, port=3306, user=self.__account__, password=self.__pswd__, database=self.__DB__,
@@ -25,13 +25,8 @@ class Mysql:
 
     def close(self):
         if self.conn.open:
-            self.conn.commit()
             self.cursor.close()
             self.conn.close()
-
-    def refreshConn(self):
-        if not self.conn.open:
-            self.__init__()
 
     def action(self, output: bool):
         """mysql语句执行基础单元"""
@@ -41,6 +36,55 @@ class Mysql:
             return callback
         else:
             self.conn.commit()
+
+
+class Server_Database(MysqlConnection):
+    __DB__ = config['serverDatabase']
+
+    def __init__(self):
+        super().__init__(self.__DB__)
+
+    def insertDailyRankDetail(self, data):
+        date = data['date']
+        code = data['code']
+        rank = data['level']
+        name = data['name']
+        white = data['white']
+        black = data['black']
+        score = data['score']
+        height = data['height']
+        detail = dumps(eval(data['details']))
+        fastDetail = dumps(eval(data['T1S_detail']))
+        slowDetail = dumps(eval(data['T1F_detail']))
+        fastScore = data['T1S']
+        slowScore = data['T1F']
+        fastBlackNum = data['b1']
+        slowBlackNum = data['b2']
+        comparePrevScore = data['S']
+        index = f'{date}-{code}'
+        self.word = f"""
+                    INSERT ignore INTO rank_detail
+                    (index_key,date,stock_code,stock_name,stock_rank,limitHeight,
+                    whiteNum,blackNum,fastBlackNum,slowBlackNum,score,fastScore,slowScore,
+                    comparePrevScore,detail,fastDetail,slowDetail) VALUES 
+                    ("{index}","{date}","{code}","{name}","{rank}",{height},
+                    {white},{black},{fastBlackNum},{slowBlackNum},{score},{fastScore},{slowScore},{comparePrevScore},
+                    '{detail}','{fastDetail}','{slowDetail}') 
+                    ON DUPLICATE KEY UPDATE 
+                    stock_rank="{rank}",whiteNum={white},blackNum={black},
+                    fastBlackNum={fastBlackNum},slowBlackNum={slowBlackNum},
+                    score={score},fastScore={fastScore},slowScore={slowScore},
+                    comparePrevScore={comparePrevScore},detail='{detail}',fastDetail='{fastDetail}',slowDetail='{slowDetail}'
+                    """
+        self.action(output=False)
+
+
+class Stock_Database(MysqlConnection):
+    __DB__ = config['stockDatabase']
+
+    def __init__(self):
+
+        super().__init__(self.__DB__)
 
     def suffix(self, stock: str) -> str:
         """获取带后缀的stock"""

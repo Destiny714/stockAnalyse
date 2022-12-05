@@ -6,6 +6,7 @@
 
 import xlwt
 import xlrd
+import pandas
 from utils.file_util import *
 from utils.log_util import log
 from common.tool_box import errorHandler
@@ -80,7 +81,7 @@ class ColumnModel(object):
         """
         判断一个词是否是非英文词
         :param word:
-        :return:
+        :return: bool
         """
         count = 0
         for s in word.encode('utf-8').decode('utf-8'):
@@ -125,7 +126,7 @@ def readScoreFromExcel(date):
     return excelDict
 
 
-def readExcel_AS(date) -> list[dict]:
+def readExcel_AS(date: str) -> list[dict]:
     AS = []
     try:
         filePath = f'{projectPath()}/strategy/dragon/result/{date}.xls'
@@ -142,3 +143,19 @@ def readExcel_AS(date) -> list[dict]:
     except Exception as e:
         log().error(errorHandler(e))
     return AS
+
+
+def readExcel2DF(date: str) -> pandas.DataFrame:
+    filePath = f'{projectPath()}/strategy/dragon/result/{date}.xls'
+    if not os.path.exists(filePath):
+        raise Exception(f'{date} 结果 EXCEL 不存在')
+    df = pandas.read_excel(filePath, converters={'代码': str, 'code': str})
+    df.columns = [ColumnModel.getEn(_) for _ in df.columns]
+    df = df.dropna()
+    return df
+
+
+if __name__ == '__main__':
+    a = readExcel2DF('20221124')
+    for i in a.iterrows():
+        print(i[1]['limitOpenTime'])
