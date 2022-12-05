@@ -10,7 +10,7 @@ from enum import Enum
 
 from utils.excel_util import readExcel_AS
 from utils.oss_util import oss_push_object
-from utils.file_util import arg_yaml, projectPath
+from utils.file_util import config_yaml, projectPath
 
 
 def bark_pusher(title, content, _url=None):
@@ -155,7 +155,7 @@ class BasePush(object):
     headers = {'content-type': 'application/json'}
 
     def __init__(self, mode: PushMode = PushMode.Dev):
-        self.config = arg_yaml()['webhook'][self.scope]
+        self.config = config_yaml()['webhook'][self.scope]
         self.webhook = self.config[mode.value]
 
     def pushDragon(self, *args, **kwargs):
