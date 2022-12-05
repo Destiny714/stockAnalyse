@@ -8,7 +8,6 @@ from utils.date_util import *
 from functools import lru_cache
 from models.stock_data_model import *
 from models.limit_data_model import *
-from common.tool_box import timeCount
 
 
 def queryIndexData(index, dateRange: int = 500, aimDate=None) -> list[StockDataModel]:
@@ -63,7 +62,6 @@ def virtualLimitData(data: dict[str, list[LimitDataModel]], virtual=None) -> dic
     return d
 
 
-@timeCount
 @lru_cache(maxsize=None)
 def queryData(stock, dateRange: int = 800, aimDate='', virtual=None) -> list[StockDataModel]:
     if aimDate == '':
