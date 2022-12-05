@@ -10,7 +10,7 @@ from typing import Union
 from matplotlib import pyplot as plt
 
 import excel_model
-from database.db import Mysql
+from database.db import Stock_Database
 from utils.stockdata_util import *
 from column_model import ColumnModel
 from utils.file_util import projectPath
@@ -34,7 +34,7 @@ def makeModel(_):
     }
     if int(nextXTradeDay(date, 3)) <= int(lastTradeDay()):
         aimDate = nextXTradeDay(date, 3)
-        backTraceData = queryData(code, 30, aimDate)
+        backTraceData = queryData(code, 30, aimDate=aimDate)
         shIndexData = queryIndexData('ShIndex', 30, aimDate)
         columnMap['shIndexClosePCT_0'] = toPercent(t_close_pct(shIndexData, 3))
         for i in range(1, 4):
@@ -78,7 +78,7 @@ def write():
 if __name__ == '__main__':
     excelPath = f'{projectPath()}/strategy/dragon/result'
     files = os.listdir(excelPath)
-    client = Mysql()
+    client = Stock_Database()
     datas = []
 
     res = process_pool_executor(incrData, files, 20)

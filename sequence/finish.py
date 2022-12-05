@@ -7,7 +7,6 @@ from prefs.params import RunMode
 from utils.file_util import projectPath
 from utils.push_util import DingtalkPush
 from utils.oss_util import oss_push_object
-from utils.excel_util import write, ColumnModel
 
 
 class Finish(object):

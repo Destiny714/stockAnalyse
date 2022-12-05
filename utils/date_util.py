@@ -6,6 +6,8 @@
 
 import time
 import datetime
+from functools import lru_cache
+
 from database import db
 
 
@@ -32,9 +34,10 @@ def today2str():
     return date2str(today).replace('-', '')
 
 
+@lru_cache(maxsize=None)
 def lastTradeDay(date=None):
     today = today2str() if date is None else date
-    client = db.Mysql()
+    client = db.Stock_Database()
     tradeDays = client.selectTradeDate()
     if today in tradeDays:
         matchTime = joinTimeToStamp(today, '15:30:00')
@@ -50,30 +53,34 @@ def lastTradeDay(date=None):
     return today
 
 
+@lru_cache(maxsize=None)
 def prevTradeDay(date: str):
-    client = db.Mysql()
+    client = db.Stock_Database()
     prev = client.selectPrevTradeDate(date)
     client.close()
     return prev
 
 
+@lru_cache(maxsize=None)
 def nextTradeDay(date: str):
-    client = db.Mysql()
+    client = db.Stock_Database()
     nxt = client.selectNextTradeDay(date)
     client.close()
     return nxt
 
 
+@lru_cache(maxsize=None)
 def lastXTradeDay(date=None, x: int = 1):
-    client = db.Mysql()
+    client = db.Stock_Database()
     date = lastTradeDay(date)
     res = client.selectTradeDateByDuration(date, x)
     client.close()
     return res
 
 
+@lru_cache(maxsize=None)
 def nextXTradeDay(date=None, x: int = 1):
-    client = db.Mysql()
+    client = db.Stock_Database()
     date = lastTradeDay(date)
     res = client.selectNextXTradeDay(date, x)
     client.close()
@@ -85,6 +92,7 @@ def week_day(day: datetime.datetime):
     return weekday
 
 
+@lru_cache(maxsize=None)
 def joinTimeToStamp(date: str, detail: str):
     """
     将标准日期格式与hh:mm:ss时间格式合并获得当时的时间戳
@@ -96,6 +104,7 @@ def joinTimeToStamp(date: str, detail: str):
     return result.timestamp()
 
 
+@lru_cache(maxsize=None)
 def timeDelta(start: str, end: str):
     """
     求时间差 返回秒数
@@ -109,6 +118,7 @@ def timeDelta(start: str, end: str):
     return (delta.days * 86400).__abs__()
 
 
+@lru_cache(maxsize=None)
 def getMinute(stamp: int = None, timeStr: str = None):
     """
     通过时间戳或者标准时间格式获取当时的hhmm
@@ -150,3 +160,7 @@ def prevMinute(now: str):
     hour = nxt.hour
     minute = nxt.minute
     return f'{0 if hour < 10 else ""}{hour}{0 if minute < 10 else ""}{minute}'
+
+
+if __name__ == '__main__':
+    print(lastTradeDay())

@@ -5,21 +5,34 @@
 # @Software: PyCharm
 from api import netease_api
 from common import tool_box
-from database.db import Mysql
 from utils.log_util import log
 from utils import stockdata_util
 from utils.stockdata_util import *
 from api.tushare_api import Tushare
+from utils.excel_util import readExcel2DF
 from middleWare.stock_filter import stockFilter
 from models.limit_data_model import LimitDataModel
+from database.db import Stock_Database, Server_Database
 
 _log = log()
+
+
+def updateRankDetail(date: str):
+    print(f'update {date}')
+    df = readExcel2DF(date)
+
+    def update(data):
+        client = Server_Database()
+        client.insertDailyRankDetail(data)
+        client.close()
+
+    tool_box.thread_pool_executor(update, [i[1] for i in df.iterrows()])
 
 
 def updateTradeCalender():
     """更新交易日历"""
     data = Tushare().tradeCalender()
-    mysql = Mysql()
+    mysql = Stock_Database()
     for d in data:
         mysql.insertTradeCalender(d)
     mysql.close()
@@ -29,7 +42,7 @@ def updateStockList():
     """更新股票资料列表"""
     print('start update stock list...')
     data = Tushare().allStocks()
-    mysql = Mysql()
+    mysql = Stock_Database()
     existStocks = mysql.selectAllStock()
     for d in data:
         if d['symbol'] not in existStocks:
@@ -53,7 +66,7 @@ def createStockDetailMap(detail: tuple[tuple]):
 def deleteEndStocks():
     """删除退市的股票"""
     endStocks = Tushare().allEndStocks()
-    Mysql().deleteTable([f'No{_}' for _ in endStocks])
+    Stock_Database().deleteTable([f'No{_}' for _ in endStocks])
 
 
 def updateLimitDetailData(date=lastTradeDay()):
@@ -64,7 +77,7 @@ def updateLimitDetailData(date=lastTradeDay()):
 
     def update(d):
         try:
-            mysql = Mysql()
+            mysql = Stock_Database()
             mysql.updateLimitDetailData(d)
             mysql.close()
         except Exception as e:
@@ -83,7 +96,7 @@ def updateTurnover(date=lastTradeDay()):
 
     def update(d):
         try:
-            mysql = Mysql()
+            mysql = Stock_Database()
             mysql.updateTurnover(d)
             mysql.close()
         except Exception as e:
@@ -103,7 +116,7 @@ def updateDaily(dateList):
     def tmp(d):
         if d['ts_code'][0] in ['4', '8']:
             return
-        mysql = Mysql()
+        mysql = Stock_Database()
         try:
             mysql.insertOneDailyBasicRecord(d)
             count.append(d["ts_code"])
@@ -127,7 +140,7 @@ def updateDaily(dateList):
 def createTableIfNotExist(stockList):
     """检查并创建新stock table"""
     print('start update stock table...')
-    mysql = Mysql()
+    mysql = Stock_Database()
     tables = mysql.selectExistTable()
     for stock in stockList:
         if f'No{stock}' not in tables:
@@ -138,7 +151,7 @@ def createTableIfNotExist(stockList):
 
 def updateShIndex(start=lastTradeDay(), end=lastTradeDay()):
     """更新上证指数"""
-    client = Mysql()
+    client = Stock_Database()
     code = '000001.SH'
     data = Tushare().indexData(start=start, end=end, code=code)
     for d in data:
@@ -148,7 +161,7 @@ def updateShIndex(start=lastTradeDay(), end=lastTradeDay()):
 
 def updateGemIndex(start=lastTradeDay(), end=lastTradeDay()):
     """更新创业板指数"""
-    client = Mysql()
+    client = Stock_Database()
     code = '399006.SZ'
     data = Tushare().indexData(start=start, end=end, code=code)
     for d in data:
@@ -163,7 +176,7 @@ def updateMoneyFlow(aimDate=lastTradeDay()):
 
     def updateOne(d):
         try:
-            client = Mysql()
+            client = Stock_Database()
             client.updateMoneyFlow(d)
             client.close()
         except Exception as e:
@@ -180,13 +193,13 @@ def updateChipDetail(aimDate=lastTradeDay()):
     def updateOne(d):
         if str(d['ts_code'])[0] not in ['4', '8']:
             try:
-                client = Mysql()
+                client = Stock_Database()
                 client.updateChipDetail(d)
                 client.close()
             except Exception as e:
                 _log.warning(f'update chip detail error - {e}')
 
-    mysql = Mysql()
+    mysql = Stock_Database()
     stocks = mysql.selectAllStockWithSuffix()
     mysql.close()
     for one_part in tool_box.cutList(stocks, 1000):
@@ -199,7 +212,7 @@ def updateChipDetail(aimDate=lastTradeDay()):
 def updateTimeDataToday():
     """更新分时数据"""
     errs = []
-    stocks = Mysql().selectAllStock()
+    stocks = Stock_Database().selectAllStock()
 
     def updateOne(stock):
         try:
@@ -208,7 +221,7 @@ def updateTimeDataToday():
                 _log.warning(f'{stock} update time data error')
                 errs.append(stock)
                 return
-            client = Mysql()
+            client = Stock_Database()
             client.updateTimeData(json=data)
             client.close()
         except:
@@ -232,7 +245,7 @@ def updateStockLimit(start=lastTradeDay(), end=lastTradeDay()):
 
     def updateOneDay(d):
         try:
-            mysql = Mysql()
+            mysql = Stock_Database()
             mysql.insertOneLimitStock(d)
             mysql.close()
         except Exception as e:
@@ -244,7 +257,7 @@ def updateStockLimit(start=lastTradeDay(), end=lastTradeDay()):
 def rankingLimitTime(aimDate=lastTradeDay()) -> list:
     """涨停时间排序"""
     print('ranking limit time')
-    client = Mysql()
+    client = Stock_Database()
     stocks = client.selectAllStock()
     client.close()
     datas = {}
@@ -282,7 +295,7 @@ def rankingLimitTime(aimDate=lastTradeDay()) -> list:
 def getStockLimitDataByDate(date: str = lastTradeDay(), lead: int = 100) -> dict[str, list[LimitDataModel]]:
     """并发获取 stockLimit表 内容"""
     res: dict[str, list[LimitDataModel]] = {}
-    client = Mysql()
+    client = Stock_Database()
     tradeDates = client.selectTradeDate()
     index = tradeDates.index(date)
     selectDates = tradeDates[index - lead + 1:index + 1]
@@ -302,7 +315,7 @@ def getStockLimitDataByDate(date: str = lastTradeDay(), lead: int = 100) -> dict
 
 def initStock(needReload=True, extra=False):
     """每日数据更新汇总脚本"""
-    mysql = Mysql()
+    mysql = Stock_Database()
     if needReload:
         updateShIndex()
         updateGemIndex()

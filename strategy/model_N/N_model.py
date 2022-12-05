@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
 
     def N(stock):
-        client = db.Mysql()
+        client = db.Stock_Database()
         try:
             day2 = rules.twoDaySlideWindow(stock, aimDate=aimDate)
             if day2:

@@ -9,7 +9,7 @@ from utils.date_util import today2str
 
 
 def twoDaySlideWindow(stock, aimDate=today2str()):
-    mysql = db.Mysql()
+    mysql = db.Stock_Database()
     data = mysql.selectOneAllData(stock, aimDate=aimDate, dateRange=2)
     day1 = data[0]
     day2 = data[1]
@@ -31,7 +31,7 @@ def twoDaySlideWindow(stock, aimDate=today2str()):
 
 
 def threeDaySlideWindow(stock, aimDate=today2str()):
-    mysql = db.Mysql()
+    mysql = db.Stock_Database()
     data = mysql.selectOneAllData(stock, aimDate=aimDate, dateRange=3)
     day1 = data[0]
     day2 = data[1]
