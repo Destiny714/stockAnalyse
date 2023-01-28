@@ -11,6 +11,12 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_compl
 
 
 def timeCount(func: Callable):
+    """
+    装饰器--计算函数运行时间
+    :param func: any func
+    :return: None
+    print -- use time
+    """
     def wrapper(*args, **kwargs):
         start = time.time()
         res = func(*args, **kwargs)

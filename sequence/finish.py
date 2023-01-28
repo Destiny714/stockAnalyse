@@ -10,7 +10,7 @@ from utils.oss_util import oss_push_object
 
 
 class Finish(object):
-    def __init__(self, date, push=True, ):
+    def __init__(self, date, push=True):
         self.date = date
         self.push = push
 

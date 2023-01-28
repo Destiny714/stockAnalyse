@@ -149,21 +149,25 @@ def createTableIfNotExist(stockList):
     print('stock table update done')
 
 
-def updateShIndex(start=lastTradeDay(), end=lastTradeDay()):
+def updateShIndex(date=None):
     """更新上证指数"""
+    if not date:
+        date = lastTradeDay()
     client = Stock_Database()
     code = '000001.SH'
-    data = Tushare().indexData(start=start, end=end, code=code)
+    data = Tushare().indexData(date=date, code=code)
     for d in data:
         client.insertIndex(d, indexTable='NoShIndex')
     client.close()
 
 
-def updateGemIndex(start=lastTradeDay(), end=lastTradeDay()):
+def updateGemIndex(date=None):
     """更新创业板指数"""
+    if not date:
+        date = lastTradeDay()
     client = Stock_Database()
     code = '399006.SZ'
-    data = Tushare().indexData(start=start, end=end, code=code)
+    data = Tushare().indexData(date=date, code=code)
     for d in data:
         client.insertIndex(d, indexTable='NoGemIndex')
     client.close()

@@ -21,7 +21,7 @@ from utils.concurrent_util import initStock
 from models.stock_detail_model import StockDetailModel
 from utils import concurrent_util, excel_util, log_util
 from rule_black import levelF1, levelF2, levelF3, levelF4, levelF5
-from rule_white import level1, level2, level3, level4, level5, level6, levelA1, levelA2, levelA3, levelA4, levelA5
+from rule_white import level1, level2, level3, level4, level5, level6, levelA1, levelA2, levelA3, levelA4, levelA5, levelA6
 
 if __name__ == '__main__':
     RunMode.Status = RunMode.DEBUG
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     stocks = initStock(False, False)  # 经过筛选的所有股票
     tradeDays = sqlClient.selectTradeDate()  # 所有交易日
     stockDetails = sqlClient.selectAllStockDetail()  # 所有股票的detail 从stockList表查到
-    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 2)  # 要计算的日期范围
+    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 1)  # 要计算的日期范围
     Prepare(stocks, aimDates).do()
 
 
@@ -82,6 +82,7 @@ if __name__ == '__main__':
                 lA3 = levelA3.levelA3(stockDetail, data, gemIndex, shIndex, limitData).filter()
                 lA4 = levelA4.levelA4(stockDetail, data, gemIndex, shIndex, limitData).filter()
                 lA5 = levelA5.levelA5(stockDetail, data, gemIndex, shIndex, limitData).filter()
+                lA6 = levelA6.levelA6(stockDetail, data, gemIndex, shIndex, limitData).filter()
                 lF1 = levelF1.levelF1(stockDetail, data, gemIndex, shIndex, limitData).filter()
                 lF2 = levelF2.levelF2(stockDetail, data, gemIndex, shIndex, limitData).filter()
                 lF3 = levelF3.levelF3(stockDetail, data, gemIndex, shIndex, limitData).filter()
@@ -93,7 +94,7 @@ if __name__ == '__main__':
                 l4 = level4.level4(stockDetail, data, gemIndex, shIndex, limitData).filter()
                 l5 = level5.level5(stockDetail, data, gemIndex, shIndex, limitData).filter()
                 l6 = level6.level6(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                for white in [lA1, lA2, lA3, lA4, lA5]:
+                for white in [lA1, lA2, lA3, lA4, lA5, lA6]:
                     white_sum += len(white['detail'])
                     if white['result']:
                         details[white['level']] = white['detail']
@@ -116,6 +117,7 @@ if __name__ == '__main__':
                 score += len(lA3['detail']) * 3
                 score += len(lA4['detail']) * 2
                 score += len(lA5['detail']) * 2
+                score += len(lA6['detail']) * 2
                 score -= len(lF1['detail']) * 5
                 score -= len(lF2['detail']) * 5
                 score -= len(lF3['detail']) * 5
@@ -125,7 +127,7 @@ if __name__ == '__main__':
                     T1S = virtualDict[stock]['s']
                     T1F = virtualDict[stock]['f']
                     _S = int(score - excelDict[stock]['score'] if excelDict != {} else -8888)
-                    AJ = round(data[-1].concentration * 100, 1)
+                    AJ = round(data[-1].concentration, 1)
                     CF = t0Day.CF
                     TF = t0Day.TF
                     TP = t0Day.TP
@@ -133,9 +135,13 @@ if __name__ == '__main__':
                     limitOpenTime = t0Day.limitOpenTime
                     b1 = virtualDict[stock]['b1']
                     b2 = virtualDict[stock]['b2']
+                    w1 = virtualDict[stock]['w1']
+                    w2 = virtualDict[stock]['w2']
                     scoreLevelData = {
                         'b1': b1,
                         'b2': b2,
+                        'w1': w1,
+                        'w2': w2,
                         'score': score,
                         'height': height,
                         'T1S': T1S,
@@ -174,6 +180,8 @@ if __name__ == '__main__':
                         'level': level,
                         'height': height,
                         'white': white_sum,
+                        'w1': w1,
+                        'w2': w2,
                         'black': black_sum,
                         'b1': b1,
                         'b2': b2,
@@ -190,9 +198,11 @@ if __name__ == '__main__':
                     log.info(f'{aimDate}-{stock} - {"NOW" if not virtual else virtual}')
                     columnModels.append(ColumnModel(result))
                 else:
-                    matchDict = {'s': 'b1', 'f': 'b2'}
+                    blackMatchDict = {'s': 'b1', 'f': 'b2'}
+                    whiteMatchDict = {'s': 'w1', 'f': 'w2'}
                     virtualDict[stock][virtual] = score
-                    virtualDict[stock][matchDict[virtual]] = black_sum
+                    virtualDict[stock][blackMatchDict[virtual]] = black_sum
+                    virtualDict[stock][whiteMatchDict[virtual]] = white_sum
                     virtualDict[stock][f'{virtual}_detail'] = details
                     log.info(f'{aimDate} - {stock} - T1{str(virtual).upper()}')
             except (IndexError, ValueError, KeyError, TypeError) as e:

@@ -33,7 +33,7 @@ def getRanDetail(date: str, page: Union[int, None] = None, db: Session = Depends
 """
 backtrace api
 version control api
-
+doc api
 """
 
 

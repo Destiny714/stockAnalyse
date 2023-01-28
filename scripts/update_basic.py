@@ -5,8 +5,8 @@
 # @Software: PyCharm
 
 from api.tushare_api import Tushare
-from utils.concurrent_util import updateLimitDetailData
+from utils.concurrent_util import updateLimitDetailData,updateChipDetail
 
 Tushare.init()
-updateLimitDetailData()
+updateChipDetail(20230112)
 # concurrent_util.initStock(needReload=True, extra=True)

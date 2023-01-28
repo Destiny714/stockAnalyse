@@ -222,7 +222,7 @@ class level5(base_level):
             range7 = data[-9:-2]
             if data[-2].turnover > max([_.turnover for _ in range7]):
                 d = data[-1]
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.5:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.7:
                     return True
         except:
             pass
@@ -262,7 +262,7 @@ class level5(base_level):
             matchTime = joinTimeToStamp(data[-1].date, '09:50:00')
             if data[-1].lastLimitTime < matchTime:
                 d = data[-1]
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) > 0.4:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) > 0.7:
                     return True
         except:
             pass
@@ -292,3 +292,17 @@ class level5(base_level):
                     return d.CP / weakenedIndex(self.shIndex) > 70
         except:
             pass
+
+    def rule15(self):
+        data = self.data
+        stock = self.stock
+        if t_limit(stock, data, 2):
+            return False
+        for i in range(2):
+            if not t_limit(stock, data, i):
+                return False
+        if not '0950' <= getMinute(stamp=data[-2].firstLimitTime) <= '1100':
+            return False
+        if not getMinute(stamp=data[-1].firstLimitTime) < '0950':
+            return False
+        return t_open_pct(data) > 0.035 and data[-1].CP > 55

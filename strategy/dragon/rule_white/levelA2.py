@@ -36,7 +36,7 @@ class levelA2(base_level):
                 return False
             d1 = data[-2]
             if (d1.buy_elg_vol - d1.sell_elg_vol) / d1.buy_elg_vol > 0.7:
-                return True
+                return data[-2].TP > 50
         except:
             pass
 
@@ -61,7 +61,7 @@ class levelA2(base_level):
                 return False
             d1 = data[-2]
             if (d1.buy_elg_vol - d1.sell_elg_vol) / d1.buy_elg_vol > 0.6:
-                return True
+                return data[-2].TP > 40
         except:
             pass
 
@@ -86,7 +86,7 @@ class levelA2(base_level):
                 return False
             d1 = data[-2]
             if (d1.buy_elg_vol - d1.sell_elg_vol) / d1.buy_elg_vol > 0.5:
-                return True
+                return data[-2].TP > 30
         except:
             pass
 
@@ -111,7 +111,7 @@ class levelA2(base_level):
                 return False
             d1 = data[-2]
             if (d1.buy_elg_vol - d1.sell_elg_vol) / d1.buy_elg_vol > 0.4:
-                return True
+                return data[-2].TP > 30
         except:
             pass
 
@@ -136,6 +136,6 @@ class levelA2(base_level):
                 return False
             d1 = data[-2]
             if (d1.buy_elg_vol - d1.sell_elg_vol) / d1.buy_elg_vol > 0.35:
-                return True
+                return data[-2].TP > 30
         except:
             pass
