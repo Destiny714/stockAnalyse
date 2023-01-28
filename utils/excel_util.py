@@ -17,7 +17,7 @@ class ColumnModel(object):
     columns = [
         'code', 'name', 'industry',
         'ptg_industry', 'level',
-        'AJ', 'CF', 'TF', 'CP', 'TP', 'limitOpenTime', 'height', 'white', 'black',
+        'AJ', 'CF', 'TF', 'CP', 'TP', 'limitOpenTime', 'height', 'white', 'w1', 'w2', 'black',
         'b1', 'b2', 'score', 'T1S', 'T1F', 'S',
         'open_price', 'date', 'details', 'T1S_detail', 'T1F_detail'
     ]
@@ -36,6 +36,8 @@ class ColumnModel(object):
         'limitOpenTime': '涨停打开次数',
         'height': '连板高度',
         'white': '白名单',
+        'w1': '加速白',
+        'w2': '减速白',
         'black': '黑名单',
         'b1': '加速黑',
         'b2': '减速黑',
@@ -153,9 +155,3 @@ def readExcel2DF(date: str) -> pandas.DataFrame:
     df.columns = [ColumnModel.getEn(_) for _ in df.columns]
     df = df.dropna()
     return df
-
-
-if __name__ == '__main__':
-    a = readExcel2DF('20221124')
-    for i in a.iterrows():
-        print(i[1]['limitOpenTime'])

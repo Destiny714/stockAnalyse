@@ -299,8 +299,10 @@ class Stock_Database(MysqlConnection):
         detail = self.action(output=True)
         return detail[0]
 
-    def selectOneAllData(self, stock, dateRange=None, aimDate=''):
+    def selectOneAllData(self, stock, dateRange=None, aimDate='', after=False):
         """获取给定时间范围内的股票每日所有数据"""
+        flag = '-' if not after else ''
+        symbol = '<=' if not after else '>='
         if aimDate == '':
             self.word = f"SELECT * FROM No{stock}"
         else:
@@ -309,8 +311,8 @@ class Stock_Database(MysqlConnection):
                             f"ORDER BY id DESC) " \
                             f"ORDER BY id"
             else:
-                self.word = f"(SELECT * FROM No{stock} WHERE id <= (SELECT id FROM No{stock} WHERE date={aimDate}) " \
-                            f"ORDER BY id DESC LIMIT {dateRange}) " \
+                self.word = f"(SELECT * FROM No{stock} WHERE id {symbol} (SELECT id FROM No{stock} WHERE date={aimDate}) " \
+                            f"ORDER BY {flag}id LIMIT {dateRange}) " \
                             f"ORDER BY id"
         data = self.action(output=True)
         return data

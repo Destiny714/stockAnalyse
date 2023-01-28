@@ -141,7 +141,7 @@ class level4(base_level):
 
     def rule8(self):
         data = self.data
-        if data[-1].concentration < 0.09:
+        if data[-1].concentration < 9:
             if data[-1].concentration < data[-2].concentration:
                 return True
 
@@ -386,7 +386,7 @@ class level4(base_level):
         if not model_t(stock, data):
             return False
         if data[-1].concentration - data[-2].concentration < 0:
-            if data[-1].concentration < 0.18:
+            if data[-1].concentration < 18:
                 return True
 
     def rule24(self):
@@ -606,7 +606,7 @@ class level4(base_level):
 
     def rule36(self):
         data = self.data
-        if data[-1].concentration >= 0.09:
+        if data[-1].concentration >= 9:
             return False
         cons = [data[-i - 1].concentration for i in range(1, 5)]
         maxCon = max(cons)

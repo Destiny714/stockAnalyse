@@ -204,3 +204,10 @@ class level6(base_level):
                 return True
         except:
             ...
+
+    def rule7(self):
+        data = self.data
+        stock = self.stock
+        if t_high_pct(data) >= limit(stock) / 100:
+            return False
+        return data[-1].CF > 25 and data[-1].CP > 10

@@ -50,7 +50,10 @@ class levelF5(base_level):
 
     def rule3(self):
         data = self.data
+        stock = self.stock
         try:
+            if model_1(stock, data):
+                return False
             count = 0
             for i in range(3):
                 if t_close_pct(data, i) <= 0.06:
@@ -131,6 +134,8 @@ class levelF5(base_level):
         data = self.data
         stock = self.stock
         try:
+            if model_1(stock, data):
+                return False
             for i in range(2):
                 if not t_limit(stock, data, i):
                     return False
@@ -145,7 +150,13 @@ class levelF5(base_level):
 
     def rule9(self):
         data = self.data
+        stock = self.stock
         try:
+            for i in range(2):
+                if model_1(stock, data, i):
+                    return False
+            if getMinute(stamp=data[-1].lastLimitTime) <= '0945':
+                return False
             for i in range(2):
                 if t_close_pct(data, i) <= 0.05:
                     return False
@@ -174,7 +185,7 @@ class levelF5(base_level):
                     if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.4:
                         matchTime = joinTimeToStamp(data[-1].date, '09:50:00')
                         if data[-1].lastLimitTime > matchTime:
-                            return True
+                            return data[-1].TP < 40
         except:
             pass
 
@@ -244,7 +255,7 @@ class levelF5(base_level):
             for i in range(2):
                 if t_close_pct(data, i) <= 0.05:
                     return False
-            if data[-2].TF < 30:
+            if data[-2].TF < 25:
                 return data[-1].CP / weakenedIndex(self.shIndex, weak_degree=5) < 65
         except:
             pass

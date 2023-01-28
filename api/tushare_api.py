@@ -24,7 +24,7 @@ class Tushare:
 
     def tradeCalender(self):
         """获取交易日历"""
-        data = self._instance.query('trade_cal', start_date='20190101')
+        data = self._instance.query('trade_cal', start_date='20230101')
         dayList = []
         for i in range(len(data)):
             day = data.iloc[i]
@@ -66,10 +66,12 @@ class Tushare:
             details.append(data.iloc[i])
         return details
 
-    def indexData(self, start: str, end: str, code: str = '000001.SH'):
+    def indexData(self, date=None, code: str = '000001.SH'):
         """获取指数数据"""
+        if not date:
+            date = lastTradeDay()
         details = []
-        data = self._instance.index_daily(ts_code=code, start_date=start, end_date=end)
+        data = self._instance.index_daily(ts_code=code, trade_date=date)
         for i in range(len(data)):
             details.append(data.iloc[-i - 1])
         return details
@@ -269,3 +271,8 @@ class Tushare:
         for i in range(len(data)):
             details.append(data.iloc[i])
         return details
+
+
+if __name__ == '__main__':
+    a = Tushare().qfqDailyData(20221226)
+    print(a)

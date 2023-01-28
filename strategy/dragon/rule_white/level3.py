@@ -224,7 +224,7 @@ class level3(base_level):
     def rule16(self):
         data = self.data
         try:
-            if data[-1].concentration < 0.09:
+            if data[-1].concentration < 9:
                 return True
         except:
             pass
@@ -344,7 +344,7 @@ class level3(base_level):
         data = self.data
         try:
             if data[-1].concentration < data[-2].concentration:
-                if data[-1].concentration < 0.13:
+                if data[-1].concentration < 13:
                     return True
         except:
             pass
@@ -647,3 +647,43 @@ class level3(base_level):
         if model_1(self.stock, data):
             return False
         return t_open_pct(data) > 0.05 and t_low_pct(data) > 0.035
+
+    def rule48(self):
+        data = self.data
+        stock = self.stock
+        if not t_limit(stock, data):
+            return False
+        try:
+            for i in range(10, 81):
+                if not t_limit(stock, data, i):
+                    continue
+                if data[-i - 1].turnover < data[-1].turnover:
+                    return True
+        except:
+            pass
+
+    def rule49(self):
+        data = self.data
+        stock = self.stock
+        if data[-1].CP <= 65:
+            return False
+        try:
+            for i in range(10, 81):
+                if t_limit(stock, data, i):
+                    return True
+        except:
+            pass
+
+    def rule50(self):
+        data = self.data
+        stock = self.stock
+        if data[-1].limitOpenTime > 0:
+            return False
+        if data[-1].turnover <= 3 * sum([data[-i - 1].turnover for i in range(1, 11)]) / 10:
+            return False
+        try:
+            for i in range(10, 81):
+                if t_limit(stock, data, i):
+                    return True
+        except:
+            pass

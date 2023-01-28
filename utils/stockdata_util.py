@@ -63,11 +63,11 @@ def virtualLimitData(data: dict[str, list[LimitDataModel]], virtual=None) -> dic
 
 
 @lru_cache(maxsize=None)
-def queryData(stock, dateRange: int = 800, aimDate='', virtual=None) -> list[StockDataModel]:
+def queryData(stock, dateRange: int = 800, aimDate='', virtual=None, after=False) -> list[StockDataModel]:
     if aimDate == '':
         aimDate = lastTradeDay()
     mysql = db.Stock_Database()
-    allData = mysql.selectOneAllData(stock=stock, dateRange=dateRange, aimDate=aimDate)
+    allData = mysql.selectOneAllData(stock=stock, dateRange=dateRange, aimDate=aimDate, after=after)
     res = [StockDataModel(_) for _ in allData]
     modifyData = res[-1]
     nextDate = nextTradeDay(modifyData.date)

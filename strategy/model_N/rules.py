@@ -4,54 +4,45 @@
 # @File    : rules.py
 # @Software: PyCharm
 
-from database import db
-from utils.date_util import today2str
+
+from models.stock_data_model import StockDataModel
+from utils.stockdata_util import t_limit, model_1, t_open_pct, t_close_pct
 
 
-def twoDaySlideWindow(stock, aimDate=today2str()):
-    mysql = db.Stock_Database()
-    data = mysql.selectOneAllData(stock, aimDate=aimDate, dateRange=2)
-    day1 = data[0]
-    day2 = data[1]
-    if not (9.8 <= day1[7] <= 10.2):  # pctChange
-        return
-    if day1[5] == day1[6]:
-        return
-    if not (day1[3] <= day2[2] <= day1[3] * 1.03):
-        return
-    if not (1.2 * day1[8] < day2[8] < 2 * day1[8]):
-        return
-    if day2[2] < day1[3] or day2[3] < day1[3]:
-        return
-    if day2[3] < day2[2]:
-        return
-    if max(day2[2], day2[3]) / min(day2[2], day2[3]) > 1.03:
-        return
-    return day2[1]
-
-
-def threeDaySlideWindow(stock, aimDate=today2str()):
-    mysql = db.Stock_Database()
-    data = mysql.selectOneAllData(stock, aimDate=aimDate, dateRange=3)
-    day1 = data[0]
-    day2 = data[1]
-    day3 = data[2]
-    if not (9.8 <= day1[7] <= 10.2):  # pctChange
-        return
-    if day1[5] == day1[6]:
-        return
-    if not (day1[3] <= day2[2] <= day1[3] * 1.03):
-        return
-    if not (1.2 * day1[8] < day2[8] < 2 * day1[8]):
-        return
-    if day2[2] < day1[3] or day2[3] < day1[3]:
-        return
-    if day2[3] < day2[2]:
-        return
-    if max(day2[2], day2[3]) / min(day2[2], day2[3]) > 1.03:
-        return
-    if day3[8] >= 0.7 * day2[8]:
-        return
-    if day3[3] <= day1[3]:
-        return
-    return day3[1]
+def n_model_rule(stock: str, data: list[StockDataModel]) -> int:
+    SWING_LIMIT = 0.06
+    assert len(data) == 3
+    for i in range(1):
+        if not t_limit(stock, data, 1):
+            break
+        if model_1(stock, data, 1):
+            break
+        day1 = data[-2]
+        day2 = data[-1]
+        if not (1.2 * day1.volume <= day2.volume <= 2 * day1.volume):
+            break
+        if not (day2.open >= day1.close and day2.close >= day1.close):
+            break
+        if not (day2.close >= day2.open):
+            break
+        if abs((t_open_pct(data) - t_close_pct(data))) <= SWING_LIMIT:
+            return 2
+    for i in range(1):
+        if not t_limit(stock, data, 2):
+            break
+        day1 = data[-3]
+        day2 = data[-2]
+        day3 = data[-1]
+        if model_1(stock, data, 2):
+            break
+        if not (1.2 * day1.volume <= day2.volume <= 2 * day1.volume):
+            break
+        if not (day2.open >= day1.close and day2.close >= day1.close):
+            break
+        if abs((t_open_pct(data, 1) - t_close_pct(data, 1))) > SWING_LIMIT:
+            break
+        if not (day2.close >= day2.open):
+            break
+        if day3.volume < 0.7 * day2.volume and day3.close > day1.close:
+            return 3
+    return 0

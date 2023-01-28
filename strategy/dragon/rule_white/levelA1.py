@@ -22,7 +22,7 @@ class levelA1(base_level):
             if (d.buy_elg_vol + d.buy_lg_vol) / d.volume / weakenedIndex(self.shIndex) > 0.8:
                 if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex) > 0.8:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
-                            d.buy_elg_vol + d.buy_lg_vol) / weakenedIndex(self.shIndex) > 0.4:
+                            d.buy_elg_vol + d.buy_lg_vol) / weakenedIndex(self.shIndex) > 0.5:
                         return True
         except:
             pass
@@ -30,11 +30,13 @@ class levelA1(base_level):
     def rule2(self):
         data = self.data
         try:
+            if model_1(self.stock, data):
+                return False
             d = data[-1]
             if d.CP / weakenedIndex(self.shIndex) > 65:
-                if d.TF / weakenedIndex(self.shIndex) > 60:
+                if d.TF / weakenedIndex(self.shIndex) > 65:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
-                            d.buy_elg_vol + d.buy_lg_vol) / weakenedIndex(self.shIndex) > 0.3:
+                            d.buy_elg_vol + d.buy_lg_vol) / weakenedIndex(self.shIndex) > 0.4:
                         return True
         except:
             pass
@@ -42,11 +44,13 @@ class levelA1(base_level):
     def rule3(self):
         data = self.data
         try:
+            if model_1(self.stock, data):
+                return False
             d = data[-1]
             if d.CP / weakenedIndex(self.shIndex) > 50:
-                if d.TF / weakenedIndex(self.shIndex) > 35:
+                if d.TF / weakenedIndex(self.shIndex) > 45:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
-                            d.buy_elg_vol + d.buy_lg_vol) / weakenedIndex(self.shIndex) > 0.2:
+                            d.buy_elg_vol + d.buy_lg_vol) / weakenedIndex(self.shIndex) > 0.3:
                         return True
         except:
             pass
@@ -54,6 +58,8 @@ class levelA1(base_level):
     def rule4(self):
         data = self.data
         try:
+            if model_1(self.stock, data):
+                return False
             d = data[-1]
             if d.CP / weakenedIndex(self.shIndex) > 40:
                 if d.TF / weakenedIndex(self.shIndex) > 20:
@@ -67,9 +73,9 @@ class levelA1(base_level):
         try:
             d = data[-2]
             if d.CP / weakenedIndex(self.shIndex, 1) > 70:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex, 1) > 0.6:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex, 1) > 0.8:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
-                            d.buy_elg_vol + d.buy_lg_vol) / weakenedIndex(self.shIndex, 1) > 0.3:
+                            d.buy_elg_vol + d.buy_lg_vol) / weakenedIndex(self.shIndex, 1) > 0.5:
                         d0 = data[-1]
                         if (d0.buy_elg_vol - d0.sell_elg_vol) / d0.buy_elg_vol / weakenedIndex(self.shIndex) > 0.4:
                             return True
@@ -81,9 +87,9 @@ class levelA1(base_level):
         try:
             d = data[-2]
             if (d.buy_elg_vol + d.buy_lg_vol) / d.volume / weakenedIndex(self.shIndex, 1) > 0.6:
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex, 1) > 0.5:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol / weakenedIndex(self.shIndex, 1) > 0.55:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
-                            d.buy_elg_vol + d.buy_lg_vol) / weakenedIndex(self.shIndex, 1) > 0.2:
+                            d.buy_elg_vol + d.buy_lg_vol) / weakenedIndex(self.shIndex, 1) > 0.3:
                         d0 = data[-1]
                         if (d0.buy_elg_vol - d0.sell_elg_vol) / d0.buy_elg_vol / weakenedIndex(self.shIndex) > 0.4:
                             return True

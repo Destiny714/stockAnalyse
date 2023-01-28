@@ -18,12 +18,15 @@ class levelF3(base_level):
         super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
 
     def rule1(self):
+        data = self.data
         try:
-            if self.data[-1].TP / weakenedIndex(self.shIndex) >= 35:
+            if data[-1].TP / weakenedIndex(self.shIndex) >= 35:
+                return False
+            if data[-1].turnover <= data[-2].turnover / 4:
                 return False
             count = 0
             for i in range(6):
-                if t_high_pct(self.data, i) > 0.07 and t_close_pct(self.data, i) < 0.045:
+                if t_high_pct(data, i) > 0.07 and t_close_pct(data, i) < 0.045:
                     count += 1
                 if count >= 2:
                     return True
@@ -226,6 +229,8 @@ class levelF3(base_level):
             return False
         if data[-2].turnover <= 0.8 * data[-3].turnover:
             return False
+        if getMinute(stamp=data[-2].lastLimitTime) <= '0935':
+            return False
         if data[-2].lastLimitTime <= data[-3].lastLimitTime + timeDelta(data[-3].date, data[-2].date):
             return False
         if data[-2].firstLimitTime > data[-3].firstLimitTime + timeDelta(data[-3].date, data[-2].date):
@@ -356,8 +361,13 @@ class levelF3(base_level):
 
     def rule22(self):
         data = self.data
+        stock = self.stock
         try:
-            if data[-1].TP >= 60:
+            if t_limit(stock, data, 2):
+                return False
+            if model_1(stock, data):
+                return False
+            if data[-1].TP >= 50:
                 return False
             for i in range(2):
                 if not t_limit(self.stock, data, i):
@@ -511,8 +521,8 @@ class levelF3(base_level):
             return False
         if not t_limit(stock, data):
             return False
-        if data[-1].concentration - data[-2].concentration > 0.02:
-            return True
+        if data[-1].concentration - data[-2].concentration > 2:
+            return data[-1].TP / weakenedIndex(self.shIndex) < 38 and data[-1].TF < 60
 
     def rule31(self):
         data = self.data
@@ -522,8 +532,8 @@ class levelF3(base_level):
         for i in range(2):
             if not t_limit(stock, data, i):
                 return False
-        if data[-1].concentration - data[-2].concentration > 0.035:
-            return True
+        if data[-1].concentration - data[-2].concentration > 3.5:
+            return getMinute(stamp=data[-1].firstLimitTime) > '0945' and getMinute(stamp=data[-2].firstLimitTime) < '0945'
 
     def rule32(self):
         data = self.data
@@ -570,7 +580,9 @@ class levelF3(base_level):
         stock = self.stock
         try:
             d = data[-1]
-            if d.CP / weakenedIndex(self.shIndex, weak_degree=5) >= 65:
+            if d.CP / weakenedIndex(self.shIndex, weak_degree=5) >= 60:
+                return False
+            if d.TF >= 70:
                 return False
             if t_limit(stock, data, 1):
                 return False
@@ -709,6 +721,10 @@ class levelF3(base_level):
         try:
             if not t_limit(stock, data):
                 return False
+            if t_open_pct(data) >= 0.06:
+                return False
+            if data[-1].turnover <= data[-2].turnover / 4:
+                return False
             d = data[-1]
             if d.lastLimitTime < joinTimeToStamp(d.date, '09:40:00'):
                 return d.CP / weakenedIndex(self.shIndex, weak_degree=5) < 65
@@ -731,10 +747,12 @@ class levelF3(base_level):
     def rule42(self):
         data = self.data
         stock = self.stock
+        if data[-1].TP >= 90:
+            return False
         for i in range(2):
             if not model_1(stock, data, i):
                 return False
-        if data[-1].turnover <= 1.3 * data[-2].turnover:
+        if data[-1].turnover <= 1.5 * data[-2].turnover:
             return False
         return data[-1].turnover > sum([data[-i - 1].turnover for i in range(3, 23)]) / 20 / 3
 
@@ -743,7 +761,9 @@ class levelF3(base_level):
         stock = self.stock
         if data[-1].turnover <= data[-2].turnover / 4:
             return False
-        if data[-2].TP >= 80:
+        if data[-2].TP >= 60:
+            return False
+        if data[-1].TP >= 90:
             return False
         for i in range(2):
             if not t_limit(stock, data, i):
@@ -752,7 +772,7 @@ class levelF3(base_level):
             return False
         if not model_1(stock, data):
             return False
-        return getMinute(stamp=data[-2].firstLimitTime) < '0940'
+        return getMinute(stamp=data[-2].firstLimitTime) < '0945'
 
     def rule44(self):
         data = self.data
@@ -803,7 +823,7 @@ class levelF3(base_level):
     def rule47(self):
         data = self.data
         stock = self.stock
-        if (data[-1].TF > 50 and data[-1].TP > 55) is True:
+        if (data[-1].TF > 0 and data[-1].TP > 40 and data[-1].CP > 60) is True:
             return False
         for i in range(2):
             if not t_limit(stock, data, i):
@@ -841,7 +861,7 @@ class levelF3(base_level):
                 return False
             close = d.close
             turnover = d.turnover
-        return True
+        return data[-1].CP < 55
 
     def rule50(self):
         data = self.data
@@ -851,12 +871,10 @@ class levelF3(base_level):
                 if i in range(1, 31):
                     if t_high_pct(data, i) > 0.06:
                         return False
-                else:
-                    if count >= 15:
-                        return True
                 if i in range(2, 42):
                     if data[-i - 1].close < move_avg(data, 20, i):
                         count += 1
+            return count >= 15 and data[-1].CP < 70
         except:
             ...
 
@@ -869,3 +887,162 @@ class levelF3(base_level):
                     return True
         except:
             ...
+
+    def rule52(self):
+        data = self.data
+        stock = self.stock
+        try:
+            down_limit_flag = False
+            for i in range(1, 151):
+                if i in range(2, 31):
+                    if t_high_pct(data, i) > limit(stock) / 100:
+                        return False
+                if i in range(30, 151):
+                    if limit_height(stock, data, i) >= 4:
+                        return False
+                if i in range(1, 61):
+                    if not down_limit_flag and t_down_limit(stock, data, i) is True:
+                        down_limit_flag = True
+            return down_limit_flag
+        except:
+            pass
+
+    def rule53(self):
+        data = self.data
+        stock = self.stock
+        for i in range(1, 5):
+            if t_limit(stock, data, i):
+                return False
+        return data[-2].high > data[-3].high > data[-4].high > data[-5].high and data[-1].TP < 35
+
+    def rule54(self):
+        data = self.data
+        stock = self.stock
+        if not t_limit(stock, data):
+            return False
+        if t_limit(stock, data, 1):
+            return False
+        return t_open_pct(data) > 0.02 and data[-1].limitOpenTime > 1
+
+    def rule55(self):
+        data = self.data
+        stock = self.stock
+        for i in range(3):
+            if not model_1(stock, data, i):
+                return False
+        return data[-3].turnover * 1.8 < data[-2].turnover < data[-1].turnover and data[-1].turnover > data[-3].turnover * 2
+
+    def rule56(self):
+        data = self.data
+        stock = self.stock
+        for i in range(4):
+            if not model_1(stock, data, i):
+                return False
+        return data[-3].turnover > data[-4].turnover * 1.8 and data[-2].turnover > data[-4].turnover * 2
+
+    def rule57(self):
+        data = self.data
+        stock = self.stock
+        if not t_limit(stock, data):
+            return False
+        if t_limit(stock, data, 1):
+            return False
+        return getMinute(stamp=data[-1].firstLimitTime) < '0940' and data[-1].limitOpenTime > 0 and data[-1].CP < 70 and data[-1].TF < 75
+
+    def rule58(self):
+        data = self.data
+        stock = self.stock
+        if not t_limit(stock, data):
+            return False
+        for i in range(1, 11):
+            if t_limit(stock, data, i):
+                return False
+        return t_low_pct(data) < -0.035
+
+    def rule59(self):
+        data = self.data
+        stock = self.stock
+        if t_limit(stock, data, 2):
+            return False
+        for i in range(2):
+            if not t_limit(stock, data, i):
+                return False
+        if model_1(stock, data, 1):
+            return False
+        if not (getMinute(stamp=data[-2].firstLimitTime) < '0945'):
+            return False
+        if not model_1(stock, data):
+            return False
+        if not data[-2].TP < 60:
+            return False
+        for i in range(5, 16):
+            if t_limit(stock, data, i):
+                return True
+
+    def rule60(self):
+        data = self.data
+        stock = self.stock
+        try:
+            if t_limit(stock, data, 1):
+                return False
+            if not getMinute(stamp=data[-1].firstLimitTime) < '0940':
+                return False
+            if not t_limit(stock, data):
+                return False
+            for i in range(1, 61):
+                if t_limit(stock, data, i):
+                    return False
+            count = 0
+            for i in range(10):
+                if data[-i - 1].close < move_avg(data, 20, i):
+                    count += 1
+                    if count == 7:
+                        return True
+        except:
+            ...
+
+    def rule61(self):
+        data = self.data
+        stock = self.stock
+        if t_limit(stock, data, 1):
+            return False
+        if not getMinute(stamp=data[-1].firstLimitTime) < '0940':
+            return False
+        if data[-2].close == max([data[-i - 1].close for i in range(10)]):
+            return False
+        for i in range(1, 11):
+            if t_high_pct(data, i) > limit(stock) / 100 and t_close_pct(data, i) < 0.055:
+                return True
+
+    def rule62(self):
+        data = self.data
+        stock = self.stock
+        if t_limit(stock, data, 2):
+            return False
+        if not getMinute(stamp=data[-2].firstLimitTime) < '0940':
+            return False
+        if not model_1(stock, data):
+            return False
+        if data[-2].close == max([data[-i - 1].close for i in range(10)]):
+            return False
+        return data[-1].TP < 90
+
+    def rule63(self):
+        data = self.data
+        stock = self.stock
+        for i in [1, 2]:
+            if t_limit(stock, data, i):
+                return False
+        if not t_limit(stock, data):
+            return False
+        return t_close_pct(data, 1) < -0.045
+
+    def rule64(self):
+        data = self.data
+        stock = self.stock
+        for i in range(1, 16):
+            for j in range(1, i + 1):
+                if t_limit(stock, data, j):
+                    return False
+            if t_low_pct(data, i) < -0.055 and t_high_pct(data, i + 1) < 0.08:
+                return True

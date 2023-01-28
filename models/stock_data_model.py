@@ -11,6 +11,9 @@ from utils import date_util
 class StockDataModel:
     """单支股票单日数据模型"""
 
+    def __str__(self):
+        return str(self.data)
+
     def __init__(self, data):
         self.data = data
 
@@ -189,11 +192,17 @@ class StockDataModel:
         return json.loads(self.data[42])
 
     @property
-    def concentration(self):
+    def concentration(self) -> float:
+        """
+        集中度
+        0.xx
+        未*100
+        :return:
+        """
         _sum = self.cost_95pct + self.cost_5pct
         if _sum == 0:
             return 100
-        return (self.cost_95pct - self.cost_5pct) / _sum
+        return ((self.cost_95pct - self.cost_5pct) / _sum) * 100
 
     @property
     def CF(self) -> float:
@@ -223,7 +232,7 @@ class StockDataModel:
         return round(((self.buy_elg_vol + self.buy_lg_vol) / self.volume) * 100, 1)
 
     @property
-    def TP(self):
+    def TP(self) -> float:
         """
         buy_elg_vol / volume
         """

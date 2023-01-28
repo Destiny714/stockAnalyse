@@ -26,7 +26,7 @@ class levelA3(base_level):
                 if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.8:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                             d.buy_elg_vol + d.buy_lg_vol) > 0.4:
-                        return True
+                        return data[-2].TP > 50
         except:
             pass
 
@@ -42,7 +42,7 @@ class levelA3(base_level):
                 if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.7:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                             d.buy_elg_vol + d.buy_lg_vol) > 0.3:
-                        return True
+                        return data[-2].TP > 40
         except:
             pass
 
@@ -58,7 +58,7 @@ class levelA3(base_level):
                 if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol > 0.6:
                     if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                             d.buy_elg_vol + d.buy_lg_vol) > 0.2:
-                        return True
+                        return data[-2].TP > 30
         except:
             pass
 
@@ -71,12 +71,12 @@ class levelA3(base_level):
                     return False
             for i in range(2):
                 d = data[-i - 1]
-                if d.buy_elg_vol / d.volume <= 0.3:
+                if d.buy_elg_vol / d.volume <= 0.4:
                     return False
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol <= 0.5:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol <= 0.65:
                     return False
                 if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
-                        d.buy_elg_vol + d.buy_lg_vol) <= 0.2:
+                        d.buy_elg_vol + d.buy_lg_vol) <= 0.3:
                     return False
             return True
         except:
@@ -90,12 +90,12 @@ class levelA3(base_level):
                 if not t_limit(stock, data, i):
                     return False
                 d = data[-i - 1]
-                if d.buy_elg_vol / d.volume <= 0.3:
+                if d.buy_elg_vol / d.volume <= 0.35:
                     return False
-                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol <= 0.4:
+                if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol <= 0.5:
                     return False
                 if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
-                        d.buy_elg_vol + d.buy_lg_vol) <= 0.15:
+                        d.buy_elg_vol + d.buy_lg_vol) <= 0.25:
                     return False
             return True
         except:
