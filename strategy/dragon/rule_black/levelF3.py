@@ -610,7 +610,7 @@ class levelF3(base_level):
         stock = self.stock
         try:
             d = data[-1]
-            if d.buy_elg_vol / d.volume / (1 + t_close_pct(self.shIndex) * 10) >= 0.4:
+            if not d.CP / weakenedIndex(self.shIndex, weak_degree=5) < 55:
                 return False
             if t_limit(stock, data, 2):
                 return False
@@ -823,6 +823,8 @@ class levelF3(base_level):
     def rule47(self):
         data = self.data
         stock = self.stock
+        if model_1(stock, data, 1):
+            return False
         if (data[-1].TF > 0 and data[-1].TP > 40 and data[-1].CP > 60) is True:
             return False
         for i in range(2):
@@ -830,7 +832,7 @@ class levelF3(base_level):
                 return False
             if getMinute(stamp=data[-i - 1].firstLimitTime) >= '0940':
                 return False
-        return data[-1].limitOpenTime > 0
+        return data[-1].limitOpenTime > 2
 
     def rule48(self):
         data = self.data
@@ -861,7 +863,7 @@ class levelF3(base_level):
                 return False
             close = d.close
             turnover = d.turnover
-        return data[-1].CP < 55
+        return data[-1].CP < 55 and data[-1].close > data[-1].his_high / 2
 
     def rule50(self):
         data = self.data
@@ -874,7 +876,7 @@ class levelF3(base_level):
                 if i in range(2, 42):
                     if data[-i - 1].close < move_avg(data, 20, i):
                         count += 1
-            return count >= 15 and data[-1].CP < 70
+            return count >= 15 and data[-1].CP < 70 and data[-1].TF < 90
         except:
             ...
 
@@ -1040,9 +1042,12 @@ class levelF3(base_level):
     def rule64(self):
         data = self.data
         stock = self.stock
+        flag = False
         for i in range(1, 16):
-            for j in range(1, i + 1):
-                if t_limit(stock, data, j):
-                    return False
+            if t_limit(stock, data, i):
+                return False
+            if flag:
+                continue
             if t_low_pct(data, i) < -0.055 and t_high_pct(data, i + 1) < 0.08:
-                return True
+                flag = True
+        return flag

@@ -18,7 +18,7 @@ class ColumnModel(object):
         'code', 'name', 'industry',
         'ptg_industry', 'level',
         'AJ', 'CF', 'TF', 'CP', 'TP', 'limitOpenTime', 'height', 'white', 'w1', 'w2', 'black',
-        'b1', 'b2', 'score', 'T1S', 'T1F', 'S',
+        'b1', 'b2', 'score', 'day2elg', 'day3elg', 'S',
         'open_price', 'date', 'details', 'T1S_detail', 'T1F_detail'
     ]
 
@@ -50,6 +50,8 @@ class ColumnModel(object):
         'details': '今日明细',
         'T1S_detail': '加速明细',
         'T1F_detail': '减速明细',
+        'day2elg': '2日特单净流入',
+        'day3elg': '3日特单净流入',
     }
 
     tranReverse = {}

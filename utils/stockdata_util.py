@@ -250,6 +250,26 @@ def weakenedIndex(indexData: list[StockDataModel], plus: int = 0, weak_degree: i
     return 1 + t_close_pct(indexData, plus) * weak_degree
 
 
+def day2elg(data: list[StockDataModel]):
+    try:
+        t0 = data[-1]
+        t1 = data[-2]
+        return round(((t0.buy_elg_vol + t1.buy_elg_vol - t0.sell_elg_vol - t1.sell_elg_vol) / (t0.buy_elg_vol + t1.buy_elg_vol)) * 100, 2)
+    except:
+        return 0
+
+
+def day3elg(data: list[StockDataModel]):
+    try:
+        t0 = data[-1]
+        t1 = data[-2]
+        t2 = data[-3]
+        return round(((t0.buy_elg_vol + t1.buy_elg_vol + t2.buy_elg_vol - t0.sell_elg_vol - t1.sell_elg_vol - t2.sell_elg_vol) / (
+                t0.buy_elg_vol + t1.buy_elg_vol + t2.buy_elg_vol)) * 100, 2)
+    except:
+        return 0
+
+
 class RankLimitStock(object):
     _instance = None
     resultsDict = {}

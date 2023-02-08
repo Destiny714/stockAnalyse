@@ -56,8 +56,8 @@ class Server_Database(MysqlConnection):
         detail = dumps(eval(data['details']))
         fastDetail = dumps(eval(data['T1S_detail']))
         slowDetail = dumps(eval(data['T1F_detail']))
-        fastScore = data['T1S']
-        slowScore = data['T1F']
+        day2elg = data['day2elg']
+        day3elg = data['day3elg']
         fastBlackNum = data['b1']
         slowBlackNum = data['b2']
         comparePrevScore = data['S']
@@ -65,15 +65,15 @@ class Server_Database(MysqlConnection):
         self.word = f"""
                     INSERT ignore INTO rank_detail
                     (index_key,date,stock_code,stock_name,stock_rank,limitHeight,
-                    whiteNum,blackNum,fastBlackNum,slowBlackNum,score,fastScore,slowScore,
+                    whiteNum,blackNum,fastBlackNum,slowBlackNum,score,day2elg,day3elg,
                     comparePrevScore,detail,fastDetail,slowDetail) VALUES 
                     ("{index}","{date}","{code}","{name}","{rank}",{height},
-                    {white},{black},{fastBlackNum},{slowBlackNum},{score},{fastScore},{slowScore},{comparePrevScore},
+                    {white},{black},{fastBlackNum},{slowBlackNum},{score},{day2elg},{day3elg},{comparePrevScore},
                     '{detail}','{fastDetail}','{slowDetail}') 
                     ON DUPLICATE KEY UPDATE 
                     stock_rank="{rank}",whiteNum={white},blackNum={black},
                     fastBlackNum={fastBlackNum},slowBlackNum={slowBlackNum},
-                    score={score},fastScore={fastScore},slowScore={slowScore},
+                    score={score},day2elg={day2elg},day3elg={day3elg},
                     comparePrevScore={comparePrevScore},detail='{detail}',fastDetail='{fastDetail}',slowDetail='{slowDetail}'
                     """
         self.action(output=False)

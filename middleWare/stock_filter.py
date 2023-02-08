@@ -21,6 +21,6 @@ class stockFilter:
         filters = [_ for _ in stockFilter.__dict__.keys() if 'Filter' in _]
         stocks = self.stocks.copy()
         for _filter in filters:
-            func = getattr(self,_filter)
+            func = getattr(self, _filter)
             stocks = func(stocks)
         return stocks

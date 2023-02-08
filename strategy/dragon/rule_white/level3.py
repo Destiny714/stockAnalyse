@@ -644,7 +644,10 @@ class level3(base_level):
 
     def rule47(self):
         data = self.data
-        if model_1(self.stock, data):
+        stock = self.stock
+        if model_1(stock, data):
+            return False
+        if not t_limit(stock, data, 1):
             return False
         return t_open_pct(data) > 0.05 and t_low_pct(data) > 0.035
 
@@ -655,9 +658,7 @@ class level3(base_level):
             return False
         try:
             for i in range(10, 81):
-                if not t_limit(stock, data, i):
-                    continue
-                if data[-i - 1].turnover < data[-1].turnover:
+                if t_limit(stock, data, i):
                     return True
         except:
             pass
@@ -687,3 +688,19 @@ class level3(base_level):
                     return True
         except:
             pass
+
+    def rule51(self):
+        data = self.data
+        stock = self.stock
+        try:
+            for i in range(1, 6):
+                if not data[-i - 1].close > move_avg(data, 20, i):
+                    return False
+            avgClose1to5 = sum([data[-_ - 1].close for _ in range(1, 6)]) / 5
+            for i in range(2, 31):
+                if not t_limit(stock, data, i):
+                    continue
+                if data[-i - 1].close * 0.96 < avgClose1to5:
+                    return True
+        except:
+            ...

@@ -137,6 +137,8 @@ if __name__ == '__main__':
                     b2 = virtualDict[stock]['b2']
                     w1 = virtualDict[stock]['w1']
                     w2 = virtualDict[stock]['w2']
+                    buy_elg_2 = day2elg(data)
+                    buy_elg_3 = day3elg(data)
                     scoreLevelData = {
                         'b1': b1,
                         'b2': b2,
@@ -156,6 +158,8 @@ if __name__ == '__main__':
                         'TP': TP,
                         'stock': stock,
                         'details': details,
+                        'day2elg': buy_elg_2,
+                        'day3elg': buy_elg_3,
                     }
                     level = 'F'
                     if F.ruleF(scoreLevelData).filter():
@@ -194,6 +198,8 @@ if __name__ == '__main__':
                         'details': str(details),
                         'T1S_detail': str(virtualDict[stock]['s_detail']),
                         'T1F_detail': str(virtualDict[stock]['f_detail']),
+                        'day2elg': buy_elg_2,
+                        'day3elg': buy_elg_3,
                     }
                     log.info(f'{aimDate}-{stock} - {"NOW" if not virtual else virtual}')
                     columnModels.append(ColumnModel(result))
@@ -205,14 +211,16 @@ if __name__ == '__main__':
                     virtualDict[stock][whiteMatchDict[virtual]] = white_sum
                     virtualDict[stock][f'{virtual}_detail'] = details
                     log.info(f'{aimDate} - {stock} - T1{str(virtual).upper()}')
-            except (IndexError, ValueError, KeyError, TypeError) as e:
-                errors.append([stock, e])
+            except (IndexError, ValueError, KeyError, TypeError) as er:
+                errors.append([stock, er])
                 log.warning(
-                    f'{aimDate} - {stock} - {"NOW" if not virtual else "".join(["T1", str(virtual).upper()])} - {e} - {tool_box.errorHandler(e)}')
+                    f'{aimDate} - {stock} - {"NOW" if not virtual else "".join(["T1", str(virtual).upper()])} - {er} - {tool_box.errorHandler(er)}')
 
         tool_box.thread_pool_executor(processOneStock, [{'stock': stock, 'virtual': 's'} for stock in stocks], 10)
         tool_box.thread_pool_executor(processOneStock, [{'stock': stock, 'virtual': 'f'} for stock in stocks], 10)
         tool_box.thread_pool_executor(processOneStock, [{'stock': stock, 'virtual': None} for stock in stocks], 10)
+
+        log.info('模型运行完毕')
 
         def rankExcelData(d: ColumnModel):
             d = d.dict()
@@ -223,13 +231,26 @@ if __name__ == '__main__':
 
         columnModels.sort(key=rankExcelData, reverse=True)
         errStocks = list(set([_[0] for _ in errors]))
+        log.error(f'共{len(errStocks)}个出错股票')
         for errStock in errStocks:
-            errStockDetail = db.Stock_Database().selectStockDetail(errStock)
-            _stockName = errStockDetail[2]
-            res = {'code': errStock, 'name': _stockName, 'level': 'N/A'}
-            columnModels.append(ColumnModel(res))
-        excel_util.write(aimDate, columnModels)
-        concurrent_util.updateRankDetail(aimDate)
+            try:
+                errStockDetail = db.Stock_Database().selectStockDetail(errStock)
+                _stockName = errStockDetail[2]
+                res = {'code': errStock, 'name': _stockName, 'level': 'N/A'}
+                columnModels.append(ColumnModel(res))
+            except Exception as e:
+                log.error(f'{errStock}错误处理时出错')
+                log.error_quick(e)
+        try:
+            excel_util.write(aimDate, columnModels)
+        except Exception as e:
+            log.error('模型数据写入excel出错')
+            log.error_quick(e)
+        try:
+            concurrent_util.updateRankDetail(aimDate)
+        except Exception as e:
+            log.error('模型数据写入数据库出错')
+            log.error_quick(e)
 
 
     for date in aimDates:

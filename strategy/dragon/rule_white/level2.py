@@ -43,6 +43,50 @@ class level2(base_level):
             return False
         return data[-1].turnover < data[-2].turnover / 10
 
+    def rule5(self):
+        data = self.data
+        stock = self.stock
+        try:
+            for i in range(1, 4):
+                if not data[-i - 1].close > move_avg(data, 60, i):
+                    return False
+            return True
+        except:
+            ...
+
+    def rule6(self):
+        data = self.data
+        stock = self.stock
+        if t_limit(stock, data, 1):
+            return False
+        if data[-1].limitOpenTime != 0:
+            return False
+        return data[-1].TP > 45 and getMinute(stamp=data[-1].firstLimitTime) > '0937'
+
+    def rule7(self):
+        data = self.data
+        stock = self.stock
+        if t_limit(stock, data, 2):
+            return False
+        for i in range(2):
+            if not t_limit(stock, data, i):
+                return False
+        return getMinute(stamp=data[-2].firstLimitTime) > '1100' and getMinute(stamp=data[-1].lastLimitTime) < '1015'
+
+    def rule8(self):
+        data = self.data
+        stock = self.stock
+        try:
+            for i in range(1, 11):
+                if i in range(1, 6):
+                    if not (move_avg(data, 10, i) > move_avg(data, 20, i)):
+                        return False
+                if not (data[-i - 1].close > move_avg(data, 10, i)):
+                    return False
+            return True
+        except:
+            ...
+
     def rule9(self):
         data = self.data
         for i in range(1, 50):

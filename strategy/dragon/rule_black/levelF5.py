@@ -75,7 +75,9 @@ class levelF5(base_level):
                 d = data[-i - 1]
                 if d.turnover <= 4:
                     continue
-                if model_1(stock, data, i):
+                if not model_1(stock, data, i):
+                    continue
+                if d.turnover > data[-i - 2].turnover / 3:
                     return True
         except:
             pass
@@ -222,8 +224,7 @@ class levelF5(base_level):
             if (d.buy_elg_vol + d.buy_lg_vol - d.sell_elg_vol - d.sell_lg_vol) / (
                     d.buy_elg_vol + d.buy_lg_vol) < 0.2:
                 if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.2:
-                    matchTime = joinTimeToStamp(data[-1].date, '09:45:00')
-                    if data[-1].lastLimitTime < matchTime:
+                    if getMinute(stamp=data[-1].lastLimitTime) > '0945':
                         if t_low_pct(index) > -0.01:
                             return True
         except:
@@ -253,7 +254,7 @@ class levelF5(base_level):
             if not t_limit(self.stock, data):
                 return False
             for i in range(2):
-                if t_close_pct(data, i) <= 0.05:
+                if t_close_pct(data, i) <= 0.06:
                     return False
             if data[-2].TF < 25:
                 return data[-1].CP / weakenedIndex(self.shIndex, weak_degree=5) < 65

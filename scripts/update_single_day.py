@@ -70,11 +70,11 @@ def getData(stockNo: str, dateList: list[list]):
 if __name__ == '__main__':
     Tushare.init()
     initStock(needReload=True, extra=True)
-    date = lastTradeDay()
+    exit(0)
     sql = db.Stock_Database()
     dateSize = 30
     dateRange = 1
-    dates = sql.selectTradeDateByDuration(date, dateRange)
+    dates = sql.selectTradeDateByDuration(lastTradeDay(), dateRange)
     datesList = cutList(dates, dateSize)
     stocks = sql.selectAllStockWithSuffix()
     cut_stocks = cutList(stocks, 440)

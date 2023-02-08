@@ -7,6 +7,7 @@ import os
 import logging
 from prefs.params import *
 from utils.file_util import projectPath
+from common.tool_box import errorHandler
 
 
 class log:
@@ -51,3 +52,6 @@ class log:
 
     def critical(self, error: str):
         self.logger.critical(error)
+
+    def error_quick(self, error: Exception):
+        self.logger.error(errorHandler(error))

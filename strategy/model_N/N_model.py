@@ -46,7 +46,7 @@ if __name__ == '__main__':
     print(aimDate)
     stocks = concurrent_util.initStock(needReload=False, extra=False)
     errors = []
-    chosenStocks = [stock for stock in stocks if stock[:2] in ['00', '60']]
+    chosenStocks = [stock for stock in stocks if stock[:2] in ['00', '60','30']]
     Ns = []
 
     tool_box.thread_pool_executor(N, chosenStocks, 20)

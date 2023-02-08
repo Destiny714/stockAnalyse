@@ -55,7 +55,7 @@ class ruleF(base_score_level):
                 return True
 
     def rule10(self):
-        if self.height > 1 and self.score > self.T1S:
+        if self.height > 1 and self.score - self.T1S > 15:
             for _ in ['A1', 'A2', 'S1', 'S2']:
                 if _ in self.details.keys():
                     return False
