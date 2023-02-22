@@ -1,155 +1,100 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2022/10/16 01:51
+# @Time    : 2023/2/18 22:48
 # @Author  : Destiny_
 # @File    : backtrace.py
 # @Software: PyCharm
-
-import os
-import xlwt
-from typing import Union
-from matplotlib import pyplot as plt
-
-import excel_model
-from database.db import Stock_Database
-from utils.stockdata_util import *
-from column_model import ColumnModel
-from utils.file_util import projectPath
-from common.tool_box import process_pool_executor
+from utils.excel_util import readExcel_AS
+from utils.stockdata_util import queryData, limit
+from models.stock_data_model import StockDataModel
+from utils.date_util import allTradeDay, nextXTradeDay
 
 
-def incrData(file: str):
-    _date = file.replace('.xls', '')
-    data = excel_model.ExcelModel.load(_date)
-    return data
-
-
-def makeModel(_):
-    date = _['date']
-    code = _['code']
-    columnMap = {
-        'backTraceDate': date,
-        'level': _['level'],
-        'height': _['height'],
-        'name': _['name'],
-    }
-    if int(nextXTradeDay(date, 3)) <= int(lastTradeDay()):
-        aimDate = nextXTradeDay(date, 3)
-        backTraceData = queryData(code, 30, aimDate=aimDate)
-        shIndexData = queryIndexData('ShIndex', 30, aimDate)
-        columnMap['shIndexClosePCT_0'] = toPercent(t_close_pct(shIndexData, 3))
-        for i in range(1, 4):
-            try:
-                columnMap[f'lowPCT_{i}'] = toPercent(t_low_pct(backTraceData, 3 - i))
-                columnMap[f'openPCT_{i}'] = toPercent(t_open_pct(backTraceData, 3 - i))
-                columnMap[f'highPCT_{i}'] = toPercent(t_high_pct(backTraceData, 3 - i))
-                columnMap[f'closePCT_{i}'] = toPercent(t_close_pct(backTraceData, 3 - i))
-                columnMap[f'isLimit_{i}'] = 1 if t_limit(code, backTraceData, 3 - i) else 0
-                columnMap[f'shIndexClosePCT_{i}'] = toPercent(t_close_pct(shIndexData, 3 - i))
-            except:
-                pass
-        columnModel = ColumnModel(columnMap)
-        return columnModel
-
-
-def toPercent(n: Union[int, float]):
-    return f'{round(n * 100, 2)}%'
-
-
-def toNum(pct: str):
-    if pct == 'N/A':
-        return 0
-    return round(float(pct.replace('%', '')) / 100, 2)
-
-
-def write():
-    book = xlwt.Workbook(encoding='utf-8', style_compression=0)
-    sheet = book.add_sheet('backtrace', cell_overwrite_ok=True)
-    col = ColumnModel.__cols__
-    for o in range(0, len(col)):
-        sheet.write(0, o, col[o])
-    for index, model in enumerate(columnModels):
-        models = [_ for _ in model.__dict__.values()]
-        for j in range(0, len(col)):
-            sheet.write(index + 1, j, models[j])
-    savePath = f'{projectPath()}/strategy/dragon/backtrace/backtrace.xls'
-    book.save(savePath)
+def percent(res: float):
+    return int(res * 100)
 
 
 if __name__ == '__main__':
-    excelPath = f'{projectPath()}/strategy/dragon/result'
-    files = os.listdir(excelPath)
-    client = Stock_Database()
-    datas = []
+    tradeDays = [day for day in allTradeDay() if '20221101' <= day <= '20221231']
 
-    res = process_pool_executor(incrData, files, 20)
-    for _ in res:
-        datas.extend(_)
+    # with open('./limit_rate.csv', 'w') as f:
+    #     f.write('日期,T日A票个数,T+1日涨停率,T+2日涨停率,T+3日涨停率,T+4日涨停率\n')
+    #     for date in tradeDays:
+    #         AS = readExcel_AS(date)
+    #         A = [d for d in AS if d['level'] == 'A']
+    #         count = len(A)
+    #         if count == 0:
+    #             continue
+    #         t1l, t2l, t3l, t4l = 0, 0, 0, 0
+    #         for a in A:
+    #             code = a['code']
+    #             limit_rate = limit(code)
+    #             day2calculate = nextXTradeDay(date, 4)
+    #             data = queryData(code, 10, day2calculate)
+    #             t1 = data[-4]
+    #             if t1.pctChange >= limit_rate:
+    #                 t1l += 1
+    #             t2 = data[-3]
+    #             if t2.pctChange >= limit_rate:
+    #                 t2l += 1
+    #             t3 = data[-2]
+    #             if t3.pctChange >= limit_rate:
+    #                 t3l += 1
+    #             t4 = data[-1]
+    #             if t4.pctChange >= limit_rate:
+    #                 t4l += 1
+    #         f.write(f'{date},{count},{percent(t1l / count)},{percent(t2l / count)},{percent(t3l / count)},{percent(t4l / count)}\n')
+
+    def rule1(t_1: StockDataModel, t_2: StockDataModel):
+        return percent((t_2.open / t_1.open) - 1)
 
 
-    def rank(d: ColumnModel):
-        return int(d.backTraceDate)
+    def rule2(t_1: StockDataModel, t_2: StockDataModel):
+        return percent((t_2.high / t_1.open) - 1)
 
 
-    columnModels = []
-    res = process_pool_executor(makeModel, datas, 20)
-    columnModels.extend([_ for _ in res if _ is not None])
-    columnModels.sort(key=rank)
-    hashmap = {}
-    standardRate = 0.02
-    for bc in columnModels:
-        if bc.backTraceDate in hashmap.keys():
-            hashmap[bc.backTraceDate].append(bc)
-        else:
-            hashmap[bc.backTraceDate] = [bc]
-    winRateMap = {}
-    winDay = 0
-    for backTraceDate in hashmap.keys():
-        bcs: list[ColumnModel] = hashmap[backTraceDate]
-        win = 0
-        len_ = len(bcs)
-        profitSum = 0
-        for bc in bcs:
-            try:
-                base = 1 * (1 + toNum(bc.lowPCT_1))
-                columnDict = bc.__dict__
-                v = 2
-                sellPoint = max(
-                    [
-                        toNum(_) for _ in
-                        [columnDict[f'lowPCT_{v}'], columnDict[f'openPCT_{v}'], columnDict[f'highPCT_{v}'], columnDict[f'closePCT_{v}']]
-                    ]
-                )
-                cursor = 1 * (1 + toNum(bc.closePCT_1)) * (1 + sellPoint)
-                if cursor / base < 1 + standardRate:
-                    cursor = 1 * (1 + toNum(bc.closePCT_1)) * (1 + toNum(bc.closePCT_2))
-                    v = 3
-                    sellPoint = max(
-                        [
-                            toNum(_) for _ in
-                            [columnDict[f'lowPCT_{v}'], columnDict[f'openPCT_{v}'], columnDict[f'highPCT_{v}'], columnDict[f'closePCT_{v}']]
-                        ]
-                    )
-                    cursor *= (1 + sellPoint)
-                if cursor / base >= 1 + standardRate:
-                    win += 1
-                profitSum += cursor / base
-            except:
-                len_ -= 1
-        winRate = win / len_ * 100
-        winRateMap[backTraceDate] = winRate
-        if profitSum / len_ > 1 + standardRate:
-            winDay += 1
-    print(winRateMap)
-    print(f'{winDay}/{len(hashmap.keys())}')
-    plt.figure(figsize=(100, 20))
-    x = [_ for _ in hashmap.keys()]
-    y = [winRateMap[_] for _ in x]
-    plt.title = "winrate backtrace"
-    plt.xlabel = 'date'
-    plt.ylabel = 'rate/%'
-    plt.plot(x, y, label=f"winrate for profit > {standardRate * 100}%", color="red")
-    plt.xticks(x[::1])
-    plt.xticks(list(x)[::1], x[::1], rotation=90)
-    plt.grid(alpha=0.4)
-    plt.legend(loc=2)
-    plt.show()
+    def rule3(t_1: StockDataModel, t_2: StockDataModel):
+        return percent((t_2.low / t_1.open) - 1)
+
+
+    def rule4(t_1: StockDataModel, t_2: StockDataModel):
+        return percent((t_2.open / t_1.high) - 1)
+
+
+    def rule5(t_1: StockDataModel, t_2: StockDataModel):
+        return percent((t_2.high / t_1.high) - 1)
+
+
+    def rule6(t_1: StockDataModel, t_2: StockDataModel):
+        return percent((t_2.low / t_1.high) - 1)
+
+
+    with open('./profit.csv', 'w') as f:
+        f.write('日期,T日A票个数,收益率1,收益率2,收益率3,收益率4,收益率5,收益率6\n')
+        for date in tradeDays:
+            AS = readExcel_AS(date)
+            A = [d for d in AS if d['level'] == 'A']
+            count = len(A)
+            if count == 0:
+                continue
+            r1, r2, r3, r4, r5, r6 = 0, 0, 0, 0, 0, 0,
+            for a in A:
+                code = a['code']
+                limit_rate = limit(code)
+                day2calculate = nextXTradeDay(date, 2)
+                data = queryData(code, 10, day2calculate)
+                t1 = data[-4]
+                t2 = data[-3]
+                p1 = rule1(t1, t2)
+                p2 = rule2(t1, t2)
+                p3 = rule3(t1, t2)
+                p4 = rule4(t1, t2)
+                p5 = rule5(t1, t2)
+                p6 = rule6(t1, t2)
+                r1 += p1
+                r2 += p2
+                r3 += p3
+                r4 += p4
+                r5 += p5
+                r6 += p6
+            f.write(
+                f'{date},{count},{round(r1 / count, 1)}%,{round(r2 / count, 1)}%,{round(r3 / count, 1)}%,{round(r4 / count, 1)}%,{round(r5 / count, 1)}%,{round(r6 / count, 1)}%\n')

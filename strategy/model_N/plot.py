@@ -30,7 +30,7 @@ if __name__ == '__main__':
         plt.figure(figsize=(100, 20))
         x = [_ for _ in hashMap]
         y = [round(sum(hashMap[_]) / len(hashMap[_]), 2) for _ in x]
-        plt.title = "profit backtrace"
+        plt.title = "profit backtrace_old"
         plt.xlabel = 'date'
         plt.ylabel = 'avg profit/%'
         plt.plot(x, y, label=f"swing limit {swing_limit}%", color="red")

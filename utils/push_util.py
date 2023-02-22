@@ -7,7 +7,6 @@
 import json
 import requests
 from enum import Enum
-
 from utils.excel_util import readExcel_AS
 from utils.oss_util import oss_push_object
 from utils.file_util import config_yaml, projectPath
@@ -15,7 +14,7 @@ from utils.file_util import config_yaml, projectPath
 
 def bark_pusher(title, content, _url=None):
     try:
-        url = f'https://api.day.app/y67CydURc8wR9CVemagkYL/{title}/{content}'
+        url = f'https://api.day.app/{config_yaml()["webhook"]["bark"]}/{title}/{content}'
         if _url is not None:
             url += f'?url={_url}'
         requests.get(url, verify=False)
@@ -182,14 +181,14 @@ class DingtalkPush(BasePush):
         template = DingtalkTemplates.ActionCard(
             markdown=DragonModelMarkDownTemplate(readExcel_AS(date)),
             url=url,
-            title=f'{date}模型结果',
+            title=f'{date} 涨停模型',
             singleTitle='点击查看')
         self.request(template)
         return url
 
-    def pushN(self, date: str, stock_details: list[dict]):
+    def pushN(self, date: str, stock_details: list[dict], model_name='N'):
         template = DingtalkTemplates.BarelyMarkDown(
-            title=f'{date} N字模型',
+            title=f'{date} {model_name} 模型',
             markdown=N_ModelMarkDownTemplate(stock_details)
         )
         self.request(template)
@@ -206,7 +205,7 @@ class WechatPush(BasePush):
             url = oss_push_object(f'{projectPath()}/strategy/dragon/result/{date}.xls')
         template = WechatTemplates.MarkDown(
             markdown=DragonModelMarkDownTemplate(readExcel_AS(date)),
-            title=f'{date} 模型结果', url=url)
+            title=f'{date} 涨停模型', url=url)
         self.request(template)
         return url
 

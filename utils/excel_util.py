@@ -130,7 +130,7 @@ def readScoreFromExcel(date):
     return excelDict
 
 
-def readExcel_AS(date: str) -> list[dict]:
+def readExcel_AS(date: str, hide: bool = True) -> list[dict]:
     AS = []
     try:
         filePath = f'{projectPath()}/strategy/dragon/result/{date}.xls'
@@ -141,12 +141,34 @@ def readExcel_AS(date: str) -> list[dict]:
         for i in range(1, sheet.nrows):
             detail = sheet.row_values(i)
             if detail[header.index('level')] in ['S', 'A']:
-                columnDict = {_: detail[header.index(_)] if _ in header else detail[header.index(ColumnModel.getCh(_))] for _ in
+                columnDict = {_: (detail[header.index(_)] if _ in header else detail[header.index(ColumnModel.getCh(_))]) for _ in
                               ['code', 'name', 'height', 'level']}
-                AS.append(columnDict)
+                if hide:
+                    if int(columnDict['height']) > 0:
+                        AS.append(columnDict)
+                else:
+                    AS.append(columnDict)
     except Exception as e:
         log().error(errorHandler(e))
     return AS
+
+
+def readExcel_white(date: str) -> dict:
+    details_dict = {}
+    try:
+        filePath = f'{projectPath()}/strategy/dragon/result/{date}.xls'
+        data = xlrd.open_workbook(filePath)
+        sheet = data.sheet_by_index(0)
+        header: list = sheet.row_values(0)
+        header = [ColumnModel.getEn(_) for _ in header]
+        code_index = header.index('code') if 'code' in header else header.index(ColumnModel.getCh('code'))
+        details_index = header.index('details') if 'details' in header else header.index(ColumnModel.getCh('details'))
+        for i in range(1, sheet.nrows):
+            detail = sheet.row_values(i)
+            details_dict[detail[code_index]] = detail[details_index]
+    except Exception as e:
+        log().error(errorHandler(e))
+    return details_dict
 
 
 def readExcel2DF(date: str) -> pandas.DataFrame:

@@ -6,12 +6,12 @@
 
 
 from models.stock_data_model import StockDataModel
-from utils.stockdata_util import t_limit, model_1, t_open_pct, t_close_pct
+from utils.stockdata_util import t_limit, model_1, t_open_pct, t_close_pct, move_avg
 
 
 def n_model_rule(stock: str, data: list[StockDataModel]) -> int:
     SWING_LIMIT = 0.06
-    assert len(data) == 3
+    assert len(data) >= 3
     for i in range(1):
         if not t_limit(stock, data, 1):
             break
@@ -45,4 +45,26 @@ def n_model_rule(stock: str, data: list[StockDataModel]) -> int:
             break
         if day3.volume < 0.7 * day2.volume and day3.close > day1.close:
             return 3
+    return 0
+
+
+def n_plus_model_rule(stock: str, data: list[StockDataModel]) -> int:
+    SWING_LIMIT = 0.06
+    assert len(data) >= 3
+    if stock.startswith('30'):
+        return 0
+    if not t_limit(stock, data, 1):
+        return 0
+    if model_1(stock, data, 1):
+        return 0
+    day1 = data[-2]
+    day2 = data[-1]
+    if not day2.volume >= day1.volume * 1.2:
+        return 0
+    if not (day2.open >= day1.close and day2.close >= day1.close):
+        return 0
+    if not (day2.open >= day2.close > move_avg(data, 5)):
+        return 0
+    if abs((t_open_pct(data) - t_close_pct(data))) <= SWING_LIMIT:
+        return 2
     return 0

@@ -53,6 +53,13 @@ def lastTradeDay(date=None):
     return today
 
 
+def allTradeDay():
+    client = db.Stock_Database()
+    alDays = client.selectTradeDate()
+    client.close()
+    return alDays
+
+
 @lru_cache(maxsize=None)
 def prevTradeDay(date: str):
     client = db.Stock_Database()
@@ -160,7 +167,3 @@ def prevMinute(now: str):
     hour = nxt.hour
     minute = nxt.minute
     return f'{0 if hour < 10 else ""}{hour}{0 if minute < 10 else ""}{minute}'
-
-
-if __name__ == '__main__':
-    print(lastTradeDay())

@@ -5,6 +5,7 @@
 # @Software: PyCharm
 
 from prefs.params import Params
+from common.tool_box import skip
 from utils.stockdata_util import *
 from base.base_level_model import base_level
 from models.stock_detail_model import StockDetailModel
@@ -811,7 +812,7 @@ class levelF3(base_level):
             d = data[-i - 1]
             if not t_limit(stock, data, i):
                 return False
-            if getMinute(stamp=d.firstLimitTime) >= '0940':
+            if getMinute(stamp=d.firstLimitTime) >= '0938':
                 return False
             _industryLimitDict = Params.dailyIndustryLimitDict[d.date]
             if self.industry not in _industryLimitDict.keys():
@@ -869,10 +870,9 @@ class levelF3(base_level):
         data = self.data
         count = 0
         try:
-            for i in range(1, 42):
-                if i in range(1, 31):
-                    if t_high_pct(data, i) > 0.06:
-                        return False
+            for i in range(1, 51):
+                if t_high_pct(data, i) > 0.055:
+                    return False
                 if i in range(2, 42):
                     if data[-i - 1].close < move_avg(data, 20, i):
                         count += 1
@@ -909,6 +909,7 @@ class levelF3(base_level):
         except:
             pass
 
+    @skip
     def rule53(self):
         data = self.data
         stock = self.stock
@@ -1043,7 +1044,7 @@ class levelF3(base_level):
         data = self.data
         stock = self.stock
         flag = False
-        for i in range(1, 16):
+        for i in range(1, 31):
             if t_limit(stock, data, i):
                 return False
             if flag:
@@ -1051,3 +1052,21 @@ class levelF3(base_level):
             if t_low_pct(data, i) < -0.055 and t_high_pct(data, i + 1) < 0.08:
                 flag = True
         return flag
+
+    def rule65(self):
+        data = self.data
+        stock = self.stock
+        if t_limit(stock, data, 1):
+            return False
+        if not t_limit(stock, data):
+            return False
+        return t_high_pct(data, 1) > 0.045 and t_close_pct(data, 1) < -0.02 and t_open_pct(data) > 0.01
+
+    def rule66(self):
+        data = self.data
+        stock = self.stock
+        if t_limit(stock, data, 1):
+            return False
+        if not t_limit(stock, data):
+            return False
+        return t_high_pct(data, 1) > 0.045 and t_close_pct(data, 1) < 0.01 and data[-1].limitOpenTime > 2

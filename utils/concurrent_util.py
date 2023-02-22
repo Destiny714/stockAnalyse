@@ -9,6 +9,7 @@ from utils.log_util import log
 from utils import stockdata_util
 from utils.stockdata_util import *
 from api.tushare_api import Tushare
+from database.redis_cli import RedisCli
 from utils.excel_util import readExcel2DF
 from middleWare.stock_filter import stockFilter
 from models.limit_data_model import LimitDataModel
@@ -95,13 +96,14 @@ def updateTurnover(date=lastTradeDay()):
     data = Tushare().stockDailyIndex(date)
 
     def update(d):
+        mysql = Stock_Database()
         try:
-            mysql = Stock_Database()
             mysql.updateTurnover(d)
-            mysql.close()
         except Exception as e:
             errors.append(e)
             pass
+        finally:
+            mysql.close()
 
     tool_box.thread_pool_executor(update, data)
 
@@ -135,6 +137,44 @@ def updateDaily(dateList):
         tool_box.thread_pool_executor(tmp, data)
     print(f'update {len(count)} stock basic data %%%%%%%%%%%%')
     print('stock data update done')
+
+
+def updateDailyBackup(date: str):
+    print(f'start update stock data in {date}')
+    mysql_ = Stock_Database()
+    redis_cli_ = RedisCli().instance()
+    redis_cli_.set('time', 1)
+    redis_cli_.set('startTime', str(int(time.time())))
+    try:
+        stocks = mysql_.selectAllStockWithSuffix()
+
+        def getOneData(stock):
+            print(f'update {stock}')
+            mysql = Stock_Database()
+            redis_cli = RedisCli().instance()
+            try:
+                req_time = redis_cli.incr('time', 1)
+                timeTillNow = time.time() - int(redis_cli.get('startTime'))
+                if req_time > 900 and timeTillNow < 60:
+                    sleep_time = 60 - timeTillNow
+                    print(f'sleep {sleep_time} s')
+                    time.sleep(sleep_time)
+                    redis_cli.set('time', 0)
+                    redis_cli.set('startTime', str(int(time.time())))
+                data = Tushare().qfqDailyDataBackup(stock, date)
+                mysql.insertOneDailyBasicRecord(data, backup=True)
+            except Exception:
+                print(f'updateDailyBackup error --> {stock}')
+            finally:
+                mysql.close()
+                redis_cli.close()
+
+        tool_box.thread_pool_executor(getOneData, stocks)
+    except Exception:
+        print(f'updateDailyBackup error')
+    finally:
+        mysql_.close()
+        redis_cli_.close()
 
 
 def createTableIfNotExist(stockList):
@@ -196,12 +236,13 @@ def updateChipDetail(aimDate=lastTradeDay()):
 
     def updateOne(d):
         if str(d['ts_code'])[0] not in ['4', '8']:
+            client = Stock_Database()
             try:
-                client = Stock_Database()
                 client.updateChipDetail(d)
-                client.close()
             except Exception as e:
                 _log.warning(f'update chip detail error - {e}')
+            finally:
+                client.close()
 
     mysql = Stock_Database()
     stocks = mysql.selectAllStockWithSuffix()
@@ -333,6 +374,7 @@ def initStock(needReload=True, extra=False):
             fullDates = mysql.selectTradeDate()
             dates = [_ for _ in fullDates if int(stockDetailVersion) < int(_) <= int(lastTradeDay())]
             updateDaily(dates)
+            # updateDailyBackup(lastTradeDay())  # TODO:备用
             mysql.stockDetailUpdateDate(lastTradeDay())
     else:
         stocks = mysql.selectAllStock()
@@ -342,7 +384,7 @@ def initStock(needReload=True, extra=False):
         updateTurnover()
         updateMoneyFlow()
         updateChipDetail()
-        # updateTimeDataToday() #TODO:fix minuteData update method
+        # updateTimeDataToday() TODO:fix minuteData update method
         updateStockLimit()
     mysql.close()
     return stocks

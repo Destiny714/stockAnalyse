@@ -32,8 +32,26 @@ def N(stock):
         res = rules.n_model_rule(stock, data)
         if res == 0:
             return
-        print(f'{stock}-{aimDate}-{res}日')
+        print(f'N-{stock}-{aimDate}-{res}日')
         Ns.append({'code': stock, 'name': client.selectNameByStock(stock), 'inCycle': res})
+    except Exception as e:
+        errors.append(f'{stock} : logic error : {e}')
+        pass
+    finally:
+        client.close()
+
+
+def N_plus(stock):
+    client = db.Stock_Database()
+    try:
+        data = queryData(stock, dateRange=10, aimDate=aimDate)
+        if len(data) < 3:
+            return
+        res = rules.n_plus_model_rule(stock, data)
+        if res == 0:
+            return
+        print(f'N-PLUS-{stock}-{aimDate}-{res}日')
+        N_plus_s.append({'code': stock, 'name': client.selectNameByStock(stock), 'inCycle': res})
     except Exception as e:
         errors.append(f'{stock} : logic error : {e}')
         pass
@@ -46,8 +64,11 @@ if __name__ == '__main__':
     print(aimDate)
     stocks = concurrent_util.initStock(needReload=False, extra=False)
     errors = []
-    chosenStocks = [stock for stock in stocks if stock[:2] in ['00', '60','30']]
+    chosenStocks = [stock for stock in stocks if stock[:2] in ['00', '60', '30']]
     Ns = []
-
+    N_plus_s = []
+    push_mode = PushMode.Release
     tool_box.thread_pool_executor(N, chosenStocks, 20)
-    DingtalkPush(mode=PushMode.Release).pushN(aimDate, Ns)
+    tool_box.thread_pool_executor(N_plus, chosenStocks, 20)
+    DingtalkPush(mode=push_mode).pushN(aimDate, Ns)
+    DingtalkPush(mode=push_mode).pushN(aimDate, N_plus_s, model_name='N-PLUS')

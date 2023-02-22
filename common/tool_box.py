@@ -17,10 +17,21 @@ def timeCount(func: Callable):
     :return: None
     print -- use time
     """
+
     def wrapper(*args, **kwargs):
         start = time.time()
         res = func(*args, **kwargs)
         print(f'use {(time.time() - start) * 1000}ms')
+        return res
+
+    return wrapper
+
+
+def skip(func: Callable):
+    def wrapper(*args, **kwargs):
+        cls = args[0]
+        virtual = cls.virtual
+        res = func(*args, **kwargs) if virtual is None else None
         return res
 
     return wrapper

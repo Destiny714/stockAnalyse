@@ -244,14 +244,22 @@ class Stock_Database(MysqlConnection):
         self.word = f"DELETE FROM stockList WHERE symbol='{stock}'"
         self.action(output=False)
 
-    def insertOneDailyBasicRecord(self, data):
+    def insertOneDailyBasicRecord(self, data, backup=False):
         """新增股票每日基础数据"""
-        low_qfq = data['low_qfq']
-        high_qfq = data['high_qfq']
-        open_qfq = data['open_qfq']
-        close_qfq = data['close_qfq']
-        pct_change = data['pct_change']
-        pre_close_qfq = data['pre_close_qfq']
+        if not backup:
+            low_qfq = data['low_qfq']
+            high_qfq = data['high_qfq']
+            open_qfq = data['open_qfq']
+            close_qfq = data['close_qfq']
+            pct_change = data['pct_change']
+            pre_close_qfq = data['pre_close_qfq']
+        else:
+            low_qfq = data['low']
+            high_qfq = data['high']
+            open_qfq = data['open']
+            close_qfq = data['close']
+            pct_change = data['pct_chg']
+            pre_close_qfq = data['pre_close']
         self.word = f"INSERT ignore INTO No{str(data['ts_code']).split('.')[0]} " \
                     f"(date,open,close,preClose,high,low,pctChange,volume,amount) VALUES " \
                     f"('{data['trade_date']}',{open_qfq},{close_qfq},{pre_close_qfq}," \

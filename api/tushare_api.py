@@ -260,19 +260,28 @@ class Tushare:
         data = None
         retry = 0
         while data is None and retry <= 3:
+            if retry > 0:
+                print(f'retry time {retry}')
             try:
+                retry += 1
                 data = tushare.pro_api().stk_factor(ts_code='', trade_date=date,
                                                     fields='ts_code,trade_date,open_qfq,close_qfq,high_qfq,low_qfq,pre_close_qfq,pct_change,vol,amount')
-                retry += 1
-            except:
-                time.sleep(20)
+            except Exception as e:
+                print(f'获取数据出错-->{e}')
+                time.sleep(2)
         if data is None:
             raise Exception(f'{date} 获取数据出错')
         for i in range(len(data)):
             details.append(data.iloc[i])
         return details
 
+    def qfqDailyDataBackup(self, stockWithSuffix: str, date: str = None):
+        if date is None:
+            date = lastTradeDay()
+        df = tushare.pro_bar(ts_code=stockWithSuffix, adj='qfq', start_date=date, end_date=date)
+        return df.iloc[0]
+
 
 if __name__ == '__main__':
-    a = Tushare().qfqDailyData(20221226)
+    a = Tushare().qfqDailyDataBackup('000001.SZ', '20230214')
     print(a)

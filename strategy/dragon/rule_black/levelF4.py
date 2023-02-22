@@ -4,6 +4,7 @@
 # @File    : levelF4.py
 # @Software: PyCharm
 
+from common.tool_box import skip
 from utils.stockdata_util import *
 from base.base_level_model import base_level
 from models.stock_detail_model import StockDetailModel
@@ -157,7 +158,7 @@ class levelF4(base_level):
                 d = data[-i - 1]
                 if d.turnover > 1:
                     if d.turnover > max([_.turnover for _ in data[-i - 21:-i - 1]]) / 3:
-                        return d.TP < 80
+                        return d.TP < 90
         except:
             ...
 
@@ -184,7 +185,7 @@ class levelF4(base_level):
         if not model_1(stock, data, 1):
             return False
         if (data[-1].turnover + data[-2].turnover) / 2 > 0.25 * max([_.turnover for _ in data[-30:]]):
-            return True
+            return data[-1].TP < 95
 
     def rule12(self):
         data = self.data
@@ -604,6 +605,8 @@ class levelF4(base_level):
                 return False
             if t_limit(stock, data, 1):
                 return False
+            if not data[-1].open > data[-1].his_high / 3:
+                return False
             for i in range(3, 153):
                 if not t_limit(stock, data, i):
                     continue
@@ -894,6 +897,8 @@ class levelF4(base_level):
                 return False
             if model_1(stock, data):
                 return False
+            if not data[-1].TF < 90:
+                return False
             for i in range(2, 152):
                 if not t_limit(stock, data, i):
                     continue
@@ -964,6 +969,13 @@ class levelF4(base_level):
                 return False
             count = 0
             highestClosePrice1to5 = max([data[-_ - 1].close for _ in range(1, 6)])
+            flag = False
+            for i in range(1, 11):
+                if data[-i - 1].close < move_avg(data, 20, i):
+                    flag = True
+                    break
+            if not flag:
+                return False
             for i in range(2, 152):
                 if not t_limit(stock, data, i):
                     continue
@@ -1060,7 +1072,9 @@ class levelF4(base_level):
         data = self.data
         stock = self.stock
         try:
-            if data[-1].TF / weakenedIndex(self.shIndex) > 50 and data[-1].TP / weakenedIndex(self.shIndex) > 35:
+            if data[-1].TF / weakenedIndex(self.shIndex) > 70:
+                return False
+            if data[-1].TP / weakenedIndex(self.shIndex) > 35:
                 return False
             for i in range(2, 152):
                 if not t_limit(stock, data, i):
@@ -1076,6 +1090,7 @@ class levelF4(base_level):
         except:
             pass
 
+    @skip
     def rule54(self):
         data = self.data
         stock = self.stock
@@ -1195,6 +1210,7 @@ class levelF4(base_level):
         except:
             ...
 
+    @skip
     def rule59(self):
         data = self.data
         stock = self.stock

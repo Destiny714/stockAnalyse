@@ -4,6 +4,7 @@
 # @File    : levelF2.py
 # @Software: PyCharm
 
+from common.tool_box import skip
 from utils.stockdata_util import *
 from base.base_level_model import base_level
 from models.stock_detail_model import StockDetailModel
@@ -104,7 +105,7 @@ class levelF2(base_level):
             return False
         range10 = data[-11:-1]
         if data[-1].turnover > 1.8 * max([_.turnover for _ in range10]):
-            return True
+            return data[-1].TF < 65 and data[-1].TP < 95
 
     def rule7(self):
         data = self.data
@@ -558,12 +559,12 @@ class levelF2(base_level):
                 return False
             if not t_limit(stock, data):
                 return False
-            if (data[-1].concentration - data[-2].concentration) / data[-2].concentration <= 0.15:
+            if (data[-1].concentration - data[-2].concentration) / data[-2].concentration <= 0.17:
                 return False
             d = data[-1]
             if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol < 0.8:
                 if d.buy_elg_vol / d.volume < 0.5:
-                    return True
+                    return data[-1].concentration > 0.08
         except:
             pass
 
@@ -599,12 +600,14 @@ class levelF2(base_level):
         # TODO
 
     def rule37(self):
+        data = self.data
+        stock = self.stock
         for i in range(1, 11):
-            if not t_down_limit(self.stock, self.data, i):
+            if not t_down_limit(stock, data, i):
                 continue
-            if t_limit(self.stock, self.data, i - 1):
+            if not t_close_pct(data, i - 1) < 0.015:
                 continue
-            if self.data[-i - 1].CF / weakenedIndex(self.shIndex, i) < -40:
+            if self.data[-i - 1].CF < -70:
                 return True
 
     def rule38(self):
@@ -633,6 +636,7 @@ class levelF2(base_level):
                 return False
         return True
 
+    @skip
     def rule40(self):
         data = self.data
         stock = self.stock
@@ -648,6 +652,10 @@ class levelF2(base_level):
             if t_limit(self.stock, data, 1):
                 return False
             if data[-1].TP / weakenedIndex(self.shIndex, weak_degree=5) >= 50:
+                return False
+            if not data[-1].TF < 90:
+                return False
+            if not data[-1].close > data[-1].his_high / 3:
                 return False
             if data[-1].CP >= 70:
                 return False
@@ -713,7 +721,7 @@ class levelF2(base_level):
             if t_limit(stock, data):
                 return False
             limitList = RankLimitStock(self.limitData).by('limitTime-industry', self.data[-1].date)[self.industry]
-            return len(limitList) >= 3
+            return len(limitList) >= 3 and t_close_pct(data) < 0.04
         except:
             ...
 
@@ -814,11 +822,16 @@ class levelF2(base_level):
         except:
             ...
 
+    @skip
     def rule53(self):
         data = self.data
         stock = self.stock
         try:
             if not t_limit(stock, data):
+                return False
+            if not data[-1].TF < 85:
+                return False
+            if not data[-1].TP < 38:
                 return False
             if (data[-1].TF > 55 and data[-1].TP > 35) is True:
                 return False
@@ -851,7 +864,7 @@ class levelF2(base_level):
         for i in range(2):
             if not model_1(stock, data, i):
                 return False
-        return data[-1].turnover > data[-2].turnover * 1.5 and data[-1].TF < 80
+        return data[-1].turnover > data[-2].turnover * 1.5 and data[-1].TF < 80 and data[-1].TP < 90
 
     def rule57(self):
         data = self.data
@@ -932,6 +945,7 @@ class levelF2(base_level):
             return False
         return data[-1].turnover > data[-2].turnover / 4 and data[-1].TP < 80
 
+    @skip
     def rule64(self):
         data = self.data
         stock = self.stock
@@ -963,3 +977,87 @@ class levelF2(base_level):
         except:
             ...
         return data[-1].TP / weakenedIndex(self.shIndex, weak_degree=5) < 90
+
+    def rule67(self):
+        data = self.data
+        stock = self.stock
+        try:
+            if not t_limit(stock, data):
+                return False
+            for i in [1, 2]:
+                if t_limit(stock, data, i):
+                    return False
+            for i in range(1, 11):
+                d = data[-i - 1]
+                if not (d.high - d.low) / d.low > 0.25:
+                    return False
+            return getMinute(stamp=data[-1].lastLimitTime) > '1030'
+        except:
+            ...
+
+    def rule68(self):
+        data = self.data
+        stock = self.stock
+        try:
+            if t_limit(stock, data, 2):
+                return False
+            for i in range(2):
+                if not model_1(stock, data, i):
+                    return False
+            return data[-1].turnover > data[-2].turnover * 2
+        except:
+            ...
+
+    def rule69(self):
+        data = self.data
+        stock = self.stock
+        if not t_limit(stock, data, 2):
+            return False
+        return data[-1].TP < 50 and day2elg(data) < 50 and day3elg(data) < 50
+
+    def rule70(self):
+        data = self.data
+        stock = self.stock
+        for i in range(3):
+            if model_1(stock, data, i):
+                return False
+            if getMinute(stamp=data[-i - 1].firstLimitTime) >= '0937':
+                return False
+        return True
+
+    def rule71(self):
+        data = self.data
+        stock = self.stock
+        return data[-1].TP < 35 and data[-1].turnover > 3 * sum([data[-i - 1].turnover for i in range(1, 6)]) / 5
+
+    def rule72(self):
+        data = self.data
+        stock = self.stock
+        if not t_limit(stock, data):
+            return False
+        if t_limit(stock, data, 1):
+            return False
+        return data[-1].limitOpenTime > 0
+
+    def rule73(self):
+        data = self.data
+        stock = self.stock
+        if not t_limit(stock, data):
+            return False
+        if t_limit(stock, data, 1):
+            return False
+        return data[-1].CF < 50 and data[-1].TF < 75
+
+    def rule74(self):
+        data = self.data
+        stock = self.stock
+        if not model_1(stock, data):
+            return False
+        return data[-1].TP < 90 and data[-1].close > data[-1].his_high / 3
+
+    def rule75(self):
+        data = self.data
+        stock = self.stock
+        if not t_limit(stock, data, 1):
+            return False
+        return day2elg(data) < 60 and day3elg(data) < 60

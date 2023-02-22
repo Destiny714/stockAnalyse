@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2023/1/22 21:50
 # @Author  : Destiny_
-# @File    : backtrace.py
+# @File    : backtrace_old.py
 # @Software: PyCharm
 
 import rules
@@ -17,10 +17,10 @@ warnings.filterwarnings('ignore')
 
 def N(stock, date):
     try:
-        data = queryData(stock, dateRange=3, aimDate=date)
+        data = queryData(stock, dateRange=10, aimDate=date)
         if len(data) < 3:
             return
-        res = rules.n_model_rule(stock, data)
+        res = rules.n_plus_model_rule(stock, data)
         if res == 0:
             return
         return {'code': stock, 'inCycle': res, 'date': date}
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     stocks = concurrent_util.initStock(needReload=False, extra=False)
     chosenStocks = [stock for stock in stocks if stock[:2] in ['00', '60']]
     singleton = db.Stock_Database()
-    dates = singleton.selectTradeDateRange(20220101, 20230116)
+    dates = singleton.selectTradeDateRange(20230101, 20230213)
     singleton.close()
     with open(f'{projectPath()}/strategy/model_N/n_backtrace_swing6.txt','w') as f:
         for _date in dates:

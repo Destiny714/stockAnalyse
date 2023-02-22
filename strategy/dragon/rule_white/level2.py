@@ -218,3 +218,18 @@ class level2(base_level):
                     return True
         except:
             pass
+
+    def rule22(self):
+        data = self.data
+        stock = self.stock
+        return data[-1].limitOpenTime < 2 and data[-1].TP > 65 and data[-1].TF > 10
+
+    def rule23(self):
+        data = self.data
+        stock = self.stock
+        return day2elg(data) > 60 and day3elg(data) > 60
+
+    def rule24(self):
+        data = self.data
+        stock = self.stock
+        return data[-1].TP > 95 and t_limit(stock, data, 1)

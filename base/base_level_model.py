@@ -26,6 +26,7 @@ class base_level(object):
         self.shot_rule: list = []
         self.fail_rule: list = []
         self.f_rule: bool = 'F' in self.level
+        self.virtual = g.get('virtual')
         self.errors = []
         if level not in Params.levelRuleDict.keys():
             Params.levelRuleDict[level] = [_ for _ in self.__class__.__dict__.keys() if 'rule' in _]

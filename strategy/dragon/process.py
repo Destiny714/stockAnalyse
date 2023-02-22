@@ -162,14 +162,17 @@ if __name__ == '__main__':
                         'day3elg': buy_elg_3,
                     }
                     level = 'F'
-                    if F.ruleF(scoreLevelData).filter():
-                        level = 'F'
-                    if B.ruleB(scoreLevelData).filter():
-                        level = 'B'
-                    if A.ruleA(scoreLevelData).filter():
-                        level = 'A'
-                    if S.ruleS(scoreLevelData).filter():
-                        level = 'S'
+                    if height == 0:
+                        level = 'O'
+                    else:
+                        if F.ruleF(scoreLevelData).filter():
+                            level = 'F'
+                        if B.ruleB(scoreLevelData).filter():
+                            level = 'B'
+                        if A.ruleA(scoreLevelData).filter():
+                            level = 'A'
+                        if S.ruleS(scoreLevelData).filter():
+                            level = 'S'
                     result = {
                         'code': stock,
                         'name': stockDetail.name,
