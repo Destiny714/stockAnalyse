@@ -10,10 +10,9 @@ from models.stock_detail_model import StockDetailModel
 
 
 class level6(base_level):
-    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel],
-                 limitData: dict[str, list[LimitDataModel]]):
+    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel]):
         self.level = self.__class__.__name__.replace('level', '')
-        super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
+        super().__init__(self.level, stockDetail, data, gemIndex, shIndex)
 
     def rule1(self):
         data = self.data

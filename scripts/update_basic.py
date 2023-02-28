@@ -5,7 +5,7 @@
 # @Software: PyCharm
 
 from api.tushare_api import Tushare
-from utils.concurrent_util import updateLimitDetailData,updateChipDetail
+from utils.concurrent_util import updateChipDetail
 
 Tushare.init()
 updateChipDetail(20230112)

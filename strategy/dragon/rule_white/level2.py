@@ -10,10 +10,9 @@ from models.stock_detail_model import StockDetailModel
 
 
 class level2(base_level):
-    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel],
-                 limitData: dict[str, list[LimitDataModel]]):
+    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel]):
         self.level = self.__class__.__name__.replace('level', '')
-        super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
+        super().__init__(self.level, stockDetail, data, gemIndex, shIndex)
 
     def rule1(self):
         data = self.data
@@ -45,7 +44,6 @@ class level2(base_level):
 
     def rule5(self):
         data = self.data
-        stock = self.stock
         try:
             for i in range(1, 4):
                 if not data[-i - 1].close > move_avg(data, 60, i):
@@ -75,7 +73,6 @@ class level2(base_level):
 
     def rule8(self):
         data = self.data
-        stock = self.stock
         try:
             for i in range(1, 11):
                 if i in range(1, 6):
@@ -221,12 +218,10 @@ class level2(base_level):
 
     def rule22(self):
         data = self.data
-        stock = self.stock
         return data[-1].limitOpenTime < 2 and data[-1].TP > 65 and data[-1].TF > 10
 
     def rule23(self):
         data = self.data
-        stock = self.stock
         return day2elg(data) > 60 and day3elg(data) > 60
 
     def rule24(self):

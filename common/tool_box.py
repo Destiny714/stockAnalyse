@@ -29,9 +29,7 @@ def timeCount(func: Callable):
 
 def skip(func: Callable):
     def wrapper(*args, **kwargs):
-        cls = args[0]
-        virtual = cls.virtual
-        res = func(*args, **kwargs) if virtual is None else None
+        res = func(*args, **kwargs)
         return res
 
     return wrapper

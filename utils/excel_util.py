@@ -15,18 +15,15 @@ from common.tool_box import errorHandler
 class ColumnModel(object):
     placeholder = 0
     columns = [
-        'code', 'name', 'industry',
-        'ptg_industry', 'level',
-        'AJ', 'CF', 'TF', 'CP', 'TP', 'limitOpenTime', 'height', 'white', 'w1', 'w2', 'black',
-        'b1', 'b2', 'score', 'day2elg', 'day3elg', 'S',
-        'open_price', 'date', 'details', 'T1S_detail', 'T1F_detail'
+        'code', 'name', 'level',
+        'AJ', 'CF', 'TF', 'CP', 'TP', 'limitOpenTime', 'height', 'white', 'black',
+        'score', 'day2elg', 'day3elg',
+        'open_price', 'date', 'details'
     ]
 
     translate = {
         'code': '代码',
         'name': '名称',
-        'industry': '行业',
-        'ptg_industry': '行业涨停比',
         'level': '评级',
         'AJ': '集中度',
         'CF': '主力净流入',
@@ -36,20 +33,11 @@ class ColumnModel(object):
         'limitOpenTime': '涨停打开次数',
         'height': '连板高度',
         'white': '白名单',
-        'w1': '加速白',
-        'w2': '减速白',
         'black': '黑名单',
-        'b1': '加速黑',
-        'b2': '减速黑',
         'score': '得分',
-        'T1S': '加速分',
-        'T1F': '减速分',
-        'S': '对比昨日',
         'open_price': '开盘涨幅',
         'date': '日期',
         'details': '今日明细',
-        'T1S_detail': '加速明细',
-        'T1F_detail': '减速明细',
         'day2elg': '2日特单净流入',
         'day3elg': '3日特单净流入',
     }

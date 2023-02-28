@@ -1,7 +1,7 @@
 # coding: utf-8
 
+from sqlalchemy import Column, Integer, JSON, VARCHAR, Enum
 from sqlalchemy.orm import declarative_base
-from sqlalchemy import BigInteger, Column, Float, Integer, JSON, VARCHAR, Enum
 
 Base = declarative_base()
 metadata = Base.metadata

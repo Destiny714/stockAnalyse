@@ -4,7 +4,6 @@
 # @File    : schemas.py
 # @Software: PyCharm
 
-from typing import Union
 from pydantic import BaseModel
 
 

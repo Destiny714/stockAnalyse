@@ -10,10 +10,9 @@ from models.stock_detail_model import StockDetailModel
 
 
 class level4(base_level):
-    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel],
-                 limitData: dict[str, list[LimitDataModel]]):
+    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel]):
         self.level = self.__class__.__name__.replace('level', '')
-        super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
+        super().__init__(self.level, stockDetail, data, gemIndex, shIndex)
 
     def rule1(self):
         data = self.data
@@ -278,23 +277,6 @@ class level4(base_level):
         except:
             return False
 
-    def rule17(self):
-        data = self.data
-        stock = self.stock
-        try:
-            if model_1(stock, data):
-                return False
-            for i in range(3):
-                if not t_limit(stock, data, i):
-                    return False
-            rank = RankLimitStock(self.limitData).by('limitTime-height', data[-1].date, eliminateModel1=True)
-            if 3 not in rank.keys():
-                return False
-            if rank[3][0] == stock:
-                return True
-        except:
-            ...
-
     def rule18(self):
         data = self.data
         stock = self.stock
@@ -535,19 +517,6 @@ class level4(base_level):
         except:
             pass
 
-    def rule32(self):
-        data = self.data
-        stock = self.stock
-        if not t_limit(stock, data):
-            return False
-        if model_1(stock, data):
-            return False
-        rankDict = RankLimitStock(self.limitData).by('limitTime-industry', data[-1].date, eliminateModel1=True)
-        if self.industry not in rankDict.keys():
-            return False
-        if stock in rankDict[self.industry][:2]:
-            return True
-
     def rule33(self):
         data = self.data
         stock = self.stock
@@ -591,19 +560,6 @@ class level4(base_level):
         except:
             pass
 
-    def rule35(self):
-        data = self.data
-        try:
-            if not t_limit(self.stock, self.data):
-                return False
-            d = data[-1]
-            if d.TF / weakenedIndex(self.shIndex) <= 50:
-                return False
-            rankList = RankLimitStock(self.limitData).by('weakenedTF-height', d.date)[limit_height(self.stock, data)]
-            return self.stock in rankList[:3]
-        except:
-            ...
-
     def rule36(self):
         data = self.data
         if data[-1].concentration >= 9:
@@ -643,21 +599,6 @@ class level4(base_level):
             return True
         except:
             pass
-
-    def rule40(self):
-        data = self.data
-        try:
-            if model_1(self.stock, data):
-                return False
-            if not t_limit(self.stock, data):
-                return False
-            d = data[-1]
-            if d.CP / weakenedIndex(self.shIndex) <= 40:
-                return False
-            rankList = RankLimitStock(self.limitData).by('weakenedHP-height', d.date)[limit_height(self.stock, data)]
-            return self.stock in rankList[:3]
-        except:
-            ...
 
     def rule41(self):
         data = self.data

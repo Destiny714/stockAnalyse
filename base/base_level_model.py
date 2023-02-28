@@ -7,26 +7,22 @@
 from prefs.params import *
 from utils.stockdata_util import *
 from models.stock_data_model import StockDataModel
-from models.limit_data_model import LimitDataModel
 from models.stock_detail_model import StockDetailModel
 
 
 class base_level(object):
     def __init__(self, level, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel],
-                 shIndex: list[StockDataModel],
-                 limitData: dict[str, list[LimitDataModel]]):
+                 shIndex: list[StockDataModel]):
         self.data: list[StockDataModel] = data
         self.level = level
         self.shIndex = shIndex
         self.gemIndex = gemIndex
-        self.limitData = limitData
         self.stock = stockDetail.symbol()
         self.industry = stockDetail.industry
         self.height: int = limit_height(stockDetail.symbol(), data)
         self.shot_rule: list = []
         self.fail_rule: list = []
         self.f_rule: bool = 'F' in self.level
-        self.virtual = g.get('virtual')
         self.errors = []
         if level not in Params.levelRuleDict.keys():
             Params.levelRuleDict[level] = [_ for _ in self.__class__.__dict__.keys() if 'rule' in _]

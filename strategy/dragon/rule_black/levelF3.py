@@ -4,7 +4,6 @@
 # @File    : levelF3.py
 # @Software: PyCharm
 
-from prefs.params import Params
 from common.tool_box import skip
 from utils.stockdata_util import *
 from base.base_level_model import base_level
@@ -13,10 +12,9 @@ from models.stock_detail_model import StockDetailModel
 
 class levelF3(base_level):
     def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel],
-                 shIndex: list[StockDataModel],
-                 limitData: dict[str, list[LimitDataModel]]):
+                 shIndex: list[StockDataModel]):
         self.level = self.__class__.__name__.replace('level', '')
-        super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
+        super().__init__(self.level, stockDetail, data, gemIndex, shIndex)
 
     def rule1(self):
         data = self.data
@@ -613,6 +611,10 @@ class levelF3(base_level):
             d = data[-1]
             if not d.CP / weakenedIndex(self.shIndex, weak_degree=5) < 55:
                 return False
+            if not getMinute(stamp=data[-1].lastLimitTime) > '0950':
+                return False
+            if not day2elg(data) < 60:
+                return False
             if t_limit(stock, data, 2):
                 return False
             for i in range(2):
@@ -800,26 +802,6 @@ class levelF3(base_level):
                         return True
         except:
             ...
-
-    def rule46(self):
-        data = self.data
-        stock = self.stock
-        if model_1(stock, data, 1):
-            return False
-        if (data[-1].TF > 50 and data[-1].TP > 55) is True:
-            return False
-        for i in range(2):
-            d = data[-i - 1]
-            if not t_limit(stock, data, i):
-                return False
-            if getMinute(stamp=d.firstLimitTime) >= '0938':
-                return False
-            _industryLimitDict = Params.dailyIndustryLimitDict[d.date]
-            if self.industry not in _industryLimitDict.keys():
-                return False
-            if len(_industryLimitDict[self.industry]) <= 3:
-                return False
-        return True
 
     def rule47(self):
         data = self.data

@@ -12,10 +12,9 @@ from models.stock_detail_model import StockDetailModel
 
 class levelF2(base_level):
     def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel],
-                 shIndex: list[StockDataModel],
-                 limitData: dict[str, list[LimitDataModel]]):
+                 shIndex: list[StockDataModel]):
         self.level = self.__class__.__name__.replace('level', '')
-        super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
+        super().__init__(self.level, stockDetail, data, gemIndex, shIndex)
 
     def rule1(self):
         data = self.data
@@ -395,30 +394,6 @@ class levelF2(base_level):
         if (data[-1].concentration - data[-2].concentration) / data[-2].concentration > 0.2:
             return data[-1].CP < 70
 
-    def rule24(self):
-        data = self.data
-        stock = self.stock
-        try:
-            rank = RankLimitStock(self.limitData).by('open-industry', data[-1].date)
-            if stock in rank[self.industry][:2]:
-                return False
-            for i in range(3):
-                if t_limit(stock, data, i + 1):
-                    return False
-            if not t_limit(stock, data):
-                return False
-            if model_1(stock, data):
-                return False
-            d = data[-1]
-            if d.buy_elg_vol / d.volume >= 0.35:
-                return False
-            matchTime = date_util.joinTimeToStamp(data[-1].date, '09:40:00')
-            if data[-1].firstLimitTime < matchTime:
-                if data[-1].timeVol(timeStamp=data[-1].firstLimitTime) < data[-1].volume * 0.1:
-                    return True
-        except:
-            pass
-
     def rule25(self):
         data = self.data
         stock = self.stock
@@ -714,17 +689,6 @@ class levelF2(base_level):
                 count += 1
         return count >= 4
 
-    def rule47(self):
-        data = self.data
-        stock = self.stock
-        try:
-            if t_limit(stock, data):
-                return False
-            limitList = RankLimitStock(self.limitData).by('limitTime-industry', self.data[-1].date)[self.industry]
-            return len(limitList) >= 3 and t_close_pct(data) < 0.04
-        except:
-            ...
-
     def rule48(self):
         data = self.data
         stock = self.stock
@@ -948,7 +912,6 @@ class levelF2(base_level):
     @skip
     def rule64(self):
         data = self.data
-        stock = self.stock
         if getMinute(stamp=data[-2].firstLimitTime) <= '0940':
             return False
         if data[-2].CP / weakenedIndex(self.shIndex, weak_degree=5) >= 50:
@@ -1027,8 +990,8 @@ class levelF2(base_level):
 
     def rule71(self):
         data = self.data
-        stock = self.stock
-        return data[-1].TP < 35 and data[-1].turnover > 3 * sum([data[-i - 1].turnover for i in range(1, 6)]) / 5
+        return data[-1].TP < 35 and data[-1].turnover > 3 * sum([data[-i - 1].turnover for i in range(1, 6)]) / 5 and data[-1].turnover > 1.5 * max(
+            [data[-i - 1].turnover for i in range(1, 21)])
 
     def rule72(self):
         data = self.data
@@ -1043,8 +1006,6 @@ class levelF2(base_level):
         data = self.data
         stock = self.stock
         if not t_limit(stock, data):
-            return False
-        if t_limit(stock, data, 1):
             return False
         return data[-1].CF < 50 and data[-1].TF < 75
 
@@ -1061,3 +1022,17 @@ class levelF2(base_level):
         if not t_limit(stock, data, 1):
             return False
         return day2elg(data) < 60 and day3elg(data) < 60
+
+    def rule76(self):
+        data = self.data
+        stock = self.stock
+        try:
+            if not t_limit(stock, data):
+                return False
+            if not t_limit(stock, data, 2):
+                return False
+            if t_limit(stock, data, 1):
+                return False
+            return data[-1].close < max([data[-i - 1].high for i in range(1, 21)])
+        except:
+            ...

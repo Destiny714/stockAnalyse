@@ -7,9 +7,12 @@
 import json
 import requests
 from enum import Enum
+from utils.log_util import log
 from utils.excel_util import readExcel_AS
 from utils.oss_util import oss_push_object
 from utils.file_util import config_yaml, projectPath
+
+logCli = log()
 
 
 def bark_pusher(title, content, _url=None):
@@ -166,7 +169,7 @@ class BasePush(object):
     def request(self, template: BasePushTemplate):
         body = json.dumps(template.toJson())
         res = requests.post(url=self.webhook, headers=self.headers, data=body)
-        return res.status_code
+        return res
 
 
 class DingtalkPush(BasePush):
@@ -187,11 +190,16 @@ class DingtalkPush(BasePush):
         return url
 
     def pushN(self, date: str, stock_details: list[dict], model_name='N'):
+        logCli.info('push start')
         template = DingtalkTemplates.BarelyMarkDown(
             title=f'{date} {model_name} 模型',
             markdown=N_ModelMarkDownTemplate(stock_details)
         )
-        self.request(template)
+        res = self.request(template)
+        if res.status_code == 200:
+            logCli.info('push done')
+        else:
+            logCli.info(res.json())
 
 
 class WechatPush(BasePush):

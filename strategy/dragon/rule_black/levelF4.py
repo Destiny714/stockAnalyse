@@ -11,10 +11,9 @@ from models.stock_detail_model import StockDetailModel
 
 
 class levelF4(base_level):
-    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel],
-                 limitData: dict[str, list[LimitDataModel]]):
+    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel]):
         self.level = self.__class__.__name__.replace('level', '')
-        super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
+        super().__init__(self.level, stockDetail, data, gemIndex, shIndex)
 
     def rule1(self):
         data = self.data
@@ -429,7 +428,7 @@ class levelF4(base_level):
         range10 = data[-12:-2]
         if data[-2].turnover > 3 * (sum([_.turnover for _ in range10]) / 10):
             if t_open_pct(data) < 0.03:
-                return getMinute(stamp=data[-1].lastLimitTime > '0950')
+                return True
 
     def rule27(self):
         data = self.data
@@ -922,7 +921,7 @@ class levelF4(base_level):
             return False
         if not t_limit(stock, data):
             return False
-        if data[-1].turnover <= 3 * sum([_.turnover for _ in data[-11:-1]]) / 10:
+        if data[-1].turnover <= 1.5 * max([_.turnover for _ in data[-21:-1]]):
             return False
         if data[-1].turnover <= 2.5 * sum([_.turnover for _ in data[-6:-1]]) / 5:
             return False
@@ -1051,6 +1050,8 @@ class levelF4(base_level):
             if model_1(stock, data):
                 return False
             if t_limit(stock, data, 1):
+                return False
+            if not data[-1].close > data[-1].his_high / 3:
                 return False
             if data[-1].TP >= 55:
                 return False
@@ -1217,7 +1218,9 @@ class levelF4(base_level):
         try:
             if t_limit(stock, data, 1):
                 return False
-            if data[-1].TP >= 75:
+            if data[-1].TP >= 50:
+                return False
+            if not data[-1].TF < 90:
                 return False
             if not getMinute(stamp=data[-1].firstLimitTime) < '0945':
                 return False

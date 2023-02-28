@@ -5,16 +5,14 @@
 # @Software: PyCharm
 from utils.stockdata_util import model_1
 from base.base_level_model import base_level
-from models.limit_data_model import LimitDataModel
 from models.stock_data_model import StockDataModel
 from models.stock_detail_model import StockDetailModel
 
 
 class levelA6(base_level):
-    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel],
-                 limitData: dict[str, list[LimitDataModel]]):
+    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel]):
         self.level = self.__class__.__name__.replace('level', '')
-        super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
+        super().__init__(self.level, stockDetail, data, gemIndex, shIndex)
 
     def rule1(self):
         data = self.data

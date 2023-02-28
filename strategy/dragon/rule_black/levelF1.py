@@ -11,10 +11,9 @@ from models.stock_detail_model import StockDetailModel
 
 
 class levelF1(base_level):
-    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel],
-                 limitData: dict[str, list[LimitDataModel]]):
+    def __init__(self, stockDetail: StockDetailModel, data: list[StockDataModel], gemIndex: list[StockDataModel], shIndex: list[StockDataModel]):
         self.level = self.__class__.__name__.replace('level', '')
-        super().__init__(self.level, stockDetail, data, gemIndex, shIndex, limitData)
+        super().__init__(self.level, stockDetail, data, gemIndex, shIndex)
 
     def rule1(self):
         data = self.data
@@ -415,28 +414,6 @@ class levelF1(base_level):
         if (data[-3].close - data[-6].close) / data[-6].close > 0.1:
             return True
 
-    def rule28(self):
-        data = self.data
-        stock = self.stock
-        try:
-            if not t_limit(stock, data, 1):
-                return False
-            flag = False
-            for i in range(20):
-                if t_limit(self.stock, self.data, i):
-                    if limit_height(self.stock, self.data, i) <= 1:
-                        continue
-                    if t_open_pct(self.data, i) > limit(self.stock) / 100:
-                        return False
-                    flag = True
-                    date = self.data[-i - 1].date
-                    rank: list = RankLimitStock(self.limitData).by('limitTime-industry+height>1', str(date), eliminateModel1=True)[self.industry]
-                    if self.stock in rank[:2]:
-                        return False
-            return flag
-        except:
-            pass
-
     def rule29(self):
         data = self.data
         stock = self.stock
@@ -519,46 +496,6 @@ class levelF1(base_level):
                 return False
         return True
 
-    def rule34(self):
-        data = self.data
-        stock = self.stock
-        try:
-            if data[-1].CP / weakenedIndex(self.shIndex, weak_degree=5) >= 65:
-                return False
-            limitDates = []
-            for i in range(90):
-                if t_limit(stock, data, i):
-                    if t_open_pct(data, i) > limit(stock) / 100:
-                        continue
-                    limitDates.append(data[-i - 1].date)
-                    if len(limitDates) >= 2:
-                        break
-            if len(limitDates) < 2:
-                return False
-            for date in limitDates:
-                rank = RankLimitStock(self.limitData).by('limitTime-industry', str(date), eliminateModel1=True)[self.industry]
-                if stock in rank[:3]:
-                    return False
-            return True
-        except:
-            pass
-
-    def rule35(self):
-        data = self.data
-        stock = self.stock
-        try:
-            if t_open_pct(data) > limit(stock) / 100:
-                return False
-            for i in range(3):
-                if not t_limit(stock, data, i):
-                    return False
-            rank: list = RankLimitStock(self.limitData).by('open-industry', self.data[-1].date)[self.industry]
-            if self.stock in rank[:2]:
-                return False
-            return True
-        except:
-            pass
-
     def rule36(self):
         data = self.data
         stock = self.stock
@@ -571,44 +508,6 @@ class levelF1(base_level):
         if data[-1].turnover > max([data[-i - 1].turnover for i in range(1, 5)]):
             return data[-1].TF < -10
 
-    def rule37(self):
-        data = self.data
-        stock = self.stock
-        try:
-            if not t_limit(stock, data, 2):
-                return False
-            for i in range(2):
-                if t_open_pct(data, i) > limit(stock) / 100:
-                    return False
-                if not t_limit(stock, data, i):
-                    return False
-                rank: list = RankLimitStock(self.limitData).by('open-industry', data[-i - 1].date)[self.industry]
-                if stock in rank[:2]:
-                    return False
-            return True
-        except:
-            pass
-
-    def rule38(self):
-        data = self.data
-        stock = self.stock
-        try:
-            if model_1(stock, data):
-                return False
-            if not t_limit(stock, data, 2):
-                return False
-            for i in range(2):
-                if t_open_pct(data, i) > limit(stock) / 100:
-                    return False
-                if not t_limit(stock, data, i):
-                    return False
-                rank: list = RankLimitStock(self.limitData).by('open-height', data[-i - 1].date, eliminateModel1=True)[self.height]
-                if stock in rank[:2]:
-                    return False
-            return True
-        except:
-            pass
-
     def rule39(self):
         data = self.data
         stock = self.stock
@@ -618,7 +517,7 @@ class levelF1(base_level):
             for i in range(1, 91):
                 if t_limit(stock, data, i):
                     return False
-                if i in range(3, 43):
+                if i in range(3, 63):
                     if t_close_pct(data, i) > 0.04:
                         return False
             return True
@@ -637,7 +536,7 @@ class levelF1(base_level):
     def rule41(self):
         data = self.data
         stock = self.stock
-        if data[-1].CP / weakenedIndex(self.shIndex, weak_degree=5) >= 55:
+        if data[-1].CP / weakenedIndex(self.shIndex, weak_degree=5) >= 60:
             return False
         if not t_limit(stock, data):
             return False
@@ -758,7 +657,9 @@ class levelF1(base_level):
         data = self.data
         stock = self.stock
         try:
-            if data[-1].CP >= 90:
+            if data[-1].CP >= 70:
+                return False
+            if data[-1].TF >= 90:
                 return False
             if t_limit(stock, data, 1):
                 return False
@@ -826,7 +727,6 @@ class levelF1(base_level):
 
     def rule57(self):
         data = self.data
-        stock = self.stock
         if not (0.03 < t_open_pct(data) < 0.09):
             return False
         try:
@@ -878,12 +778,9 @@ class levelF1(base_level):
 
     def rule60(self):
         data = self.data
-        stock = self.stock
         return data[-1].limitOpenTime > 0 and data[-1].CF < 25 and data[-1].CP < 65 and getMinute(stamp=data[-1].lastLimitTime) > '1100'
 
     def rule61(self):
-        data = self.data
-        stock = self.stock
         ...
 
     def rule62(self):
@@ -936,11 +833,12 @@ class levelF1(base_level):
 
     def rule65(self):
         data = self.data
-        stock = self.stock
         try:
             if not data[-1].CP < 65:
                 return False
             if not data[-1].TF < 85:
+                return False
+            if not day2elg(data) < 60:
                 return False
             for i in range(1, 121):
                 end = data[-i - 1].close
@@ -1014,7 +912,6 @@ class levelF1(base_level):
 
     def rule71(self):
         data = self.data
-        stock = self.stock
         return data[-1].limitOpenTime > 5 and data[-1].close < max([data[-i - 1].high for i in range(1, 6)]) * 1.03
 
     def rule72(self):
@@ -1058,7 +955,6 @@ class levelF1(base_level):
 
     def rule74(self):
         data = self.data
-        stock = self.stock
         try:
             if not data[-1].turnover > sum([data[-i - 1].turnover for i in range(1, 6)]):
                 return False
@@ -1073,7 +969,6 @@ class levelF1(base_level):
 
     def rule75(self):
         data = self.data
-        stock = self.stock
         try:
             if sum([data[-i - 1].turnover for i in range(1, 21)]) / 20 >= 0.017:
                 return False
@@ -1089,7 +984,6 @@ class levelF1(base_level):
 
     def rule76(self):
         data = self.data
-        stock = self.stock
         try:
             if data[-1].turnover > 8 * sum([data[-i - 1].turnover for i in range(1, 41)]) / 40:
                 return data[-1].amount < 3e5
@@ -1098,7 +992,6 @@ class levelF1(base_level):
 
     def rule77(self):
         data = self.data
-        stock = self.stock
         try:
             if data[-1].turnover > 4 * sum([data[-i - 1].turnover for i in range(1, 21)]) / 20:
                 for i in range(1, 51):

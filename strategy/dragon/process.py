@@ -10,14 +10,12 @@
 
 import warnings
 from prefs.params import *
-from api import tushare_api
 from common import tool_box
-from rule_level import A, B, S, F
+from level_rule import LevelRule
 from sequence.finish import Finish
 from utils.stockdata_util import *
 from sequence.prepare import Prepare
 from utils.excel_util import ColumnModel
-from utils.concurrent_util import initStock
 from models.stock_detail_model import StockDetailModel
 from utils import concurrent_util, excel_util, log_util
 from rule_black import levelF1, levelF2, levelF3, levelF4, levelF5
@@ -28,202 +26,167 @@ if __name__ == '__main__':
     log = log_util.log()
     sqlClient = db.Stock_Database()  # 数据库查询client
     warnings.filterwarnings('ignore')
-    stocks = initStock(False, False)  # 经过筛选的所有股票
+    # stocks = initStock(False, False)  # 经过筛选的所有股票
+
     tradeDays = sqlClient.selectTradeDate()  # 所有交易日
     stockDetails = sqlClient.selectAllStockDetail()  # 所有股票的detail 从stockList表查到
-    aimDates = sqlClient.selectTradeDateByDuration(lastTradeDay(), 1)  # 要计算的日期范围
-    Prepare(stocks, aimDates).do()
+    lead = 1
+    _aimDate = lastTradeDay()
+    aimDates = sqlClient.selectTradeDateByDuration(_aimDate, lead)  # 要计算的日期范围
+    limitDatas = concurrent_util.getStockLimitDataByDate(_aimDate, lead)
+    Prepare(None, aimDates).do()
 
 
     def process(aimDate):
+        limitStocks = [_.stock for _ in limitDatas[aimDate]]
         stockDetailDict = concurrent_util.createStockDetailMap(stockDetails)  # 利用stockDetails生成stock为key的dict
-        _limitData = Params.dailyLimitData[aimDate]  # 从stockLimit表读取当日所有涨停票详情 返回 dict[str, list[limitDataModel]]
-        limitData_virtual_s = virtualLimitData(_limitData, 's')
-        limitData_virtual_f = virtualLimitData(_limitData, 'f')
-        limitData_virtualDict = {  # 生成下一天虚拟数据的涨停票详情
-            's': limitData_virtual_s,
-            'f': limitData_virtual_f,
-        }
-        industryLimitDict = Params.dailyIndustryLimitDict[aimDate]  # 通过行业分类生成行业涨停票列表 返回dict[行业，股票列表]
-        limitUpCount = tushare_api.Tushare().dailyLimitCount(date=aimDate)
-        errors = []
-        columnModels = []
-        virtualDict = {f'{stock}': {} for stock in stocks}
-        shIndexData = queryIndexData('ShIndex', aimDate=aimDate)
-        gemIndexData = queryIndexData('GemIndex', aimDate=aimDate)
-        shIndexData_virtual = virtualIndexData(shIndexData)
-        gemIndexData_virtual = virtualIndexData(gemIndexData)
-        excelDict: dict = excel_util.readScoreFromExcel(db.Stock_Database().selectPrevTradeDate(aimDate))
+        limitColumnModels = []
+        unLimitColumnData = []
+        unLimitColumnModels = []
+        shIndex = queryIndexData('ShIndex', aimDate=aimDate)
+        gemIndex = queryIndexData('GemIndex', aimDate=aimDate)
 
-        def processOneStock(argMap: dict):
-            stock = argMap['stock']
-            virtual = argMap['virtual']
-            g.save(virtual, 'virtual')
+        def processModel(stock):
             stockDetail = StockDetailModel(stockDetailDict[stock])
-            industryLimitCount = 0 if stockDetail.industry not in industryLimitDict.keys() else len(industryLimitDict[stockDetail.industry])
-            if virtual is not None:
-                shIndex = shIndexData_virtual
-                gemIndex = gemIndexData_virtual
-                limitData = limitData_virtualDict[virtual]
-            else:
-                shIndex = shIndexData
-                gemIndex = gemIndexData
-                limitData = _limitData
+            score = 0
+            details = {}
+            white_sum = 0
+            black_sum = 0
+            data = queryData(stock, aimDate=aimDate)
+            lA1 = levelA1.levelA1(stockDetail, data, gemIndex, shIndex).filter()
+            lA2 = levelA2.levelA2(stockDetail, data, gemIndex, shIndex).filter()
+            lA3 = levelA3.levelA3(stockDetail, data, gemIndex, shIndex).filter()
+            lA4 = levelA4.levelA4(stockDetail, data, gemIndex, shIndex).filter()
+            lA5 = levelA5.levelA5(stockDetail, data, gemIndex, shIndex).filter()
+            lA6 = levelA6.levelA6(stockDetail, data, gemIndex, shIndex).filter()
+            lF1 = levelF1.levelF1(stockDetail, data, gemIndex, shIndex).filter()
+            lF2 = levelF2.levelF2(stockDetail, data, gemIndex, shIndex).filter()
+            lF3 = levelF3.levelF3(stockDetail, data, gemIndex, shIndex).filter()
+            lF4 = levelF4.levelF4(stockDetail, data, gemIndex, shIndex).filter()
+            lF5 = levelF5.levelF5(stockDetail, data, gemIndex, shIndex).filter()
+            l1 = level1.level1(stockDetail, data, gemIndex, shIndex).filter()
+            l2 = level2.level2(stockDetail, data, gemIndex, shIndex).filter()
+            l3 = level3.level3(stockDetail, data, gemIndex, shIndex).filter()
+            l4 = level4.level4(stockDetail, data, gemIndex, shIndex).filter()
+            l5 = level5.level5(stockDetail, data, gemIndex, shIndex).filter()
+            l6 = level6.level6(stockDetail, data, gemIndex, shIndex).filter()
+            for white in [lA1, lA2, lA3, lA4, lA5, lA6]:
+                white_sum += len(white['detail'])
+                if white['result']:
+                    details[white['level']] = white['detail']
+            for black in [lF1, lF2, lF3, lF4, lF5]:
+                black_sum += len(black['detail'])
+                if black['result'] is False:
+                    details[black['level']] = black['detail']
+            for white in [l1, l2, l3, l4, l5, l6]:
+                white_sum += len(white['detail'])
+                if white['result']:
+                    details[white['level']] = white['detail']
+            score += len(l1['detail']) * 1
+            score += len(l2['detail']) * 1
+            score += len(l3['detail']) * 2
+            score += len(l4['detail']) * 3
+            score += len(l5['detail']) * 5
+            score += len(l6['detail']) * 7
+            score += len(lA1['detail']) * 4
+            score += len(lA2['detail']) * 3
+            score += len(lA3['detail']) * 3
+            score += len(lA4['detail']) * 2
+            score += len(lA5['detail']) * 2
+            score += len(lA6['detail']) * 2
+            score -= len(lF1['detail']) * 5
+            score -= len(lF2['detail']) * 5
+            score -= len(lF3['detail']) * 5
+            score -= len(lF4['detail']) * 5
+            score -= len(lF5['detail']) * 7
+            return {
+                'score': score,
+                'black': black_sum,
+                'white': white_sum,
+                'details': details,
+                'stockDetail': stockDetail,
+                'data': data,
+            }
+
+        def processModelResult(stock):
             try:
-                data = queryData(stock, aimDate=aimDate, virtual=virtual)
+                modelResult = processModel(stock)
+                data = modelResult['data']
+                score = modelResult['score']
+                black_sum = modelResult['black']
+                white_sum = modelResult['white']
+                details = modelResult['details']
+                stockDetail = modelResult['stockDetail']
                 height = limit_height(stock, data)
+                isLimit = t_limit(stock, data)
                 t0Day = data[-1]
-                details = {}
-                score = 0
-                white_sum = 0
-                black_sum = 0
-                lA1 = levelA1.levelA1(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                lA2 = levelA2.levelA2(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                lA3 = levelA3.levelA3(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                lA4 = levelA4.levelA4(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                lA5 = levelA5.levelA5(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                lA6 = levelA6.levelA6(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                lF1 = levelF1.levelF1(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                lF2 = levelF2.levelF2(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                lF3 = levelF3.levelF3(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                lF4 = levelF4.levelF4(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                lF5 = levelF5.levelF5(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                l1 = level1.level1(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                l2 = level2.level2(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                l3 = level3.level3(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                l4 = level4.level4(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                l5 = level5.level5(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                l6 = level6.level6(stockDetail, data, gemIndex, shIndex, limitData).filter()
-                for white in [lA1, lA2, lA3, lA4, lA5, lA6]:
-                    white_sum += len(white['detail'])
-                    if white['result']:
-                        details[white['level']] = white['detail']
-                for black in [lF1, lF2, lF3, lF4, lF5]:
-                    black_sum += len(black['detail'])
-                    if black['result'] is False:
-                        details[black['level']] = black['detail']
-                for white in [l1, l2, l3, l4, l5, l6]:
-                    white_sum += len(white['detail'])
-                    if white['result']:
-                        details[white['level']] = white['detail']
-                score += len(l1['detail']) * 1
-                score += len(l2['detail']) * 1
-                score += len(l3['detail']) * 2
-                score += len(l4['detail']) * 3
-                score += len(l5['detail']) * 5
-                score += len(l6['detail']) * 7
-                score += len(lA1['detail']) * 4
-                score += len(lA2['detail']) * 3
-                score += len(lA3['detail']) * 3
-                score += len(lA4['detail']) * 2
-                score += len(lA5['detail']) * 2
-                score += len(lA6['detail']) * 2
-                score -= len(lF1['detail']) * 5
-                score -= len(lF2['detail']) * 5
-                score -= len(lF3['detail']) * 5
-                score -= len(lF4['detail']) * 5
-                score -= len(lF5['detail']) * 7
-                if virtual is None:
-                    T1S = virtualDict[stock]['s']
-                    T1F = virtualDict[stock]['f']
-                    _S = int(score - excelDict[stock]['score'] if excelDict != {} else -8888)
-                    AJ = round(data[-1].concentration, 1)
-                    CF = t0Day.CF
-                    TF = t0Day.TF
-                    TP = t0Day.TP
-                    CP = t0Day.CP
-                    limitOpenTime = t0Day.limitOpenTime
-                    b1 = virtualDict[stock]['b1']
-                    b2 = virtualDict[stock]['b2']
-                    w1 = virtualDict[stock]['w1']
-                    w2 = virtualDict[stock]['w2']
-                    buy_elg_2 = day2elg(data)
-                    buy_elg_3 = day3elg(data)
-                    scoreLevelData = {
-                        'b1': b1,
-                        'b2': b2,
-                        'w1': w1,
-                        'w2': w2,
-                        'score': score,
-                        'height': height,
-                        'T1S': T1S,
-                        'T1F': T1F,
-                        'black': black_sum,
-                        'white': white_sum,
-                        'S': _S,
-                        'data': data,
-                        'AJ': AJ,
-                        'CF': CF,
-                        'TF': TF,
-                        'TP': TP,
-                        'stock': stock,
-                        'details': details,
-                        'day2elg': buy_elg_2,
-                        'day3elg': buy_elg_3,
-                    }
-                    level = 'F'
-                    if height == 0:
-                        level = 'O'
-                    else:
-                        if F.ruleF(scoreLevelData).filter():
-                            level = 'F'
-                        if B.ruleB(scoreLevelData).filter():
-                            level = 'B'
-                        if A.ruleA(scoreLevelData).filter():
-                            level = 'A'
-                        if S.ruleS(scoreLevelData).filter():
-                            level = 'S'
-                    result = {
-                        'code': stock,
-                        'name': stockDetail.name,
-                        'industry': stockDetail.industry,
-                        'ptg_industry': f'{industryLimitCount}/{limitUpCount}',
-                        'AJ': AJ,
-                        'CF': CF,
-                        'TF': TF,
-                        'TP': TP,
-                        'CP': CP,
-                        'limitOpenTime': limitOpenTime,
-                        'level': level,
-                        'height': height,
-                        'white': white_sum,
-                        'w1': w1,
-                        'w2': w2,
-                        'black': black_sum,
-                        'b1': b1,
-                        'b2': b2,
-                        'score': score,
-                        'T1S': T1S,
-                        'T1F': T1F,
-                        'S': _S,
-                        'open_price': f'{round(t_open_pct(data) * 100, 2)}%',
-                        'date': aimDate,
-                        'details': str(details),
-                        'T1S_detail': str(virtualDict[stock]['s_detail']),
-                        'T1F_detail': str(virtualDict[stock]['f_detail']),
-                        'day2elg': buy_elg_2,
-                        'day3elg': buy_elg_3,
-                    }
-                    log.info(f'{aimDate}-{stock} - {"NOW" if not virtual else virtual}')
-                    columnModels.append(ColumnModel(result))
+                AJ = t0Day.concentration
+                CF = t0Day.CF
+                TF = t0Day.TF
+                TP = t0Day.TP
+                CP = t0Day.CP
+                limitOpenTime = t0Day.limitOpenTime
+                buy_elg_2 = day2elg(data)
+                buy_elg_3 = day3elg(data)
+                scoreLevelData = {
+                    'score': score,
+                    'height': height,
+                    'black': black_sum,
+                    'white': white_sum,
+                    'data': data,
+                    'AJ': AJ,
+                    'CF': CF,
+                    'TF': TF,
+                    'TP': TP,
+                    'stock': stock,
+                    'details': details,
+                    'day2elg': buy_elg_2,
+                    'day3elg': buy_elg_3,
+                    'is1': model_1(stock, data)
+                }
+                levelModel = LevelRule(scoreLevelData)
+                levelModel.filter()
+                if isLimit:
+                    level = levelModel.limitRank()
                 else:
-                    blackMatchDict = {'s': 'b1', 'f': 'b2'}
-                    whiteMatchDict = {'s': 'w1', 'f': 'w2'}
-                    virtualDict[stock][virtual] = score
-                    virtualDict[stock][blackMatchDict[virtual]] = black_sum
-                    virtualDict[stock][whiteMatchDict[virtual]] = white_sum
-                    virtualDict[stock][f'{virtual}_detail'] = details
-                    log.info(f'{aimDate} - {stock} - T1{str(virtual).upper()}')
+                    level = 'F'
+                result = {
+                    'code': stock,
+                    'name': stockDetail.name,
+                    'industry': stockDetail.industry,
+                    'AJ': AJ,
+                    'CF': CF,
+                    'TF': TF,
+                    'TP': TP,
+                    'CP': CP,
+                    'limitOpenTime': limitOpenTime,
+                    'level': level,
+                    'height': height,
+                    'white': white_sum,
+                    'black': black_sum,
+                    'score': score,
+                    'open_price': f'{round(t_open_pct(data) * 100, 2)}%',
+                    'date': aimDate,
+                    'details': str(details),
+                    'day2elg': buy_elg_2,
+                    'day3elg': buy_elg_3,
+                }
+                log.info(f'{aimDate}-{stock} - NOW')
+                if isLimit:
+                    limitColumnModels.append(ColumnModel(result))
+                else:
+                    unLimitColumnData.append(result)
             except (IndexError, ValueError, KeyError, TypeError) as er:
-                errors.append([stock, er])
-                log.warning(
-                    f'{aimDate} - {stock} - {"NOW" if not virtual else "".join(["T1", str(virtual).upper()])} - {er} - {tool_box.errorHandler(er)}')
+                log.warning(f'{aimDate} - {stock} - NOW - {er} - {tool_box.errorHandler(er)}')
 
-        tool_box.thread_pool_executor(processOneStock, [{'stock': stock, 'virtual': 's'} for stock in stocks], 10)
-        tool_box.thread_pool_executor(processOneStock, [{'stock': stock, 'virtual': 'f'} for stock in stocks], 10)
-        tool_box.thread_pool_executor(processOneStock, [{'stock': stock, 'virtual': None} for stock in stocks], 10)
-
+        tool_box.thread_pool_executor(processModelResult, limitStocks, 10)
         log.info('模型运行完毕')
+        unLimitColumnData.sort(key=lambda d: d['score'], reverse=True)
+        for unLimitData in unLimitColumnData[:3]:
+            unLimitData['level'] = 'A'
+        for unLimitData in unLimitColumnData[3:10]:
+            unLimitData['level'] = 'B'
+        unLimitColumnModels = [ColumnModel(_) for _ in unLimitColumnData]
 
         def rankExcelData(d: ColumnModel):
             d = d.dict()
@@ -232,30 +195,15 @@ if __name__ == '__main__':
             _score = d['score']
             return _height * 1000000 + _score * 1000 + _white * 1
 
-        columnModels.sort(key=rankExcelData, reverse=True)
-        errStocks = list(set([_[0] for _ in errors]))
-        log.error(f'共{len(errStocks)}个出错股票')
-        for errStock in errStocks:
-            try:
-                errStockDetail = db.Stock_Database().selectStockDetail(errStock)
-                _stockName = errStockDetail[2]
-                res = {'code': errStock, 'name': _stockName, 'level': 'N/A'}
-                columnModels.append(ColumnModel(res))
-            except Exception as e:
-                log.error(f'{errStock}错误处理时出错')
-                log.error_quick(e)
+        limitColumnModels.sort(key=rankExcelData, reverse=True)
+        columnModels = limitColumnModels + unLimitColumnModels
         try:
             excel_util.write(aimDate, columnModels)
         except Exception as e:
             log.error('模型数据写入excel出错')
             log.error_quick(e)
-        try:
-            concurrent_util.updateRankDetail(aimDate)
-        except Exception as e:
-            log.error('模型数据写入数据库出错')
-            log.error_quick(e)
 
 
     for date in aimDates:
         process(date)
-        Finish(date).all()
+        # Finish(date).all()

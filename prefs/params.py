@@ -24,19 +24,19 @@ class RunMode(object):
 runMode:int
 
 
-class g:
-    """
-    global variables
-    """
-    g_dict = {}
-
-    @classmethod
-    def save(cls, obj, key: str):
-        cls.g_dict[key] = obj
-
-    @classmethod
-    def get(cls, key: str):
-        try:
-            return cls.g_dict[key]
-        except:
-            return None
+# class g:
+#     """
+#     global variables
+#     """
+#     g_dict = {}
+#
+#     @classmethod
+#     def save(cls, obj, key: str):
+#         cls.g_dict[key] = obj
+#
+#     @classmethod
+#     def get(cls, key: str):
+#         try:
+#             return cls.g_dict[key]
+#         except:
+#             return None
