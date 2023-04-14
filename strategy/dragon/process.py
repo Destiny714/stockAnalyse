@@ -13,6 +13,7 @@ from prefs.params import *
 from common import tool_box
 from level_rule import LevelRule
 from sequence.finish import Finish
+from utils.concurrent_util import initStock
 from utils.stockdata_util import *
 from sequence.prepare import Prepare
 from utils.excel_util import ColumnModel
@@ -26,7 +27,7 @@ if __name__ == '__main__':
     log = log_util.log()
     sqlClient = db.Stock_Database()  # 数据库查询client
     warnings.filterwarnings('ignore')
-    # stocks = initStock(False, False)  # 经过筛选的所有股票
+    stocks = initStock(False, False)  # 经过筛选的所有股票
 
     tradeDays = sqlClient.selectTradeDate()  # 所有交易日
     stockDetails = sqlClient.selectAllStockDetail()  # 所有股票的detail 从stockList表查到
@@ -38,11 +39,8 @@ if __name__ == '__main__':
 
 
     def process(aimDate):
-        limitStocks = [_.stock for _ in limitDatas[aimDate]]
         stockDetailDict = concurrent_util.createStockDetailMap(stockDetails)  # 利用stockDetails生成stock为key的dict
-        limitColumnModels = []
-        unLimitColumnData = []
-        unLimitColumnModels = []
+        limitColumnModels: list[ColumnModel] = []
         shIndex = queryIndexData('ShIndex', aimDate=aimDate)
         gemIndex = queryIndexData('GemIndex', aimDate=aimDate)
 
@@ -53,6 +51,15 @@ if __name__ == '__main__':
             white_sum = 0
             black_sum = 0
             data = queryData(stock, aimDate=aimDate)
+            if not t_limit(stock, data):
+                return {
+                    'score': score,
+                    'black': black_sum,
+                    'white': white_sum,
+                    'details': details,
+                    'stockDetail': stockDetail,
+                    'data': data,
+                }
             lA1 = levelA1.levelA1(stockDetail, data, gemIndex, shIndex).filter()
             lA2 = levelA2.levelA2(stockDetail, data, gemIndex, shIndex).filter()
             lA3 = levelA3.levelA3(stockDetail, data, gemIndex, shIndex).filter()
@@ -128,28 +135,29 @@ if __name__ == '__main__':
                 limitOpenTime = t0Day.limitOpenTime
                 buy_elg_2 = day2elg(data)
                 buy_elg_3 = day3elg(data)
-                scoreLevelData = {
-                    'score': score,
-                    'height': height,
-                    'black': black_sum,
-                    'white': white_sum,
-                    'data': data,
-                    'AJ': AJ,
-                    'CF': CF,
-                    'TF': TF,
-                    'TP': TP,
-                    'stock': stock,
-                    'details': details,
-                    'day2elg': buy_elg_2,
-                    'day3elg': buy_elg_3,
-                    'is1': model_1(stock, data)
-                }
-                levelModel = LevelRule(scoreLevelData)
-                levelModel.filter()
                 if isLimit:
-                    level = levelModel.limitRank()
+                    scoreLevelData = {
+                        'score': score,
+                        'height': height,
+                        'black': black_sum,
+                        'white': white_sum,
+                        'data': data,
+                        'AJ': AJ,
+                        'CF': CF,
+                        'TF': TF,
+                        'TP': TP,
+                        'CP': CP,
+                        'stock': stock,
+                        'details': details,
+                        'day2elg': buy_elg_2,
+                        'day3elg': buy_elg_3,
+                        'is1': model_1(stock, data),
+                    }
+                    levelModel = LevelRule(scoreLevelData)
+                    levelModel.filter()
+                    level = levelModel.limitRank
                 else:
-                    level = 'F'
+                    level = 'O'
                 result = {
                     'code': stock,
                     'name': stockDetail.name,
@@ -172,31 +180,21 @@ if __name__ == '__main__':
                     'day3elg': buy_elg_3,
                 }
                 log.info(f'{aimDate}-{stock} - NOW')
-                if isLimit:
-                    limitColumnModels.append(ColumnModel(result))
-                else:
-                    unLimitColumnData.append(result)
+                limitColumnModels.append(ColumnModel(result))
             except (IndexError, ValueError, KeyError, TypeError) as er:
                 log.warning(f'{aimDate} - {stock} - NOW - {er} - {tool_box.errorHandler(er)}')
 
-        tool_box.thread_pool_executor(processModelResult, limitStocks, 10)
+        tool_box.thread_pool_executor(processModelResult, stocks, 20)
         log.info('模型运行完毕')
-        unLimitColumnData.sort(key=lambda d: d['score'], reverse=True)
-        for unLimitData in unLimitColumnData[:3]:
-            unLimitData['level'] = 'A'
-        for unLimitData in unLimitColumnData[3:10]:
-            unLimitData['level'] = 'B'
-        unLimitColumnModels = [ColumnModel(_) for _ in unLimitColumnData]
 
         def rankExcelData(d: ColumnModel):
             d = d.dict()
-            _white = d['white']
             _height = d['height']
-            _score = d['score']
-            return _height * 1000000 + _score * 1000 + _white * 1
+            _TP = d['TP']
+            return _height * 1000000 + _TP * 100
 
         limitColumnModels.sort(key=rankExcelData, reverse=True)
-        columnModels = limitColumnModels + unLimitColumnModels
+        columnModels = limitColumnModels
         try:
             excel_util.write(aimDate, columnModels)
         except Exception as e:
@@ -206,4 +204,4 @@ if __name__ == '__main__':
 
     for date in aimDates:
         process(date)
-        # Finish(date).all()
+        Finish(date).all()

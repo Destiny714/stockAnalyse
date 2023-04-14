@@ -56,7 +56,11 @@ class StockDataModel:
         return self.data[8]
 
     @property
-    def amount(self):  # 单位k
+    def amount(self):
+        """
+        单位 k
+        :return:
+        """
         return self.data[9]
 
     @property
@@ -236,7 +240,8 @@ class StockDataModel:
         """
         buy_elg_vol / volume
         """
-        return 0 if self.volume == 0 else round((self.buy_elg_vol / self.volume) * 100, 1)
+        res = 0.1 if self.volume == 0 else round((self.buy_elg_vol / self.volume) * 100, 1)
+        return res if res != 0 else 0.1
 
     def timeVol(self, timeStamp: int = None, minute: str = None):
         assert (timeStamp is None or minute is None)

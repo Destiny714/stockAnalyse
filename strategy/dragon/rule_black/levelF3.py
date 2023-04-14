@@ -246,6 +246,8 @@ class levelF3(base_level):
         data = self.data
         stock = self.stock
         try:
+            if not data[-1].TP < 40:
+                return False
             if data[-1].CP / weakenedIndex(self.shIndex, weak_degree=5) >= 60:
                 return False
             for i in range(1, 21):
@@ -724,7 +726,7 @@ class levelF3(base_level):
         try:
             if not t_limit(stock, data):
                 return False
-            if t_open_pct(data) >= 0.06:
+            if t_open_pct(data) >= 0.05:
                 return False
             if data[-1].turnover <= data[-2].turnover / 4:
                 return False
@@ -738,6 +740,8 @@ class levelF3(base_level):
         data = self.data
         stock = self.stock
         try:
+            if data[-1].TF > 50 and data[-1].TP > 50:
+                return False
             if (data[-11].close - data[-101].close) / data[-101].close <= 0.5:
                 return False
             for i in range(10, 101):
@@ -995,6 +999,8 @@ class levelF3(base_level):
             return False
         if data[-2].close == max([data[-i - 1].close for i in range(10)]):
             return False
+        if not (data[-1].TF < 70 and data[-1].TP < 70):
+            return False
         for i in range(1, 11):
             if t_high_pct(data, i) > limit(stock) / 100 and t_close_pct(data, i) < 0.055:
                 return True
@@ -1020,7 +1026,7 @@ class levelF3(base_level):
                 return False
         if not t_limit(stock, data):
             return False
-        return t_close_pct(data, 1) < -0.045
+        return t_close_pct(data, 1) < -0.05
 
     def rule64(self):
         data = self.data
@@ -1031,7 +1037,7 @@ class levelF3(base_level):
                 return False
             if flag:
                 continue
-            if t_low_pct(data, i) < -0.055 and t_high_pct(data, i + 1) < 0.08:
+            if t_low_pct(data, i) < -0.055 and t_close_pct(data, i) < -0.035 and t_high_pct(data, i + 1) < 0.08:
                 flag = True
         return flag
 
@@ -1052,3 +1058,43 @@ class levelF3(base_level):
         if not t_limit(stock, data):
             return False
         return t_high_pct(data, 1) > 0.045 and t_close_pct(data, 1) < 0.01 and data[-1].limitOpenTime > 2
+
+    def rule67(self):
+        data = self.data
+        stock = self.stock
+        if not t_limit(stock, data):
+            return False
+        if t_limit(stock, data, 1):
+            return False
+        try:
+            for i in range(1, 41):
+                if t_limit(stock, data, i):
+                    return False
+                d = data[-i - 1]
+                if not (d.high - d.low) / d.low > 0.025:
+                    return False
+            return True
+        except:
+            ...
+
+    def rule68(self):
+        data = self.data
+        stock = self.stock
+        if not t_limit(stock, data):
+            return False
+        if t_limit(stock, data, 1):
+            return False
+        return getMinute(stamp=data[-1].firstLimitTime) < '0950' and getMinute(stamp=data[-1].lastLimitTime) > '1040'
+
+    def rule69(self):
+        data = self.data
+        stock = self.stock
+        if not t_limit(stock, data):
+            return False
+        try:
+            for i in range(1, 41):
+                if t_close_pct(data, i) > 0.05:
+                    return False
+            return data[-1].turnover > 4 * sum([data[-i - 1].turnover for i in range(1, 21)]) / 20
+        except:
+            ...

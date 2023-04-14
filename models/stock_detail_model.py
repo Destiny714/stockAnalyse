@@ -21,3 +21,7 @@ class StockDetailModel:
     @property
     def industry(self) -> str:
         return self.data[3]
+
+    @property
+    def amount(self) -> float:
+        return self.data[6] * 10

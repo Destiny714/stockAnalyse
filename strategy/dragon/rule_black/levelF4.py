@@ -921,7 +921,7 @@ class levelF4(base_level):
             return False
         if not t_limit(stock, data):
             return False
-        if data[-1].turnover <= 1.5 * max([_.turnover for _ in data[-21:-1]]):
+        if data[-1].turnover <= 2 * max([_.turnover for _ in data[-31:-1]]):
             return False
         if data[-1].turnover <= 2.5 * sum([_.turnover for _ in data[-6:-1]]) / 5:
             return False

@@ -71,4 +71,4 @@ if __name__ == '__main__':
     tool_box.thread_pool_executor(N, chosenStocks, 20)
     tool_box.thread_pool_executor(N_plus, chosenStocks, 20)
     DingtalkPush(mode=push_mode).pushN(aimDate, Ns)
-    DingtalkPush(mode=push_mode).pushN(aimDate, N_plus_s, model_name='N-PLUS')
+    DingtalkPush(mode=PushMode.Dev).pushN(aimDate, N_plus_s, model_name='N-PLUS')
