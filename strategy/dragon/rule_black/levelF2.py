@@ -443,7 +443,7 @@ class levelF2(base_level):
                 return False
             for i in range(2):
                 d = data[-i - 1]
-                if d.TP / weakenedIndex(self.shIndex) >= 60:
+                if d.CP / weakenedIndex(self.shIndex) >= 60:
                     return False
             if t_open_pct(data, 1) >= 0.07:
                 return False
@@ -791,6 +791,9 @@ class levelF2(base_level):
         data = self.data
         stock = self.stock
         try:
+            d = data[-1]
+            if d.CP > 53 and d.TP > 33:
+                return False
             if not t_limit(stock, data):
                 return False
             if not data[-1].TF < 85:
@@ -993,7 +996,7 @@ class levelF2(base_level):
     def rule71(self):
         data = self.data
         return data[-1].TP < 35 and data[-1].turnover > 3 * sum([data[-i - 1].turnover for i in range(1, 6)]) / 5 and data[-1].turnover > 1.5 * max(
-            [data[-i - 1].turnover for i in range(1, 21)]) and data[-1].TF < 80
+            [data[-i - 1].turnover for i in range(1, 21)]) and data[-1].TF < 70
 
     def rule72(self):
         data = self.data
@@ -1015,11 +1018,13 @@ class levelF2(base_level):
         stock = self.stock
         if not t_limit(stock, data):
             return False
-        return data[-1].CF < 50 and data[-1].TF < 75 and data[-1].TP < 37
+        return data[-1].CF < 50 and data[-1].TF < 60 and data[-1].TP < 37 and t_open_pct(data) < 0.055
 
     def rule74(self):
         data = self.data
         stock = self.stock
+        if not data[-1].TF < 95:
+            return False
         if not model_1(stock, data):
             return False
         return data[-1].TP < 90 and data[-1].close > data[-1].his_high / 3
@@ -1029,7 +1034,7 @@ class levelF2(base_level):
         stock = self.stock
         if not t_limit(stock, data, 1):
             return False
-        return day2elg(data) < 60 and day3elg(data) < 60
+        return day2elg(data) < 55 and day3elg(data) < 55 and data[-1].TP < 40
 
     def rule76(self):
         data = self.data
@@ -1072,6 +1077,9 @@ class levelF2(base_level):
     def rule79(self):
         data = self.data
         stock = self.stock
+        d = data[-1]
+        if not (d.TF < 85 and d.TP < 45):
+            return False
         if not t_limit(stock, data):
             return False
         if model_1(stock, data):
@@ -1091,8 +1099,8 @@ class levelF2(base_level):
         for i in range(2):
             if not data[-i - 1].CP / weakenedIndex(self.shIndex, weak_degree=5) < 60:
                 return False
-        if not t_close_pct(data) > 0.06 and t_close_pct(data, 1) > 0.06:
-            return False
+            if t_close_pct(data, i) <= 0.06:
+                return False
         return data[-2].TF < 25 and data[-1].TF < 70
 
     def rule81(self):

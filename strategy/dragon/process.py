@@ -13,10 +13,10 @@ from prefs.params import *
 from common import tool_box
 from level_rule import LevelRule
 from sequence.finish import Finish
-from utils.concurrent_util import initStock
 from utils.stockdata_util import *
 from sequence.prepare import Prepare
 from utils.excel_util import ColumnModel
+from utils.concurrent_util import initStock
 from models.stock_detail_model import StockDetailModel
 from utils import concurrent_util, excel_util, log_util
 from rule_black import levelF1, levelF2, levelF3, levelF4, levelF5

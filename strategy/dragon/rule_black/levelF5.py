@@ -256,6 +256,6 @@ class levelF5(base_level):
                 if t_close_pct(data, i) <= 0.06:
                     return False
             if data[-2].TF < 25:
-                return data[-1].CP / weakenedIndex(self.shIndex, weak_degree=5) < 65
+                return data[-1].CP / weakenedIndex(self.shIndex, weak_degree=5) < 60
         except:
             pass

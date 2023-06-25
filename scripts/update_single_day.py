@@ -82,18 +82,20 @@ if __name__ == '__main__':
 
     @timeCount
     def multiProcess(stock_list):
-        return process_pool_executor(getData, stock_list, 20, datesList)
+        return process_pool_executor(getData, stock_list, 10, datesList)
 
 
     def writeSQL(_):
-        db.Stock_Database().updateTimeData(_)
+        connect = db.Stock_Database()
+        connect.updateTimeData(_)
+        connect.close()
 
 
     def writeData(r: list):
         datas = []
         for _ in numpy.array(r, dtype=object):
             datas.extend(_)
-        thread_pool_executor(writeSQL, datas, 25)
+        thread_pool_executor(writeSQL, datas, 15)
 
 
     startTime = time.time()

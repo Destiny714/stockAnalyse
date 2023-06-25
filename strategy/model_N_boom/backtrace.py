@@ -10,6 +10,7 @@ from database import db
 from common import tool_box
 from utils import concurrent_util
 from utils.file_util import projectPath
+from utils.date_util import lastTradeDay
 from utils.stockdata_util import queryData
 from models.stock_detail_model import StockDetailModel
 
@@ -29,7 +30,7 @@ def boom(stock, date):
         if res == 0:
             return
         result = {'code': stock, 'name': detail.name, 'date': date}
-        profit = backtrace(stock,date)
+        profit = backtrace(stock, date)
         print(result)
         print(f'{date}-{stock}-{detail.name}-{profit}%')
     except Exception as e:
@@ -54,9 +55,8 @@ if __name__ == '__main__':
     stocks = concurrent_util.initStock(needReload=False, extra=False)
     chosenStocks = [stock for stock in stocks if stock[:2] in ['00', '60']]
     singleton = db.Stock_Database()
-    dates = singleton.selectTradeDateRange(20230101, 20230329)
+    dates = singleton.selectTradeDateRange(20230401, lastTradeDay())
     singleton.close()
     for _date in dates:
         print(_date)
         ans = tool_box.thread_pool_executor(boom, chosenStocks, 20, _date)
-

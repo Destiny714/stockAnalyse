@@ -18,7 +18,7 @@ from common import tool_box
 from utils import concurrent_util
 from utils.date_util import lastTradeDay
 from utils.stockdata_util import queryData
-from utils.push_util import PushMode,DingtalkPush
+from utils.push_util import PushMode, DingtalkPush
 from models.stock_detail_model import StockDetailModel
 
 warnings.filterwarnings('ignore')
@@ -53,6 +53,5 @@ if __name__ == '__main__':
     errors = []
     chosenStocks = stocks
     booms = []
-    push_mode = PushMode.Release
     tool_box.thread_pool_executor(boom, chosenStocks, 20)
-    DingtalkPush(mode=push_mode).pushN_boom(aimDate, booms, model_name='N-BOOM')
+    DingtalkPush(modes=[PushMode.Release, PushMode.Dev]).pushN_boom(aimDate, booms, model_name='N-BOOM')

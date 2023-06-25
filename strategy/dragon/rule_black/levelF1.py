@@ -411,7 +411,7 @@ class levelF1(base_level):
         for i in range(2):
             if not t_limit(stock, data, i):
                 return False
-        if (data[-3].close - data[-6].close) / data[-6].close > 0.1:
+        if (data[-3].close - data[-6].close) / data[-6].close > 0.15:
             return True
 
     def rule29(self):
@@ -592,6 +592,8 @@ class levelF1(base_level):
         data = self.data
         stock = self.stock
         if t_limit(stock, data, 2):
+            return False
+        if not data[-1].TF < 95:
             return False
         flag = 10000
         for i in range(1, 6):
@@ -946,6 +948,8 @@ class levelF1(base_level):
         if t_limit(stock, data, 1):
             return False
         if not t_limit(stock, data):
+            return False
+        if not data[-1].TP < 35:
             return False
         if data[-1].limitOpenTime == 0:
             return False

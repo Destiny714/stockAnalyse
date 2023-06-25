@@ -27,6 +27,13 @@ class MysqlConnection:
         if self.conn.open:
             self.cursor.close()
             self.conn.close()
+        try:
+            self.kill()
+        except:
+            pass
+
+    def kill(self):
+        self.conn.kill(self.conn.thread_id())
 
     def action(self, output: bool):
         """mysql语句执行基础单元"""
@@ -242,6 +249,11 @@ class Stock_Database(MysqlConnection):
     def deleteStockFromList(self, stock):
         """从股票详情表中删除给定股票详情"""
         self.word = f"DELETE FROM stockList WHERE symbol='{stock}'"
+        self.action(output=False)
+
+    def deleteOneDayStockDetail(self, stock, date):
+        """从股票表中删除一条详情"""
+        self.word = f"DELETE FROM No{stock} WHERE date='{date}'"
         self.action(output=False)
 
     def insertOneDailyBasicRecord(self, data, backup=False):

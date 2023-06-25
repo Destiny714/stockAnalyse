@@ -163,7 +163,7 @@ class levelF4(base_level):
 
     def rule10(self):
         data = self.data
-        if data[-1].CP / weakenedIndex(self.shIndex, weak_degree=5) >= 65:
+        if data[-1].CP / weakenedIndex(self.shIndex, weak_degree=5) >= 60:
             return False
         if data[-1].turnover <= 10:
             return False
@@ -401,7 +401,7 @@ class levelF4(base_level):
         stock = self.stock
         try:
             count = 0
-            for i in range(1, 6):
+            for i in range(4):
                 if not t_limit(stock, data, i - 1):
                     continue
                 if data[-i].limitOpenTime > 3:
@@ -534,7 +534,7 @@ class levelF4(base_level):
         stock = self.stock
         try:
             d = data[-1]
-            if d.CP / weakenedIndex(self.shIndex) >= 60:
+            if d.CP / weakenedIndex(self.shIndex, weak_degree=5) >= 60:
                 return False
             if (d.buy_elg_vol - d.sell_elg_vol) / d.buy_elg_vol >= 0.8:
                 return False

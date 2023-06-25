@@ -627,7 +627,7 @@ class levelF3(base_level):
                     return False
             plus = 0
             minus = 0
-            for i in range(50):
+            for i in range(30):
                 if t_low_pct(self.gemIndex, i) < -0.02:
                     continue
                 d = data[-i - 1]
@@ -796,7 +796,11 @@ class levelF3(base_level):
     def rule45(self):
         data = self.data
         try:
-            if data[-1].CP / weakenedIndex(self.shIndex, weak_degree=5) >= 65:
+            if not data[-1].TF < 75:
+                return False
+            if data[-1].CP / weakenedIndex(self.shIndex, weak_degree=5) >= 70:
+                return False
+            if data[-1].TF >= 75:
                 return False
             count = 0
             for i in range(2, 42):
@@ -936,7 +940,7 @@ class levelF3(base_level):
             return False
         if t_limit(stock, data, 1):
             return False
-        return getMinute(stamp=data[-1].firstLimitTime) < '0940' and data[-1].limitOpenTime > 0 and data[-1].CP < 70 and data[-1].TF < 75
+        return getMinute(stamp=data[-1].firstLimitTime) < '0940' and data[-1].limitOpenTime > 0 and data[-1].CP < 60 and data[-1].TF < 75
 
     def rule58(self):
         data = self.data
@@ -977,6 +981,8 @@ class levelF3(base_level):
             if not getMinute(stamp=data[-1].firstLimitTime) < '0940':
                 return False
             if not t_limit(stock, data):
+                return False
+            if not data[-1].turnover > data[-2].turnover / 4:
                 return False
             for i in range(1, 61):
                 if t_limit(stock, data, i):
@@ -1026,13 +1032,14 @@ class levelF3(base_level):
                 return False
         if not t_limit(stock, data):
             return False
-        return t_close_pct(data, 1) < -0.05
+        d = data[-1]
+        return t_close_pct(data, 1) < -0.05 and d.CP < 65 and d.TP < 45
 
     def rule64(self):
         data = self.data
         stock = self.stock
         flag = False
-        for i in range(1, 31):
+        for i in range(1, 11):
             if t_limit(stock, data, i):
                 return False
             if flag:
@@ -1084,7 +1091,7 @@ class levelF3(base_level):
             return False
         if t_limit(stock, data, 1):
             return False
-        return getMinute(stamp=data[-1].firstLimitTime) < '0950' and getMinute(stamp=data[-1].lastLimitTime) > '1040'
+        return getMinute(stamp=data[-1].firstLimitTime) < '0950' and getMinute(stamp=data[-1].lastLimitTime) > '1040' and data[-1].TF < 50
 
     def rule69(self):
         data = self.data
@@ -1098,3 +1105,39 @@ class levelF3(base_level):
             return data[-1].turnover > 4 * sum([data[-i - 1].turnover for i in range(1, 21)]) / 20
         except:
             ...
+
+    def rule70(self):
+        data = self.data
+        stock = self.stock
+        for i in range(3):
+            if not t_limit(stock, data, i):
+                return
+        if model_1(stock, data, 2):
+            return False
+        for i in range(2):
+            if not model_1(stock, data, i):
+                return False
+        return data[-1].turnover > data[-2].turnover and data[-1].TF < 90
+
+    def rule71(self):
+        data = self.data
+        stock = self.stock
+        if not model_1(stock, data):
+            return False
+        if model_1(stock, data, 1):
+            return False
+        return data[-1].turnover > data[-2].turnover / 2
+
+    def rule72(self):
+        data = self.data
+        return sum([data[-i - 1].turnover for i in range(5)]) / 5 < 4 and sum([data[-i - 1].turnover for i in range(20)]) / 20 < 3 * sum(
+            [data[-i - 1].turnover for i in range(61, 121)]) / 60
+
+    def rule73(self):
+        data = self.data
+        stock = self.stock
+        if model_1(stock, data, 1):
+            return False
+        if not model_1(stock, data):
+            return False
+        return data[-2].turnover < 2 * sum([data[-_ - 1].turnover for _ in range(10, 71)]) / 60 and data[-2].turnover < data[-1].turnover * 3

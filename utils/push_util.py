@@ -7,6 +7,7 @@
 import json
 import requests
 from enum import Enum
+from typing import Optional
 from utils.log_util import log
 from utils.excel_util import readExcel_AS
 from utils.oss_util import oss_push_object
@@ -198,9 +199,14 @@ class BasePush(object):
     scope: str
     headers = {'content-type': 'application/json'}
 
-    def __init__(self, mode: PushMode = PushMode.Dev):
+    def __init__(self, mode: PushMode = PushMode.Dev, modes=Optional[list[PushMode]]):
         self.config = config_yaml()['webhook'][self.scope]
-        self.webhook = self.config[mode.value]
+        self.pushModes = []
+        if mode:
+            self.pushModes.append(mode)
+        if modes:
+            self.pushModes.extend(modes)
+            self.pushModes = list(set(self.pushModes))
 
     def pushDragon(self, *args, **kwargs):
         ...
@@ -210,15 +216,19 @@ class BasePush(object):
 
     def request(self, template: BasePushTemplate):
         body = json.dumps(template.toJson())
-        res = requests.post(url=self.webhook, headers=self.headers, data=body)
-        return res
+        for pushMode in self.pushModes:
+            res = requests.post(url=self.config[pushMode.value], headers=self.headers, data=body)
+            if res.status_code == 200:
+                logCli.info(f'{pushMode.name} channel push done')
+            else:
+                logCli.error(f'{pushMode.name} channel ' + res.json())
 
 
 class DingtalkPush(BasePush):
     scope = 'Dingtalk'
 
-    def __init__(self, mode: PushMode = PushMode.Release):
-        super().__init__(mode)
+    def __init__(self, mode: PushMode = PushMode.Release, modes=None):
+        super().__init__(mode=mode, modes=modes)
 
     def pushDragon(self, date: str, url: str = None):
         if not url:
@@ -242,11 +252,7 @@ class DingtalkPush(BasePush):
             title=f'{date} {model_name} 模型',
             markdown=N_ModelMarkDownTemplate(stock_details)
         )
-        res = self.request(template)
-        if res.status_code == 200:
-            logCli.info('push done')
-        else:
-            logCli.info(res.json())
+        self.request(template)
 
     def pushBoom(self, date: str, stock_details: list[dict], model_name='爆量'):
         logCli.info('push start')
@@ -254,11 +260,7 @@ class DingtalkPush(BasePush):
             title=f'{date} {model_name} 模型',
             markdown=BoomModelMarkDownTemplate(stock_details)
         )
-        res = self.request(template)
-        if res.status_code == 200:
-            logCli.info('push done')
-        else:
-            logCli.info(res.json())
+        self.request(template)
 
     def pushN_boom(self, date: str, stock_details: list[dict], model_name='N-BOOM'):
         logCli.info('push start')
@@ -266,18 +268,14 @@ class DingtalkPush(BasePush):
             title=f'{date} {model_name} 模型',
             markdown=N_Boom_ModelMarkDownTemplate(stock_details)
         )
-        res = self.request(template)
-        if res.status_code == 200:
-            logCli.info('push done')
-        else:
-            logCli.info(res.json())
+        self.request(template)
 
 
 class WechatPush(BasePush):
     scope = 'Wechat'
 
-    def __init__(self, mode: PushMode = PushMode.Release):
-        super().__init__(mode)
+    def __init__(self, mode: PushMode = PushMode.Release, modes=None):
+        super().__init__(mode=mode, modes=modes)
 
     def pushDragon(self, date: str, url: str = None):
         if not url:

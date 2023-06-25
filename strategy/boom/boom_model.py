@@ -25,5 +25,5 @@ if __name__ == '__main__':
     stocks = initStock(needReload=False, extra=False)
     booms = []
     push_mode = PushMode.Release
-    thread_pool_executor(run_model, stocks, 20)
+    thread_pool_executor(run_model, stocks, 10)
     DingtalkPush(mode=push_mode).pushBoom(aimDate, booms)
