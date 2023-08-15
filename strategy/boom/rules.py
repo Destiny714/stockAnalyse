@@ -5,6 +5,7 @@
 # @Software: PyCharm
 
 from database import db
+from typing import Optional
 from models.stock_data_model import StockDataModel
 from models.stock_detail_model import StockDetailModel
 from utils.stockdata_util import queryData, move_avg, t_close_pct, t_limit, limit_height, t_low_pct, getMinute, t_high_pct, t_down_limit
@@ -73,7 +74,7 @@ class BoomRule(object):
     def __init__(self, stock: str, date=''):
         self.stock = stock
         self.boomDay = None
-        self.boomData = None
+        self.boomData: Optional[StockDataModel] = None
         self.client = db.Stock_Database()
         self.data = queryData(stock, 300, date)
         self.detail = StockDetailModel(self.client.selectStockDetail(stock))
@@ -91,9 +92,10 @@ class BoomRule(object):
         data = self.data
         a = len([i for i in range(5) if data[-i - 1].close > move_avg(data, 5, i)]) >= 4
         b = len([i for i in range(10) if data[-i - 1].close > move_avg(data, 5, i)]) >= 8
-        c = len([i for i in range(10) if data[-i - 1].close > move_avg(data, 10, i)]) >= 9 and len(
+        c = len([i for i in range(10) if data[-i - 1].close > move_avg(data, 10, i)]) >= 8 and len(
             [i for i in range(10) if data[-i - 1].close > move_avg(data, 5, i)]) >= 7
-        return a or b or c
+        d = len([i for i in range(20) if data[-i - 1].close > move_avg(data, 20, i)]) >= 19
+        return a or b or c or d
 
     def rule4(self):
         data = self.data
@@ -127,6 +129,8 @@ class BoomRule(object):
             if not d.turnover < nxt.turnover * 1.75:
                 continue
             if not (d.high - d.close) / (d.close - d.open) < 3 / 5:
+                continue
+            if not t_low_pct(data, i) > -0.025:
                 continue
             if t_limit(self.stock, data, i):
                 if not (d.limitOpenTime < 3 or getMinute(stamp=d.firstLimitTime) < '1400'):
@@ -226,6 +230,19 @@ class BoomRule(object):
             if not self.data[-i - 1].open < move_avg(self.data, 5, i):
                 return False
         return True
+
+    def fail11(self):
+        if self.boomData:
+            return self.boomData.turnover > self.data[-2].turnover * 1.3
+
+    def fail12(self):
+        if self.boomData:
+            boomIndex = self.dates.index(self.boomDay)
+            if boomIndex:
+                for i in range(boomIndex + 1, len(self.dates)):
+                    if not self.boomData.high > self.data[i].high:
+                        return False
+                return True
 
     def run(self):
         passCount = 0

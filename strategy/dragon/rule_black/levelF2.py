@@ -996,7 +996,7 @@ class levelF2(base_level):
     def rule71(self):
         data = self.data
         return data[-1].TP < 35 and data[-1].turnover > 3 * sum([data[-i - 1].turnover for i in range(1, 6)]) / 5 and data[-1].turnover > 1.5 * max(
-            [data[-i - 1].turnover for i in range(1, 21)]) and data[-1].TF < 70
+            [data[-i - 1].turnover for i in range(1, 21)]) and data[-1].TF < 70 and data[-1].pctChange < 16
 
     def rule72(self):
         data = self.data
@@ -1062,6 +1062,9 @@ class levelF2(base_level):
     def rule78(self):
         data = self.data
         stock = self.stock
+        d = data[-1]
+        if d.TF > 75 and d.CP > 65 and d.TP > 35 and d.CP / d.TP > 1.37:
+            return False
         if not t_limit(stock, data):
             return False
         if t_limit(stock, data, 1):

@@ -599,6 +599,9 @@ class levelF4(base_level):
         data = self.data
         stock = self.stock
         try:
+            d = data[-1]
+            if d.TF > 75 and d.CP > 65 and d.TP > 35 and d.CP / d.TP > 1.37:
+                return False
             range4MaxClose = max([_.close for _ in data[-5:-1]])
             if not t_limit(stock, data):
                 return False
@@ -810,6 +813,9 @@ class levelF4(base_level):
         data = self.data
         stock = self.stock
         try:
+            d = data[-1]
+            if d.TF > 75 and d.CP > 65 and d.TP > 35 and d.CP / d.TP > 1.37:
+                return False
             if model_1(stock, data):
                 return False
             d = data[-1]
@@ -905,7 +911,7 @@ class levelF4(base_level):
                     continue
                 d = data[-i - 1]
                 nxt = data[-i]
-                if nxt.turnover > 1.8 * data[-1].turnover and d.turnover > 1.3 * data[-1].turnover:
+                if nxt.turnover > 1.8 * data[-1].turnover:
                     if nxt.high * 1.04 > data[-1].close:
                         if nxt.high > max([_.close for _ in data[-6:-1]]):
                             return True
@@ -1112,6 +1118,9 @@ class levelF4(base_level):
         data = self.data
         stock = self.stock
         try:
+            d = data[-1]
+            if d.TF > 75 and d.CP > 65 and d.TP > 35 and d.CP / d.TP > 1.37:
+                return False
             flag = False
             count = 0
             for i in range(2):
@@ -1150,9 +1159,6 @@ class levelF4(base_level):
                     return False
             if data[-1].turnover <= data[-2].turnover / 4:
                 return False
-            for i in range(2):
-                if getMinute(stamp=data[-i - 1].firstLimitTime) >= '0940':
-                    return False
             for i in range(2, 152):
                 if not t_limit(stock, data, i):
                     continue
@@ -1216,6 +1222,9 @@ class levelF4(base_level):
         data = self.data
         stock = self.stock
         try:
+            d = data[-1]
+            if d.TF > 75 and d.CP > 65 and d.TP > 35 and d.CP / d.TP > 1.37:
+                return False
             if t_limit(stock, data, 1):
                 return False
             if data[-1].TP >= 50:
@@ -1245,13 +1254,13 @@ class levelF4(base_level):
         data = self.data
         stock = self.stock
         try:
+            d = data[-1]
+            if not d.CP / d.TP < 1.37:
+                return False
             if t_limit(stock, data, 2):
                 return False
             for i in range(2):
                 if model_1(stock, data, i):
-                    return False
-            for i in range(2):
-                if getMinute(stamp=data[-i - 1].firstLimitTime) >= '0945':
                     return False
             highest2to6 = max([data[-i - 1].close for i in range(2, 7)])
             for i in range(2, 152):
@@ -1269,3 +1278,20 @@ class levelF4(base_level):
                     return True
         except:
             ...
+
+    def rule61(self):
+        data = self.data
+        stock = self.stock
+        if t_limit(stock, data, 2):
+            return False
+        return sum([data[-_ - 1].turnover for _ in range(20)]) / 20 < 3 * sum([data[-i - 1].turnover for i in range(121, 181)]) / 60 and (
+                data[-1].turnover + data[-2].turnover) / 2 < 1.5 * sum([data[-i - 1].turnover for i in range(10, 50)]) / 40
+
+    def rule62(self):
+        data = self.data
+        stock = self.stock
+        if t_limit(stock, data, 1):
+            return False
+        if not t_limit(stock, data):
+            return False
+        return t_open_pct(data) > 0.04 and data[-1].turnover > max([data[-i - 1].turnover for i in range(1, 11)]) / 2

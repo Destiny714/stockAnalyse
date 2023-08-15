@@ -248,6 +248,8 @@ class levelF3(base_level):
         try:
             if not data[-1].TP < 40:
                 return False
+            if not data[-1].pctChange < 16:
+                return False
             if data[-1].CP / weakenedIndex(self.shIndex, weak_degree=5) >= 60:
                 return False
             for i in range(1, 21):
@@ -518,6 +520,8 @@ class levelF3(base_level):
     def rule30(self):
         data = self.data
         stock = self.stock
+        if not data[-1].pctChange < 16:
+            return False
         if t_limit(stock, data, 1):
             return False
         if not t_limit(stock, data):
@@ -860,6 +864,9 @@ class levelF3(base_level):
         data = self.data
         count = 0
         try:
+            d = data[-1]
+            if d.TF > 75 and d.CP > 65 and d.TP > 35 and d.CP / d.TP > 1.37:
+                return False
             for i in range(1, 51):
                 if t_high_pct(data, i) > 0.055:
                     return False
@@ -1130,7 +1137,7 @@ class levelF3(base_level):
 
     def rule72(self):
         data = self.data
-        return sum([data[-i - 1].turnover for i in range(5)]) / 5 < 4 and sum([data[-i - 1].turnover for i in range(20)]) / 20 < 3 * sum(
+        return sum([data[-i - 1].turnover for i in range(5)]) / 5 < 4 and max([data[-i - 1].turnover for i in range(20)]) < 3 * sum(
             [data[-i - 1].turnover for i in range(61, 121)]) / 60
 
     def rule73(self):

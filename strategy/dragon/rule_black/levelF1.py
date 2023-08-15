@@ -692,7 +692,7 @@ class levelF1(base_level):
             return False
         if t_limit(stock, data, 1):
             return False
-        return (data[-1].concentration - data[-2].concentration) / data[-2].concentration > 0.25 and data[-1].TF < 60
+        return (data[-1].concentration - data[-2].concentration) / data[-2].concentration > 0.25 and data[-1].TF < 55
 
     def rule54(self):
         data = self.data
@@ -782,7 +782,7 @@ class levelF1(base_level):
 
     def rule60(self):
         data = self.data
-        return data[-1].limitOpenTime > 0 and data[-1].CF < 25 and data[-1].CP < 65 and getMinute(stamp=data[-1].lastLimitTime) > '1100'
+        return data[-1].limitOpenTime > 2 and data[-1].TF < 55 and getMinute(stamp=data[-1].lastLimitTime) > '1100'
 
     def rule61(self):
         ...
@@ -839,6 +839,9 @@ class levelF1(base_level):
     def rule65(self):
         data = self.data
         try:
+            d = data[-1]
+            if d.TF > 75 and d.CP > 65 and d.TP > 35 and d.CP / d.TP > 1.37:
+                return False
             if not data[-1].CP < 65:
                 return False
             if not data[-1].TF < 85:
