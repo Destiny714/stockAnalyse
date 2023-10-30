@@ -281,7 +281,12 @@ class Tushare:
         df = tushare.pro_bar(ts_code=stockWithSuffix, adj='qfq', start_date=date, end_date=date)
         return df.iloc[0]
 
+    def dailyStockNos(self, date: str):
+        allStocks = self.dailyData(date)
+        filtered = [i['ts_code'][:6] for i in allStocks]
+        return [i for i in filtered if i[0] in ['3', '6']]
+
 
 if __name__ == '__main__':
-    a = Tushare().qfqDailyDataBackup('000001.SZ', '20230214')
+    a = Tushare().dailyStockNos('20230214')
     print(a)

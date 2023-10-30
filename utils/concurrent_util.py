@@ -177,12 +177,13 @@ def updateDailyBackup(date: str):
         redis_cli_.close()
 
 
-def createTableIfNotExist(stockList):
+def createTableIfNotExist(date):
     """检查并创建新stock table"""
     print('start update stock table...')
+    newStocks = Tushare().dailyStockNos(date)
     mysql = Stock_Database()
     tables = mysql.selectExistTable()
-    for stock in stockList:
+    for stock in newStocks:
         if f'No{stock}' not in tables:
             mysql.createTableForStock(stock)
     mysql.close()
@@ -362,13 +363,13 @@ def initStock(needReload=True, extra=False):
     """每日数据更新汇总脚本"""
     mysql = Stock_Database()
     if needReload:
-        updateShIndex()
-        updateGemIndex()
-        updateStockList()
+        # updateShIndex()
+        # updateGemIndex()
+        # updateStockList()
         stocks = mysql.selectAllStock()
-        stocks = stockFilter(stocks).result()
+        # stocks = stockFilter(stocks).result()
         stockDetailVersion = mysql.selectDetailUpdateDate()
-        createTableIfNotExist(stocks)
+        createTableIfNotExist(lastTradeDay())
         mysql.stockListUpdateDate(lastTradeDay())
         if int(stockDetailVersion) < int(lastTradeDay()):
             fullDates = mysql.selectTradeDate()
@@ -378,13 +379,13 @@ def initStock(needReload=True, extra=False):
             mysql.stockDetailUpdateDate(lastTradeDay())
     else:
         stocks = mysql.selectAllStock()
-        stocks = stockFilter(stocks).result()
-    if extra:
-        updateLimitDetailData()
-        updateTurnover()
-        updateMoneyFlow()
-        updateChipDetail()
-        # updateTimeDataToday() TODO:fix minuteData update method
-        updateStockLimit()
+        # stocks = stockFilter(stocks).result()
+    # if extra:
+    #     updateLimitDetailData()
+    #     updateTurnover()
+    #     updateMoneyFlow()
+    #     updateChipDetail()
+    #     # updateTimeDataToday() TODO:fix minuteData update method
+    #     updateStockLimit()
     mysql.close()
     return stocks
